@@ -885,6 +885,473 @@ display(all_column_quality_summary)
 </div>
 
 
+
+```python
+##################################
+# Counting the number of columns
+# with Fill.Rate < 1.00
+##################################
+print('Number of Columns with Missing Data:',str(len(all_column_quality_summary[(all_column_quality_summary['Fill.Rate']<1)])))
+```
+
+    Number of Columns with Missing Data: 12
+    
+
+
+```python
+##################################
+# Identifying the columns
+# with Fill.Rate < 1.00
+##################################
+print('Columns with Missing Data:')
+display(all_column_quality_summary[(all_column_quality_summary['Fill.Rate']<1)].sort_values(by=['Fill.Rate'], ascending=True))
+```
+
+    Columns with Missing Data:
+    
+
+
+<div>
+<style scoped>
+    .dataframe tbody tr th:only-of-type {
+        vertical-align: middle;
+    }
+
+    .dataframe tbody tr th {
+        vertical-align: top;
+    }
+
+    .dataframe thead th {
+        text-align: right;
+    }
+</style>
+<table border="1" class="dataframe">
+  <thead>
+    <tr style="text-align: right;">
+      <th></th>
+      <th>Column.Name</th>
+      <th>Column.Type</th>
+      <th>Row.Count</th>
+      <th>Non.Null.Count</th>
+      <th>Null.Count</th>
+      <th>Fill.Rate</th>
+    </tr>
+  </thead>
+  <tbody>
+    <tr>
+      <th>16</th>
+      <td>Tryglicerides</td>
+      <td>float64</td>
+      <td>418</td>
+      <td>282</td>
+      <td>136</td>
+      <td>0.674641</td>
+    </tr>
+    <tr>
+      <th>11</th>
+      <td>Cholesterol</td>
+      <td>float64</td>
+      <td>418</td>
+      <td>284</td>
+      <td>134</td>
+      <td>0.679426</td>
+    </tr>
+    <tr>
+      <th>13</th>
+      <td>Copper</td>
+      <td>float64</td>
+      <td>418</td>
+      <td>310</td>
+      <td>108</td>
+      <td>0.741627</td>
+    </tr>
+    <tr>
+      <th>3</th>
+      <td>Drug</td>
+      <td>object</td>
+      <td>418</td>
+      <td>312</td>
+      <td>106</td>
+      <td>0.746411</td>
+    </tr>
+    <tr>
+      <th>6</th>
+      <td>Ascites</td>
+      <td>object</td>
+      <td>418</td>
+      <td>312</td>
+      <td>106</td>
+      <td>0.746411</td>
+    </tr>
+    <tr>
+      <th>7</th>
+      <td>Hepatomegaly</td>
+      <td>object</td>
+      <td>418</td>
+      <td>312</td>
+      <td>106</td>
+      <td>0.746411</td>
+    </tr>
+    <tr>
+      <th>8</th>
+      <td>Spiders</td>
+      <td>object</td>
+      <td>418</td>
+      <td>312</td>
+      <td>106</td>
+      <td>0.746411</td>
+    </tr>
+    <tr>
+      <th>14</th>
+      <td>Alk_Phos</td>
+      <td>float64</td>
+      <td>418</td>
+      <td>312</td>
+      <td>106</td>
+      <td>0.746411</td>
+    </tr>
+    <tr>
+      <th>15</th>
+      <td>SGOT</td>
+      <td>float64</td>
+      <td>418</td>
+      <td>312</td>
+      <td>106</td>
+      <td>0.746411</td>
+    </tr>
+    <tr>
+      <th>17</th>
+      <td>Platelets</td>
+      <td>float64</td>
+      <td>418</td>
+      <td>407</td>
+      <td>11</td>
+      <td>0.973684</td>
+    </tr>
+    <tr>
+      <th>19</th>
+      <td>Stage</td>
+      <td>float64</td>
+      <td>418</td>
+      <td>412</td>
+      <td>6</td>
+      <td>0.985646</td>
+    </tr>
+    <tr>
+      <th>18</th>
+      <td>Prothrombin</td>
+      <td>float64</td>
+      <td>418</td>
+      <td>416</td>
+      <td>2</td>
+      <td>0.995215</td>
+    </tr>
+  </tbody>
+</table>
+</div>
+
+
+
+```python
+##################################
+# Identifying the rows
+# with Fill.Rate < 1.00
+##################################
+column_low_fill_rate = all_column_quality_summary[(all_column_quality_summary['Fill.Rate']<1.00)]
+```
+
+
+```python
+##################################
+# Gathering the metadata labels for each observation
+##################################
+row_metadata_list = cirrhosis_survival["ID"].values.tolist()
+```
+
+
+```python
+##################################
+# Gathering the number of columns for each observation
+##################################
+column_count_list = list([len(cirrhosis_survival.columns)] * len(cirrhosis_survival))
+```
+
+
+```python
+##################################
+# Gathering the number of missing data for each row
+##################################
+null_row_list = list(cirrhosis_survival.isna().sum(axis=1))
+```
+
+
+```python
+##################################
+# Gathering the missing data percentage for each column
+##################################
+missing_rate_list = map(truediv, null_row_list, column_count_list)
+```
+
+
+```python
+##################################
+# Exploring the rows
+# for missing data
+##################################
+all_row_quality_summary = pd.DataFrame(zip(row_metadata_list,
+                                           column_count_list,
+                                           null_row_list,
+                                           missing_rate_list), 
+                                        columns=['Row.Name',
+                                                 'Column.Count',
+                                                 'Null.Count',                                                 
+                                                 'Missing.Rate'])
+display(all_row_quality_summary)
+```
+
+
+<div>
+<style scoped>
+    .dataframe tbody tr th:only-of-type {
+        vertical-align: middle;
+    }
+
+    .dataframe tbody tr th {
+        vertical-align: top;
+    }
+
+    .dataframe thead th {
+        text-align: right;
+    }
+</style>
+<table border="1" class="dataframe">
+  <thead>
+    <tr style="text-align: right;">
+      <th></th>
+      <th>Row.Name</th>
+      <th>Column.Count</th>
+      <th>Null.Count</th>
+      <th>Missing.Rate</th>
+    </tr>
+  </thead>
+  <tbody>
+    <tr>
+      <th>0</th>
+      <td>1</td>
+      <td>20</td>
+      <td>0</td>
+      <td>0.00</td>
+    </tr>
+    <tr>
+      <th>1</th>
+      <td>2</td>
+      <td>20</td>
+      <td>0</td>
+      <td>0.00</td>
+    </tr>
+    <tr>
+      <th>2</th>
+      <td>3</td>
+      <td>20</td>
+      <td>0</td>
+      <td>0.00</td>
+    </tr>
+    <tr>
+      <th>3</th>
+      <td>4</td>
+      <td>20</td>
+      <td>0</td>
+      <td>0.00</td>
+    </tr>
+    <tr>
+      <th>4</th>
+      <td>5</td>
+      <td>20</td>
+      <td>0</td>
+      <td>0.00</td>
+    </tr>
+    <tr>
+      <th>...</th>
+      <td>...</td>
+      <td>...</td>
+      <td>...</td>
+      <td>...</td>
+    </tr>
+    <tr>
+      <th>413</th>
+      <td>414</td>
+      <td>20</td>
+      <td>9</td>
+      <td>0.45</td>
+    </tr>
+    <tr>
+      <th>414</th>
+      <td>415</td>
+      <td>20</td>
+      <td>9</td>
+      <td>0.45</td>
+    </tr>
+    <tr>
+      <th>415</th>
+      <td>416</td>
+      <td>20</td>
+      <td>9</td>
+      <td>0.45</td>
+    </tr>
+    <tr>
+      <th>416</th>
+      <td>417</td>
+      <td>20</td>
+      <td>9</td>
+      <td>0.45</td>
+    </tr>
+    <tr>
+      <th>417</th>
+      <td>418</td>
+      <td>20</td>
+      <td>9</td>
+      <td>0.45</td>
+    </tr>
+  </tbody>
+</table>
+<p>418 rows × 4 columns</p>
+</div>
+
+
+
+```python
+##################################
+# Counting the number of rows
+# with Fill.Rate < 1.00
+##################################
+print('Number of Rows with Missing Data:',str(len(all_row_quality_summary[all_row_quality_summary['Missing.Rate']>0])))
+```
+
+    Number of Rows with Missing Data: 142
+    
+
+
+```python
+##################################
+# Identifying the rows
+# with Fill.Rate < 1.00
+##################################
+print('Rows with Missing Data:')
+display(all_row_quality_summary[all_row_quality_summary['Missing.Rate']>0])
+```
+
+    Rows with Missing Data:
+    
+
+
+<div>
+<style scoped>
+    .dataframe tbody tr th:only-of-type {
+        vertical-align: middle;
+    }
+
+    .dataframe tbody tr th {
+        vertical-align: top;
+    }
+
+    .dataframe thead th {
+        text-align: right;
+    }
+</style>
+<table border="1" class="dataframe">
+  <thead>
+    <tr style="text-align: right;">
+      <th></th>
+      <th>Row.Name</th>
+      <th>Column.Count</th>
+      <th>Null.Count</th>
+      <th>Missing.Rate</th>
+    </tr>
+  </thead>
+  <tbody>
+    <tr>
+      <th>5</th>
+      <td>6</td>
+      <td>20</td>
+      <td>1</td>
+      <td>0.05</td>
+    </tr>
+    <tr>
+      <th>13</th>
+      <td>14</td>
+      <td>20</td>
+      <td>2</td>
+      <td>0.10</td>
+    </tr>
+    <tr>
+      <th>39</th>
+      <td>40</td>
+      <td>20</td>
+      <td>2</td>
+      <td>0.10</td>
+    </tr>
+    <tr>
+      <th>40</th>
+      <td>41</td>
+      <td>20</td>
+      <td>2</td>
+      <td>0.10</td>
+    </tr>
+    <tr>
+      <th>41</th>
+      <td>42</td>
+      <td>20</td>
+      <td>2</td>
+      <td>0.10</td>
+    </tr>
+    <tr>
+      <th>...</th>
+      <td>...</td>
+      <td>...</td>
+      <td>...</td>
+      <td>...</td>
+    </tr>
+    <tr>
+      <th>413</th>
+      <td>414</td>
+      <td>20</td>
+      <td>9</td>
+      <td>0.45</td>
+    </tr>
+    <tr>
+      <th>414</th>
+      <td>415</td>
+      <td>20</td>
+      <td>9</td>
+      <td>0.45</td>
+    </tr>
+    <tr>
+      <th>415</th>
+      <td>416</td>
+      <td>20</td>
+      <td>9</td>
+      <td>0.45</td>
+    </tr>
+    <tr>
+      <th>416</th>
+      <td>417</td>
+      <td>20</td>
+      <td>9</td>
+      <td>0.45</td>
+    </tr>
+    <tr>
+      <th>417</th>
+      <td>418</td>
+      <td>20</td>
+      <td>9</td>
+      <td>0.45</td>
+    </tr>
+  </tbody>
+</table>
+<p>142 rows × 4 columns</p>
+</div>
+
+
 # 2. Summary <a class="anchor" id="Summary"></a>
 
 # 3. References <a class="anchor" id="References"></a>
