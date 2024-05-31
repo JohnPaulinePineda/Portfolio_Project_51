@@ -1352,6 +1352,446 @@ display(all_row_quality_summary[all_row_quality_summary['Missing.Rate']>0])
 </div>
 
 
+
+```python
+##################################
+# Formulating the dataset
+# with numeric columns only
+##################################
+cirrhosis_survival_numeric = cirrhosis_survival.select_dtypes(include='number')
+```
+
+
+```python
+##################################
+# Gathering the variable names for each numeric column
+##################################
+numeric_variable_name_list = cirrhosis_survival_numeric.columns
+```
+
+
+```python
+##################################
+# Gathering the minimum value for each numeric column
+##################################
+numeric_minimum_list = cirrhosis_survival_numeric.min()
+```
+
+
+```python
+##################################
+# Gathering the mean value for each numeric column
+##################################
+numeric_mean_list = cirrhosis_survival_numeric.mean()
+```
+
+
+```python
+##################################
+# Gathering the median value for each numeric column
+##################################
+numeric_median_list = cirrhosis_survival_numeric.median()
+```
+
+
+```python
+##################################
+# Gathering the maximum value for each numeric column
+##################################
+numeric_maximum_list = cirrhosis_survival_numeric.max()
+```
+
+
+```python
+##################################
+# Gathering the first mode values for each numeric column
+##################################
+numeric_first_mode_list = [cirrhosis_survival[x].value_counts(dropna=True).index.tolist()[0] for x in cirrhosis_survival_numeric]
+```
+
+
+```python
+##################################
+# Gathering the second mode values for each numeric column
+##################################
+numeric_second_mode_list = [cirrhosis_survival[x].value_counts(dropna=True).index.tolist()[1] for x in cirrhosis_survival_numeric]
+```
+
+
+```python
+##################################
+# Gathering the count of first mode values for each numeric column
+##################################
+numeric_first_mode_count_list = [cirrhosis_survival_numeric[x].isin([cirrhosis_survival[x].value_counts(dropna=True).index.tolist()[0]]).sum() for x in cirrhosis_survival_numeric]
+```
+
+
+```python
+##################################
+# Gathering the count of second mode values for each numeric column
+##################################
+numeric_second_mode_count_list = [cirrhosis_survival_numeric[x].isin([cirrhosis_survival[x].value_counts(dropna=True).index.tolist()[1]]).sum() for x in cirrhosis_survival_numeric]
+```
+
+
+```python
+##################################
+# Gathering the first mode to second mode ratio for each numeric column
+##################################
+numeric_first_second_mode_ratio_list = map(truediv, numeric_first_mode_count_list, numeric_second_mode_count_list)
+```
+
+
+```python
+##################################
+# Gathering the count of unique values for each numeric column
+##################################
+numeric_unique_count_list = cirrhosis_survival_numeric.nunique(dropna=True)
+```
+
+
+```python
+##################################
+# Gathering the number of observations for each numeric column
+##################################
+numeric_row_count_list = list([len(cirrhosis_survival_numeric)] * len(cirrhosis_survival_numeric.columns))
+```
+
+
+```python
+##################################
+# Gathering the unique to count ratio for each numeric column
+##################################
+numeric_unique_count_ratio_list = map(truediv, numeric_unique_count_list, numeric_row_count_list)
+```
+
+
+```python
+##################################
+# Gathering the skewness value for each numeric column
+##################################
+numeric_skewness_list = cirrhosis_survival_numeric.skew()
+```
+
+
+```python
+##################################
+# Gathering the kurtosis value for each numeric column
+##################################
+numeric_kurtosis_list = cirrhosis_survival_numeric.kurtosis()
+```
+
+
+```python
+numeric_column_quality_summary = pd.DataFrame(zip(numeric_variable_name_list,
+                                                numeric_minimum_list,
+                                                numeric_mean_list,
+                                                numeric_median_list,
+                                                numeric_maximum_list,
+                                                numeric_first_mode_list,
+                                                numeric_second_mode_list,
+                                                numeric_first_mode_count_list,
+                                                numeric_second_mode_count_list,
+                                                numeric_first_second_mode_ratio_list,
+                                                numeric_unique_count_list,
+                                                numeric_row_count_list,
+                                                numeric_unique_count_ratio_list,
+                                                numeric_skewness_list,
+                                                numeric_kurtosis_list), 
+                                        columns=['Numeric.Column.Name',
+                                                 'Minimum',
+                                                 'Mean',
+                                                 'Median',
+                                                 'Maximum',
+                                                 'First.Mode',
+                                                 'Second.Mode',
+                                                 'First.Mode.Count',
+                                                 'Second.Mode.Count',
+                                                 'First.Second.Mode.Ratio',
+                                                 'Unique.Count',
+                                                 'Row.Count',
+                                                 'Unique.Count.Ratio',
+                                                 'Skewness',
+                                                 'Kurtosis'])
+display(numeric_column_quality_summary)
+```
+
+
+<div>
+<style scoped>
+    .dataframe tbody tr th:only-of-type {
+        vertical-align: middle;
+    }
+
+    .dataframe tbody tr th {
+        vertical-align: top;
+    }
+
+    .dataframe thead th {
+        text-align: right;
+    }
+</style>
+<table border="1" class="dataframe">
+  <thead>
+    <tr style="text-align: right;">
+      <th></th>
+      <th>Numeric.Column.Name</th>
+      <th>Minimum</th>
+      <th>Mean</th>
+      <th>Median</th>
+      <th>Maximum</th>
+      <th>First.Mode</th>
+      <th>Second.Mode</th>
+      <th>First.Mode.Count</th>
+      <th>Second.Mode.Count</th>
+      <th>First.Second.Mode.Ratio</th>
+      <th>Unique.Count</th>
+      <th>Row.Count</th>
+      <th>Unique.Count.Ratio</th>
+      <th>Skewness</th>
+      <th>Kurtosis</th>
+    </tr>
+  </thead>
+  <tbody>
+    <tr>
+      <th>0</th>
+      <td>ID</td>
+      <td>1.00</td>
+      <td>209.500000</td>
+      <td>209.50</td>
+      <td>418.00</td>
+      <td>1.00</td>
+      <td>314.00</td>
+      <td>1</td>
+      <td>1</td>
+      <td>1.000000</td>
+      <td>418</td>
+      <td>418</td>
+      <td>1.000000</td>
+      <td>0.000000</td>
+      <td>-1.200000</td>
+    </tr>
+    <tr>
+      <th>1</th>
+      <td>N_Days</td>
+      <td>41.00</td>
+      <td>1917.782297</td>
+      <td>1730.00</td>
+      <td>4795.00</td>
+      <td>1434.00</td>
+      <td>3445.00</td>
+      <td>2</td>
+      <td>2</td>
+      <td>1.000000</td>
+      <td>399</td>
+      <td>418</td>
+      <td>0.954545</td>
+      <td>0.472602</td>
+      <td>-0.482139</td>
+    </tr>
+    <tr>
+      <th>2</th>
+      <td>Age</td>
+      <td>9598.00</td>
+      <td>18533.351675</td>
+      <td>18628.00</td>
+      <td>28650.00</td>
+      <td>19724.00</td>
+      <td>18993.00</td>
+      <td>7</td>
+      <td>6</td>
+      <td>1.166667</td>
+      <td>344</td>
+      <td>418</td>
+      <td>0.822967</td>
+      <td>0.086850</td>
+      <td>-0.616730</td>
+    </tr>
+    <tr>
+      <th>3</th>
+      <td>Bilirubin</td>
+      <td>0.30</td>
+      <td>3.220813</td>
+      <td>1.40</td>
+      <td>28.00</td>
+      <td>0.70</td>
+      <td>0.60</td>
+      <td>33</td>
+      <td>31</td>
+      <td>1.064516</td>
+      <td>98</td>
+      <td>418</td>
+      <td>0.234450</td>
+      <td>2.717611</td>
+      <td>8.065336</td>
+    </tr>
+    <tr>
+      <th>4</th>
+      <td>Cholesterol</td>
+      <td>120.00</td>
+      <td>369.510563</td>
+      <td>309.50</td>
+      <td>1775.00</td>
+      <td>260.00</td>
+      <td>316.00</td>
+      <td>4</td>
+      <td>4</td>
+      <td>1.000000</td>
+      <td>201</td>
+      <td>418</td>
+      <td>0.480861</td>
+      <td>3.408526</td>
+      <td>14.337870</td>
+    </tr>
+    <tr>
+      <th>5</th>
+      <td>Albumin</td>
+      <td>1.96</td>
+      <td>3.497440</td>
+      <td>3.53</td>
+      <td>4.64</td>
+      <td>3.35</td>
+      <td>3.50</td>
+      <td>11</td>
+      <td>8</td>
+      <td>1.375000</td>
+      <td>154</td>
+      <td>418</td>
+      <td>0.368421</td>
+      <td>-0.467527</td>
+      <td>0.566745</td>
+    </tr>
+    <tr>
+      <th>6</th>
+      <td>Copper</td>
+      <td>4.00</td>
+      <td>97.648387</td>
+      <td>73.00</td>
+      <td>588.00</td>
+      <td>52.00</td>
+      <td>67.00</td>
+      <td>8</td>
+      <td>7</td>
+      <td>1.142857</td>
+      <td>158</td>
+      <td>418</td>
+      <td>0.377990</td>
+      <td>2.303640</td>
+      <td>7.624023</td>
+    </tr>
+    <tr>
+      <th>7</th>
+      <td>Alk_Phos</td>
+      <td>289.00</td>
+      <td>1982.655769</td>
+      <td>1259.00</td>
+      <td>13862.40</td>
+      <td>601.00</td>
+      <td>794.00</td>
+      <td>2</td>
+      <td>2</td>
+      <td>1.000000</td>
+      <td>295</td>
+      <td>418</td>
+      <td>0.705742</td>
+      <td>2.992834</td>
+      <td>9.662553</td>
+    </tr>
+    <tr>
+      <th>8</th>
+      <td>SGOT</td>
+      <td>26.35</td>
+      <td>122.556346</td>
+      <td>114.70</td>
+      <td>457.25</td>
+      <td>71.30</td>
+      <td>137.95</td>
+      <td>6</td>
+      <td>5</td>
+      <td>1.200000</td>
+      <td>179</td>
+      <td>418</td>
+      <td>0.428230</td>
+      <td>1.449197</td>
+      <td>4.311976</td>
+    </tr>
+    <tr>
+      <th>9</th>
+      <td>Tryglicerides</td>
+      <td>33.00</td>
+      <td>124.702128</td>
+      <td>108.00</td>
+      <td>598.00</td>
+      <td>118.00</td>
+      <td>90.00</td>
+      <td>7</td>
+      <td>6</td>
+      <td>1.166667</td>
+      <td>146</td>
+      <td>418</td>
+      <td>0.349282</td>
+      <td>2.523902</td>
+      <td>11.802753</td>
+    </tr>
+    <tr>
+      <th>10</th>
+      <td>Platelets</td>
+      <td>62.00</td>
+      <td>257.024570</td>
+      <td>251.00</td>
+      <td>721.00</td>
+      <td>344.00</td>
+      <td>269.00</td>
+      <td>6</td>
+      <td>5</td>
+      <td>1.200000</td>
+      <td>243</td>
+      <td>418</td>
+      <td>0.581340</td>
+      <td>0.627098</td>
+      <td>0.863045</td>
+    </tr>
+    <tr>
+      <th>11</th>
+      <td>Prothrombin</td>
+      <td>9.00</td>
+      <td>10.731731</td>
+      <td>10.60</td>
+      <td>18.00</td>
+      <td>10.60</td>
+      <td>11.00</td>
+      <td>39</td>
+      <td>32</td>
+      <td>1.218750</td>
+      <td>48</td>
+      <td>418</td>
+      <td>0.114833</td>
+      <td>2.223276</td>
+      <td>10.040773</td>
+    </tr>
+    <tr>
+      <th>12</th>
+      <td>Stage</td>
+      <td>1.00</td>
+      <td>3.024272</td>
+      <td>3.00</td>
+      <td>4.00</td>
+      <td>3.00</td>
+      <td>4.00</td>
+      <td>155</td>
+      <td>144</td>
+      <td>1.076389</td>
+      <td>4</td>
+      <td>418</td>
+      <td>0.009569</td>
+      <td>-0.496273</td>
+      <td>-0.638354</td>
+    </tr>
+  </tbody>
+</table>
+</div>
+
+
 # 2. Summary <a class="anchor" id="Summary"></a>
 
 # 3. References <a class="anchor" id="References"></a>
