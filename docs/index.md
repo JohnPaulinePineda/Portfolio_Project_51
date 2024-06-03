@@ -1792,6 +1792,262 @@ display(numeric_column_quality_summary)
 </div>
 
 
+
+```python
+##################################
+# Formulating the dataset
+# with object column only
+##################################
+cirrhosis_survival_object = cirrhosis_survival.select_dtypes(include='object')
+```
+
+
+```python
+##################################
+# Gathering the variable names for the object column
+##################################
+object_variable_name_list = cirrhosis_survival_object.columns
+```
+
+
+```python
+##################################
+# Gathering the first mode values for the object column
+##################################
+object_first_mode_list = [cirrhosis_survival[x].value_counts().index.tolist()[0] for x in cirrhosis_survival_object]
+```
+
+
+```python
+##################################
+# Gathering the second mode values for each object column
+##################################
+object_second_mode_list = [cirrhosis_survival[x].value_counts().index.tolist()[1] for x in cirrhosis_survival_object]
+```
+
+
+```python
+##################################
+# Gathering the count of first mode values for each object column
+##################################
+object_first_mode_count_list = [cirrhosis_survival_object[x].isin([cirrhosis_survival[x].value_counts(dropna=True).index.tolist()[0]]).sum() for x in cirrhosis_survival_object]
+```
+
+
+```python
+##################################
+# Gathering the count of second mode values for each object column
+##################################
+object_second_mode_count_list = [cirrhosis_survival_object[x].isin([cirrhosis_survival[x].value_counts(dropna=True).index.tolist()[1]]).sum() for x in cirrhosis_survival_object]
+```
+
+
+```python
+##################################
+# Gathering the first mode to second mode ratio for each object column
+##################################
+object_first_second_mode_ratio_list = map(truediv, object_first_mode_count_list, object_second_mode_count_list)
+```
+
+
+```python
+##################################
+# Gathering the count of unique values for each object column
+##################################
+object_unique_count_list = cirrhosis_survival_object.nunique(dropna=True)
+```
+
+
+```python
+##################################
+# Gathering the number of observations for each object column
+##################################
+object_row_count_list = list([len(cirrhosis_survival_object)] * len(cirrhosis_survival_object.columns))
+```
+
+
+```python
+##################################
+# Gathering the unique to count ratio for each object column
+##################################
+object_unique_count_ratio_list = map(truediv, object_unique_count_list, object_row_count_list)
+```
+
+
+```python
+object_column_quality_summary = pd.DataFrame(zip(object_variable_name_list,
+                                                 object_first_mode_list,
+                                                 object_second_mode_list,
+                                                 object_first_mode_count_list,
+                                                 object_second_mode_count_list,
+                                                 object_first_second_mode_ratio_list,
+                                                 object_unique_count_list,
+                                                 object_row_count_list,
+                                                 object_unique_count_ratio_list), 
+                                        columns=['Object.Column.Name',
+                                                 'First.Mode',
+                                                 'Second.Mode',
+                                                 'First.Mode.Count',
+                                                 'Second.Mode.Count',
+                                                 'First.Second.Mode.Ratio',
+                                                 'Unique.Count',
+                                                 'Row.Count',
+                                                 'Unique.Count.Ratio'])
+display(object_column_quality_summary)
+```
+
+
+<div>
+<style scoped>
+    .dataframe tbody tr th:only-of-type {
+        vertical-align: middle;
+    }
+
+    .dataframe tbody tr th {
+        vertical-align: top;
+    }
+
+    .dataframe thead th {
+        text-align: right;
+    }
+</style>
+<table border="1" class="dataframe">
+  <thead>
+    <tr style="text-align: right;">
+      <th></th>
+      <th>Object.Column.Name</th>
+      <th>First.Mode</th>
+      <th>Second.Mode</th>
+      <th>First.Mode.Count</th>
+      <th>Second.Mode.Count</th>
+      <th>First.Second.Mode.Ratio</th>
+      <th>Unique.Count</th>
+      <th>Row.Count</th>
+      <th>Unique.Count.Ratio</th>
+    </tr>
+  </thead>
+  <tbody>
+    <tr>
+      <th>0</th>
+      <td>Status</td>
+      <td>C</td>
+      <td>D</td>
+      <td>232</td>
+      <td>161</td>
+      <td>1.440994</td>
+      <td>3</td>
+      <td>418</td>
+      <td>0.007177</td>
+    </tr>
+    <tr>
+      <th>1</th>
+      <td>Drug</td>
+      <td>D-penicillamine</td>
+      <td>Placebo</td>
+      <td>158</td>
+      <td>154</td>
+      <td>1.025974</td>
+      <td>2</td>
+      <td>418</td>
+      <td>0.004785</td>
+    </tr>
+    <tr>
+      <th>2</th>
+      <td>Sex</td>
+      <td>F</td>
+      <td>M</td>
+      <td>374</td>
+      <td>44</td>
+      <td>8.500000</td>
+      <td>2</td>
+      <td>418</td>
+      <td>0.004785</td>
+    </tr>
+    <tr>
+      <th>3</th>
+      <td>Ascites</td>
+      <td>N</td>
+      <td>Y</td>
+      <td>288</td>
+      <td>24</td>
+      <td>12.000000</td>
+      <td>2</td>
+      <td>418</td>
+      <td>0.004785</td>
+    </tr>
+    <tr>
+      <th>4</th>
+      <td>Hepatomegaly</td>
+      <td>Y</td>
+      <td>N</td>
+      <td>160</td>
+      <td>152</td>
+      <td>1.052632</td>
+      <td>2</td>
+      <td>418</td>
+      <td>0.004785</td>
+    </tr>
+    <tr>
+      <th>5</th>
+      <td>Spiders</td>
+      <td>N</td>
+      <td>Y</td>
+      <td>222</td>
+      <td>90</td>
+      <td>2.466667</td>
+      <td>2</td>
+      <td>418</td>
+      <td>0.004785</td>
+    </tr>
+    <tr>
+      <th>6</th>
+      <td>Edema</td>
+      <td>N</td>
+      <td>S</td>
+      <td>354</td>
+      <td>44</td>
+      <td>8.045455</td>
+      <td>3</td>
+      <td>418</td>
+      <td>0.007177</td>
+    </tr>
+  </tbody>
+</table>
+</div>
+
+
+
+```python
+##################################
+# Counting the number of object columns
+# with First.Second.Mode.Ratio > 5.00
+##################################
+len(object_column_quality_summary[(object_column_quality_summary['First.Second.Mode.Ratio']>5)])
+```
+
+
+
+
+    3
+
+
+
+
+```python
+##################################
+# Counting the number of object columns
+# with Unique.Count.Ratio > 10.00
+##################################
+len(object_column_quality_summary[(object_column_quality_summary['Unique.Count.Ratio']>10)])
+```
+
+
+
+
+    0
+
+
+
 # 2. Summary <a class="anchor" id="Summary"></a>
 
 # 3. References <a class="anchor" id="References"></a>
