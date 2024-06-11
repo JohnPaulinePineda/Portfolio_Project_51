@@ -2,7 +2,7 @@
 # Supervised Learning : Modelling Right-Censored Survival Time and Status Responses for Prediction
 
 ***
-### John Pauline Pineda <br> <br> *June 8, 2024*
+### John Pauline Pineda <br> <br> *June 23, 2024*
 ***
 
 * [**1. Table of Contents**](#TOC)
@@ -48,7 +48,66 @@ This project implements the **Cox Proportional Hazards**, **Random Survival Fore
 
 ## 1.1. Data Background <a class="anchor" id="1.1"></a>
 
+An open [Liver Cirrhosis Dataset](https://www.kaggle.com/code/arjunbhaybhang/liver-cirrhosis-prediction-with-xgboost-eda) from [Kaggle](https://www.kaggle.com/) (with all credits attributed to [Arjun Bhaybhang](https://www.kaggle.com/arjunbhaybhang)) was used for the analysis as consolidated from the following primary sources: 
+1. Reference Book entitled **Counting Processes and Survival Analysis** from [Wiley](https://onlinelibrary.wiley.com/doi/book/10.1002/9781118150672)
+2. Research Paper entitled **Efficacy of Liver Transplantation in Patients with Primary Biliary Cirrhosis** from the [New England Journal of Medicine](https://www.nejm.org/doi/abs/10.1056/NEJM198906293202602)
+3. Research Paper entitled **Prognosis in Primary Biliary Cirrhosis: Model for Decision Making** from the [Hepatology](https://aasldpubs.onlinelibrary.wiley.com/doi/10.1002/hep.1840100102)
+
+This study hypothesized that the evaluated drug, liver profile test biomarkers and various clinicopathological characteristics influence liver cirrhosis survival between patients.
+
+The target status and survival duration variables for the study are:
+* <span style="color: #FF0000">Status</span> - Status of the patient (C, censored | CL, censored due to liver transplant | D, death)
+* <span style="color: #FF0000">N_Days</span> - Number of days between registration and the earlier of death, transplantation, or study analysis time (1986)
+
+The predictor variables for the study are:
+* <span style="color: #FF0000">Drug</span> - Type of administered drug to the patient (D-Penicillamine | Placebo)
+* <span style="color: #FF0000">Age</span> - Patient's age (Days)
+* <span style="color: #FF0000">Sex</span> - Patient's sex (Male | Female)
+* <span style="color: #FF0000">Ascites</span> - Presence of ascites (Yes | No)
+* <span style="color: #FF0000">Hepatomegaly</span> - Presence of hepatomegaly (Yes | No)
+* <span style="color: #FF0000">Spiders</span> - Presence of spiders (Yes | No)
+* <span style="color: #FF0000">Edema</span> - Presence of edema ( N, No edema and no diuretic therapy for edema | S, Edema present without diuretics or edema resolved by diuretics) | Y, Edema despite diuretic therapy)
+* <span style="color: #FF0000">Bilirubin</span> - Serum bilirubin (mg/dl)
+* <span style="color: #FF0000">Cholesterol</span> - Serum cholesterol (mg/dl)
+* <span style="color: #FF0000">Albumin</span> - Albumin (gm/dl)
+* <span style="color: #FF0000">Copper</span> - Urine copper (ug/day)
+* <span style="color: #FF0000">Alk_Phos</span> - Alkaline phosphatase (U/liter)
+* <span style="color: #FF0000">SGOT</span> - Serum glutamic-oxaloacetic transaminase (U/ml)
+* <span style="color: #FF0000">Triglycerides</span> - Triglicerides (mg/dl)
+* <span style="color: #FF0000">Platelets</span> - Platelets (cubic ml/1000)
+* <span style="color: #FF0000">Prothrombin</span> - Prothrombin time (seconds)
+* <span style="color: #FF0000">Stage</span> - Histologic stage of disease (Stage I | Stage II | Stage III | Stage IV)
+
+
 ## 1.2. Data Description <a class="anchor" id="1.2"></a>
+
+1. The dataset is comprised of:
+    * **418 rows** (observations)
+    * **20 columns** (variables)
+        * **1/20 metadata** (object)
+            * <span style="color: #FF0000">ID</span>
+        * **2/20 target | duration** (categorical | numeric)
+             * <span style="color: #FF0000">Status</span>
+             * <span style="color: #FF0000">N_Days</span>
+        * **10/20 predictor** (numeric)
+             * <span style="color: #FF0000">Age</span>
+             * <span style="color: #FF0000">Bilirubin</span>
+             * <span style="color: #FF0000">Cholesterol</span>
+             * <span style="color: #FF0000">Albumin</span>
+             * <span style="color: #FF0000">Copper</span>
+             * <span style="color: #FF0000">Alk_Phos</span>
+             * <span style="color: #FF0000">SGOT</span>
+             * <span style="color: #FF0000">Triglycerides</span>
+             * <span style="color: #FF0000">Platelets</span>
+             * <span style="color: #FF0000">Prothrombin</span>
+        * **7/20 predictor** (categorical)
+             * <span style="color: #FF0000">Drug</span>
+             * <span style="color: #FF0000">Sex</span>
+             * <span style="color: #FF0000">Ascites</span>
+             * <span style="color: #FF0000">Hepatomegaly</span>
+             * <span style="color: #FF0000">Spiders</span>
+             * <span style="color: #FF0000">Edema</span>
+             * <span style="color: #FF0000">Stage</span>
 
 
 ```python
