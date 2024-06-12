@@ -647,6 +647,35 @@ display(cirrhosis_survival.describe(include='object').transpose())
 
 ## 1.3. Data Quality Assessment <a class="anchor" id="1.3"></a>
 
+Data quality findings based on assessment are as follows:
+1. No duplicated rows observed.
+2. Missing data noted for 12 variables with Null.Count>0 and Fill.Rate<1.0.
+    * <span style="color: #FF0000">Tryglicerides</span>: Null.Count = 136, Fill.Rate = 0.675
+    * <span style="color: #FF0000">Cholesterol</span>: Null.Count = 134, Fill.Rate = 0.679
+    * <span style="color: #FF0000">Copper</span>: Null.Count = 108, Fill.Rate = 0.741
+    * <span style="color: #FF0000">Drug</span>: Null.Count = 106, Fill.Rate = 0.746
+    * <span style="color: #FF0000">Ascites</span>: Null.Count = 106, Fill.Rate = 0.746
+    * <span style="color: #FF0000">Hepatomegaly</span>: Null.Count = 106, Fill.Rate = 0.746
+    * <span style="color: #FF0000">Spiders</span>: Null.Count = 106, Fill.Rate = 0.746
+    * <span style="color: #FF0000">Alk_Phos</span>: Null.Count = 106, Fill.Rate = 0.746
+    * <span style="color: #FF0000">SGOT</span>: Null.Count = 106, Fill.Rate = 0.746
+    * <span style="color: #FF0000">Platelets</span>: Null.Count = 11, Fill.Rate = 0.974
+    * <span style="color: #FF0000">Stage</span>: Null.Count = 6, Fill.Rate = 0.986
+    * <span style="color: #FF0000">Prothrombin</span>: Null.Count = 2, Fill.Rate = 0.995
+3. 142 observations noted with at least 1 missing data. From this number, 14 observations reported high Missing.Rate>0.2.
+    * 91 Observations: Missing.Rate = 0.450 (9 columns)
+    * 15 Observations: Missing.Rate = 0.500 (10 columns)
+    * 28 Observations: Missing.Rate = 0.100 (2 columns)
+    * 8 Observations: Missing.Rate = 0.050 (1 column)
+4. Low variance observed for 3 variables with First.Second.Mode.Ratio>5.
+    * <span style="color: #FF0000">Ascites</span>: First.Second.Mode.Ratio = 12.000
+    * <span style="color: #FF0000">Sex</span>: First.Second.Mode.Ratio = 8.500
+    * <span style="color: #FF0000">Edema</span>: First.Second.Mode.Ratio = 8.045
+5. No low variance observed for any variable with Unique.Count.Ratio>10.
+6. High and marginally high skewness observed for 2 variables with Skewness>3 or Skewness<(-3).
+    * <span style="color: #FF0000">Cholesterol</span>: Skewness = +3.409
+    * <span style="color: #FF0000">Alk_Phos</span>: Skewness = +2.993
+
 
 ```python
 ##################################
@@ -1410,6 +1439,23 @@ display(all_row_quality_summary[all_row_quality_summary['Missing.Rate']>0])
 <p>142 rows × 4 columns</p>
 </div>
 
+
+
+```python
+##################################
+# Counting the number of rows
+# based on different Fill.Rate categories
+##################################
+print(all_row_quality_summary['Missing.Rate'].value_counts())
+```
+
+    0.00    276
+    0.45     91
+    0.10     28
+    0.50     15
+    0.05      8
+    Name: Missing.Rate, dtype: int64
+    
 
 
 ```python
