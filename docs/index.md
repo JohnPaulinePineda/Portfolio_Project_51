@@ -1460,6 +1460,15 @@ print(all_row_quality_summary['Missing.Rate'].value_counts())
 
 ```python
 ##################################
+# Identifying the rows
+# with Missing.Rate > 0.40
+##################################
+row_high_missing_rate = all_row_quality_summary[(all_row_quality_summary['Missing.Rate']>0.40)]
+```
+
+
+```python
+##################################
 # Formulating the dataset
 # with numeric columns only
 ##################################
@@ -2151,6 +2160,1073 @@ len(object_column_quality_summary[(object_column_quality_summary['Unique.Count.R
 
     0
 
+
+
+### 1.3.3. Data Preprocessing <a class="anchor" id="1.3.3"></a>
+
+#### 1.3.3.1 Data Cleaning <a class="anchor" id="1.3.3.1"></a>
+
+
+```python
+##################################
+# Performing a general exploration of the original dataset
+##################################
+print('Dataset Dimensions: ')
+display(cirrhosis_survival.shape)
+```
+
+    Dataset Dimensions: 
+    
+
+
+    (418, 20)
+
+
+
+```python
+##################################
+# Filtering out the rows with
+# with Missing.Rate > 0.40
+##################################
+cirrhosis_survival_filtered_row = cirrhosis_survival.drop(cirrhosis_survival[cirrhosis_survival.ID.isin(row_high_missing_rate['Row.Name'].values.tolist())].index)
+```
+
+
+```python
+##################################
+# Performing a general exploration of the filtered dataset
+##################################
+print('Dataset Dimensions: ')
+display(cirrhosis_survival_filtered_row.shape)
+```
+
+    Dataset Dimensions: 
+    
+
+
+    (312, 20)
+
+
+
+```python
+##################################
+# Gathering the missing data percentage for each column
+# from the filtered data
+##################################
+data_type_list = list(cirrhosis_survival_filtered_row.dtypes)
+variable_name_list = list(cirrhosis_survival_filtered_row.columns)
+null_count_list = list(cirrhosis_survival_filtered_row.isna().sum(axis=0))
+non_null_count_list = list(cirrhosis_survival_filtered_row.count())
+row_count_list = list([len(cirrhosis_survival_filtered_row)] * len(cirrhosis_survival_filtered_row.columns))
+fill_rate_list = map(truediv, non_null_count_list, row_count_list)
+all_column_quality_summary = pd.DataFrame(zip(variable_name_list,
+                                              data_type_list,
+                                              row_count_list,
+                                              non_null_count_list,
+                                              null_count_list,
+                                              fill_rate_list), 
+                                        columns=['Column.Name',
+                                                 'Column.Type',
+                                                 'Row.Count',
+                                                 'Non.Null.Count',
+                                                 'Null.Count',                                                 
+                                                 'Fill.Rate'])
+display(all_column_quality_summary)
+
+```
+
+
+<div>
+<style scoped>
+    .dataframe tbody tr th:only-of-type {
+        vertical-align: middle;
+    }
+
+    .dataframe tbody tr th {
+        vertical-align: top;
+    }
+
+    .dataframe thead th {
+        text-align: right;
+    }
+</style>
+<table border="1" class="dataframe">
+  <thead>
+    <tr style="text-align: right;">
+      <th></th>
+      <th>Column.Name</th>
+      <th>Column.Type</th>
+      <th>Row.Count</th>
+      <th>Non.Null.Count</th>
+      <th>Null.Count</th>
+      <th>Fill.Rate</th>
+    </tr>
+  </thead>
+  <tbody>
+    <tr>
+      <th>0</th>
+      <td>ID</td>
+      <td>int64</td>
+      <td>312</td>
+      <td>312</td>
+      <td>0</td>
+      <td>1.000000</td>
+    </tr>
+    <tr>
+      <th>1</th>
+      <td>N_Days</td>
+      <td>int64</td>
+      <td>312</td>
+      <td>312</td>
+      <td>0</td>
+      <td>1.000000</td>
+    </tr>
+    <tr>
+      <th>2</th>
+      <td>Status</td>
+      <td>object</td>
+      <td>312</td>
+      <td>312</td>
+      <td>0</td>
+      <td>1.000000</td>
+    </tr>
+    <tr>
+      <th>3</th>
+      <td>Drug</td>
+      <td>object</td>
+      <td>312</td>
+      <td>312</td>
+      <td>0</td>
+      <td>1.000000</td>
+    </tr>
+    <tr>
+      <th>4</th>
+      <td>Age</td>
+      <td>int64</td>
+      <td>312</td>
+      <td>312</td>
+      <td>0</td>
+      <td>1.000000</td>
+    </tr>
+    <tr>
+      <th>5</th>
+      <td>Sex</td>
+      <td>object</td>
+      <td>312</td>
+      <td>312</td>
+      <td>0</td>
+      <td>1.000000</td>
+    </tr>
+    <tr>
+      <th>6</th>
+      <td>Ascites</td>
+      <td>object</td>
+      <td>312</td>
+      <td>312</td>
+      <td>0</td>
+      <td>1.000000</td>
+    </tr>
+    <tr>
+      <th>7</th>
+      <td>Hepatomegaly</td>
+      <td>object</td>
+      <td>312</td>
+      <td>312</td>
+      <td>0</td>
+      <td>1.000000</td>
+    </tr>
+    <tr>
+      <th>8</th>
+      <td>Spiders</td>
+      <td>object</td>
+      <td>312</td>
+      <td>312</td>
+      <td>0</td>
+      <td>1.000000</td>
+    </tr>
+    <tr>
+      <th>9</th>
+      <td>Edema</td>
+      <td>object</td>
+      <td>312</td>
+      <td>312</td>
+      <td>0</td>
+      <td>1.000000</td>
+    </tr>
+    <tr>
+      <th>10</th>
+      <td>Bilirubin</td>
+      <td>float64</td>
+      <td>312</td>
+      <td>312</td>
+      <td>0</td>
+      <td>1.000000</td>
+    </tr>
+    <tr>
+      <th>11</th>
+      <td>Cholesterol</td>
+      <td>float64</td>
+      <td>312</td>
+      <td>284</td>
+      <td>28</td>
+      <td>0.910256</td>
+    </tr>
+    <tr>
+      <th>12</th>
+      <td>Albumin</td>
+      <td>float64</td>
+      <td>312</td>
+      <td>312</td>
+      <td>0</td>
+      <td>1.000000</td>
+    </tr>
+    <tr>
+      <th>13</th>
+      <td>Copper</td>
+      <td>float64</td>
+      <td>312</td>
+      <td>310</td>
+      <td>2</td>
+      <td>0.993590</td>
+    </tr>
+    <tr>
+      <th>14</th>
+      <td>Alk_Phos</td>
+      <td>float64</td>
+      <td>312</td>
+      <td>312</td>
+      <td>0</td>
+      <td>1.000000</td>
+    </tr>
+    <tr>
+      <th>15</th>
+      <td>SGOT</td>
+      <td>float64</td>
+      <td>312</td>
+      <td>312</td>
+      <td>0</td>
+      <td>1.000000</td>
+    </tr>
+    <tr>
+      <th>16</th>
+      <td>Tryglicerides</td>
+      <td>float64</td>
+      <td>312</td>
+      <td>282</td>
+      <td>30</td>
+      <td>0.903846</td>
+    </tr>
+    <tr>
+      <th>17</th>
+      <td>Platelets</td>
+      <td>float64</td>
+      <td>312</td>
+      <td>308</td>
+      <td>4</td>
+      <td>0.987179</td>
+    </tr>
+    <tr>
+      <th>18</th>
+      <td>Prothrombin</td>
+      <td>float64</td>
+      <td>312</td>
+      <td>312</td>
+      <td>0</td>
+      <td>1.000000</td>
+    </tr>
+    <tr>
+      <th>19</th>
+      <td>Stage</td>
+      <td>float64</td>
+      <td>312</td>
+      <td>312</td>
+      <td>0</td>
+      <td>1.000000</td>
+    </tr>
+  </tbody>
+</table>
+</div>
+
+
+
+```python
+##################################
+# Formulating a new dataset object
+# for the cleaned data
+##################################
+cirrhosis_survival_cleaned = cirrhosis_survival_filtered_row
+```
+
+#### 1.3.3.2 Missing Data Imputation <a class="anchor" id="1.3.3.2"></a>
+
+1. Missing data for float variables were imputed using the iterative imputer algorithm with a  linear regression estimator.
+    * <span style="color: #FF0000">Tryglicerides</span>: Null.Count = 30
+    * <span style="color: #FF0000">Cholesterol</span>: Null.Count = 28
+    * <span style="color: #FF0000">Platelets</span>: Null.Count = 4
+    * <span style="color: #FF0000">Copper</span>: Null.Count = 2
+
+
+```python
+##################################
+# Formulating the summary
+# for all cleaned columns
+##################################
+cleaned_column_quality_summary = pd.DataFrame(zip(list(cirrhosis_survival_cleaned.columns),
+                                                  list(cirrhosis_survival_cleaned.dtypes),
+                                                  list([len(cirrhosis_survival_cleaned)] * len(cirrhosis_survival_cleaned.columns)),
+                                                  list(cirrhosis_survival_cleaned.count()),
+                                                  list(cirrhosis_survival_cleaned.isna().sum(axis=0))), 
+                                        columns=['Column.Name',
+                                                 'Column.Type',
+                                                 'Row.Count',
+                                                 'Non.Null.Count',
+                                                 'Null.Count'])
+display(cleaned_column_quality_summary)
+```
+
+
+<div>
+<style scoped>
+    .dataframe tbody tr th:only-of-type {
+        vertical-align: middle;
+    }
+
+    .dataframe tbody tr th {
+        vertical-align: top;
+    }
+
+    .dataframe thead th {
+        text-align: right;
+    }
+</style>
+<table border="1" class="dataframe">
+  <thead>
+    <tr style="text-align: right;">
+      <th></th>
+      <th>Column.Name</th>
+      <th>Column.Type</th>
+      <th>Row.Count</th>
+      <th>Non.Null.Count</th>
+      <th>Null.Count</th>
+    </tr>
+  </thead>
+  <tbody>
+    <tr>
+      <th>0</th>
+      <td>ID</td>
+      <td>int64</td>
+      <td>312</td>
+      <td>312</td>
+      <td>0</td>
+    </tr>
+    <tr>
+      <th>1</th>
+      <td>N_Days</td>
+      <td>int64</td>
+      <td>312</td>
+      <td>312</td>
+      <td>0</td>
+    </tr>
+    <tr>
+      <th>2</th>
+      <td>Status</td>
+      <td>object</td>
+      <td>312</td>
+      <td>312</td>
+      <td>0</td>
+    </tr>
+    <tr>
+      <th>3</th>
+      <td>Drug</td>
+      <td>object</td>
+      <td>312</td>
+      <td>312</td>
+      <td>0</td>
+    </tr>
+    <tr>
+      <th>4</th>
+      <td>Age</td>
+      <td>int64</td>
+      <td>312</td>
+      <td>312</td>
+      <td>0</td>
+    </tr>
+    <tr>
+      <th>5</th>
+      <td>Sex</td>
+      <td>object</td>
+      <td>312</td>
+      <td>312</td>
+      <td>0</td>
+    </tr>
+    <tr>
+      <th>6</th>
+      <td>Ascites</td>
+      <td>object</td>
+      <td>312</td>
+      <td>312</td>
+      <td>0</td>
+    </tr>
+    <tr>
+      <th>7</th>
+      <td>Hepatomegaly</td>
+      <td>object</td>
+      <td>312</td>
+      <td>312</td>
+      <td>0</td>
+    </tr>
+    <tr>
+      <th>8</th>
+      <td>Spiders</td>
+      <td>object</td>
+      <td>312</td>
+      <td>312</td>
+      <td>0</td>
+    </tr>
+    <tr>
+      <th>9</th>
+      <td>Edema</td>
+      <td>object</td>
+      <td>312</td>
+      <td>312</td>
+      <td>0</td>
+    </tr>
+    <tr>
+      <th>10</th>
+      <td>Bilirubin</td>
+      <td>float64</td>
+      <td>312</td>
+      <td>312</td>
+      <td>0</td>
+    </tr>
+    <tr>
+      <th>11</th>
+      <td>Cholesterol</td>
+      <td>float64</td>
+      <td>312</td>
+      <td>284</td>
+      <td>28</td>
+    </tr>
+    <tr>
+      <th>12</th>
+      <td>Albumin</td>
+      <td>float64</td>
+      <td>312</td>
+      <td>312</td>
+      <td>0</td>
+    </tr>
+    <tr>
+      <th>13</th>
+      <td>Copper</td>
+      <td>float64</td>
+      <td>312</td>
+      <td>310</td>
+      <td>2</td>
+    </tr>
+    <tr>
+      <th>14</th>
+      <td>Alk_Phos</td>
+      <td>float64</td>
+      <td>312</td>
+      <td>312</td>
+      <td>0</td>
+    </tr>
+    <tr>
+      <th>15</th>
+      <td>SGOT</td>
+      <td>float64</td>
+      <td>312</td>
+      <td>312</td>
+      <td>0</td>
+    </tr>
+    <tr>
+      <th>16</th>
+      <td>Tryglicerides</td>
+      <td>float64</td>
+      <td>312</td>
+      <td>282</td>
+      <td>30</td>
+    </tr>
+    <tr>
+      <th>17</th>
+      <td>Platelets</td>
+      <td>float64</td>
+      <td>312</td>
+      <td>308</td>
+      <td>4</td>
+    </tr>
+    <tr>
+      <th>18</th>
+      <td>Prothrombin</td>
+      <td>float64</td>
+      <td>312</td>
+      <td>312</td>
+      <td>0</td>
+    </tr>
+    <tr>
+      <th>19</th>
+      <td>Stage</td>
+      <td>float64</td>
+      <td>312</td>
+      <td>312</td>
+      <td>0</td>
+    </tr>
+  </tbody>
+</table>
+</div>
+
+
+
+```python
+##################################
+# Formulating the cleaned dataset
+# with categorical columns only
+##################################
+cirrhosis_survival_cleaned_object = cirrhosis_survival_cleaned.select_dtypes(include='object')
+cirrhosis_survival_cleaned_object.head()
+```
+
+
+
+
+<div>
+<style scoped>
+    .dataframe tbody tr th:only-of-type {
+        vertical-align: middle;
+    }
+
+    .dataframe tbody tr th {
+        vertical-align: top;
+    }
+
+    .dataframe thead th {
+        text-align: right;
+    }
+</style>
+<table border="1" class="dataframe">
+  <thead>
+    <tr style="text-align: right;">
+      <th></th>
+      <th>Status</th>
+      <th>Drug</th>
+      <th>Sex</th>
+      <th>Ascites</th>
+      <th>Hepatomegaly</th>
+      <th>Spiders</th>
+      <th>Edema</th>
+    </tr>
+  </thead>
+  <tbody>
+    <tr>
+      <th>0</th>
+      <td>D</td>
+      <td>D-penicillamine</td>
+      <td>F</td>
+      <td>Y</td>
+      <td>Y</td>
+      <td>Y</td>
+      <td>Y</td>
+    </tr>
+    <tr>
+      <th>1</th>
+      <td>C</td>
+      <td>D-penicillamine</td>
+      <td>F</td>
+      <td>N</td>
+      <td>Y</td>
+      <td>Y</td>
+      <td>N</td>
+    </tr>
+    <tr>
+      <th>2</th>
+      <td>D</td>
+      <td>D-penicillamine</td>
+      <td>M</td>
+      <td>N</td>
+      <td>N</td>
+      <td>N</td>
+      <td>S</td>
+    </tr>
+    <tr>
+      <th>3</th>
+      <td>D</td>
+      <td>D-penicillamine</td>
+      <td>F</td>
+      <td>N</td>
+      <td>Y</td>
+      <td>Y</td>
+      <td>S</td>
+    </tr>
+    <tr>
+      <th>4</th>
+      <td>CL</td>
+      <td>Placebo</td>
+      <td>F</td>
+      <td>N</td>
+      <td>Y</td>
+      <td>Y</td>
+      <td>N</td>
+    </tr>
+  </tbody>
+</table>
+</div>
+
+
+
+
+```python
+##################################
+# Formulating the cleaned dataset
+# with categorical columns only
+##################################
+cirrhosis_survival_cleaned_int = cirrhosis_survival_cleaned.select_dtypes(include='int')
+cirrhosis_survival_cleaned_int.head()
+```
+
+
+
+
+<div>
+<style scoped>
+    .dataframe tbody tr th:only-of-type {
+        vertical-align: middle;
+    }
+
+    .dataframe tbody tr th {
+        vertical-align: top;
+    }
+
+    .dataframe thead th {
+        text-align: right;
+    }
+</style>
+<table border="1" class="dataframe">
+  <thead>
+    <tr style="text-align: right;">
+      <th></th>
+      <th>ID</th>
+      <th>N_Days</th>
+      <th>Age</th>
+    </tr>
+  </thead>
+  <tbody>
+    <tr>
+      <th>0</th>
+      <td>1</td>
+      <td>400</td>
+      <td>21464</td>
+    </tr>
+    <tr>
+      <th>1</th>
+      <td>2</td>
+      <td>4500</td>
+      <td>20617</td>
+    </tr>
+    <tr>
+      <th>2</th>
+      <td>3</td>
+      <td>1012</td>
+      <td>25594</td>
+    </tr>
+    <tr>
+      <th>3</th>
+      <td>4</td>
+      <td>1925</td>
+      <td>19994</td>
+    </tr>
+    <tr>
+      <th>4</th>
+      <td>5</td>
+      <td>1504</td>
+      <td>13918</td>
+    </tr>
+  </tbody>
+</table>
+</div>
+
+
+
+
+```python
+##################################
+# Formulating the cleaned dataset
+# with categorical columns only
+##################################
+cirrhosis_survival_cleaned_float = cirrhosis_survival_cleaned.select_dtypes(include='float')
+cirrhosis_survival_cleaned_float.head()
+```
+
+
+
+
+<div>
+<style scoped>
+    .dataframe tbody tr th:only-of-type {
+        vertical-align: middle;
+    }
+
+    .dataframe tbody tr th {
+        vertical-align: top;
+    }
+
+    .dataframe thead th {
+        text-align: right;
+    }
+</style>
+<table border="1" class="dataframe">
+  <thead>
+    <tr style="text-align: right;">
+      <th></th>
+      <th>Bilirubin</th>
+      <th>Cholesterol</th>
+      <th>Albumin</th>
+      <th>Copper</th>
+      <th>Alk_Phos</th>
+      <th>SGOT</th>
+      <th>Tryglicerides</th>
+      <th>Platelets</th>
+      <th>Prothrombin</th>
+      <th>Stage</th>
+    </tr>
+  </thead>
+  <tbody>
+    <tr>
+      <th>0</th>
+      <td>14.5</td>
+      <td>261.0</td>
+      <td>2.60</td>
+      <td>156.0</td>
+      <td>1718.0</td>
+      <td>137.95</td>
+      <td>172.0</td>
+      <td>190.0</td>
+      <td>12.2</td>
+      <td>4.0</td>
+    </tr>
+    <tr>
+      <th>1</th>
+      <td>1.1</td>
+      <td>302.0</td>
+      <td>4.14</td>
+      <td>54.0</td>
+      <td>7394.8</td>
+      <td>113.52</td>
+      <td>88.0</td>
+      <td>221.0</td>
+      <td>10.6</td>
+      <td>3.0</td>
+    </tr>
+    <tr>
+      <th>2</th>
+      <td>1.4</td>
+      <td>176.0</td>
+      <td>3.48</td>
+      <td>210.0</td>
+      <td>516.0</td>
+      <td>96.10</td>
+      <td>55.0</td>
+      <td>151.0</td>
+      <td>12.0</td>
+      <td>4.0</td>
+    </tr>
+    <tr>
+      <th>3</th>
+      <td>1.8</td>
+      <td>244.0</td>
+      <td>2.54</td>
+      <td>64.0</td>
+      <td>6121.8</td>
+      <td>60.63</td>
+      <td>92.0</td>
+      <td>183.0</td>
+      <td>10.3</td>
+      <td>4.0</td>
+    </tr>
+    <tr>
+      <th>4</th>
+      <td>3.4</td>
+      <td>279.0</td>
+      <td>3.53</td>
+      <td>143.0</td>
+      <td>671.0</td>
+      <td>113.15</td>
+      <td>72.0</td>
+      <td>136.0</td>
+      <td>10.9</td>
+      <td>3.0</td>
+    </tr>
+  </tbody>
+</table>
+</div>
+
+
+
+
+```python
+##################################
+# Defining the estimator to be used
+# at each step of the round-robin imputation
+##################################
+lr = LinearRegression()
+```
+
+
+```python
+##################################
+# Defining the parameter of the
+# iterative imputer which will estimate 
+# the columns with missing values
+# as a function of the other columns
+# in a round-robin fashion
+##################################
+iterative_imputer = IterativeImputer(
+    estimator = lr,
+    max_iter = 10,
+    tol = 1e-10,
+    imputation_order = 'ascending',
+    random_state=88888888
+)
+```
+
+
+```python
+##################################
+# Implementing the iterative imputer 
+##################################
+cirrhosis_survival_imputed_float_array = iterative_imputer.fit_transform(cirrhosis_survival_cleaned_float)
+```
+
+
+```python
+##################################
+# Transforming the imputed data
+# from an array to a dataframe
+##################################
+cirrhosis_survival_imputed_float = pd.DataFrame(cirrhosis_survival_imputed_float_array, 
+                                                columns = cirrhosis_survival_cleaned_float.columns)
+```
+
+
+```python
+##################################
+# Formulating the imputed dataset
+##################################
+cirrhosis_survival_imputed = pd.concat([cirrhosis_survival_cleaned_int,
+                                        cirrhosis_survival_cleaned_object,
+                                        cirrhosis_survival_imputed_float], 
+                                       axis=1, 
+                                       join='inner')  
+```
+
+
+```python
+##################################
+# Formulating the summary
+# for all imputed columns
+##################################
+imputed_column_quality_summary = pd.DataFrame(zip(list(cirrhosis_survival_imputed.columns),
+                                                  list(cirrhosis_survival_imputed.dtypes),
+                                                  list([len(cirrhosis_survival_imputed)] * len(cirrhosis_survival_imputed.columns)),
+                                                  list(cirrhosis_survival_imputed.count()),
+                                                  list(cirrhosis_survival_imputed.isna().sum(axis=0))), 
+                                        columns=['Column.Name',
+                                                 'Column.Type',
+                                                 'Row.Count',
+                                                 'Non.Null.Count',
+                                                 'Null.Count'])
+display(imputed_column_quality_summary)
+```
+
+
+<div>
+<style scoped>
+    .dataframe tbody tr th:only-of-type {
+        vertical-align: middle;
+    }
+
+    .dataframe tbody tr th {
+        vertical-align: top;
+    }
+
+    .dataframe thead th {
+        text-align: right;
+    }
+</style>
+<table border="1" class="dataframe">
+  <thead>
+    <tr style="text-align: right;">
+      <th></th>
+      <th>Column.Name</th>
+      <th>Column.Type</th>
+      <th>Row.Count</th>
+      <th>Non.Null.Count</th>
+      <th>Null.Count</th>
+    </tr>
+  </thead>
+  <tbody>
+    <tr>
+      <th>0</th>
+      <td>ID</td>
+      <td>int64</td>
+      <td>312</td>
+      <td>312</td>
+      <td>0</td>
+    </tr>
+    <tr>
+      <th>1</th>
+      <td>N_Days</td>
+      <td>int64</td>
+      <td>312</td>
+      <td>312</td>
+      <td>0</td>
+    </tr>
+    <tr>
+      <th>2</th>
+      <td>Age</td>
+      <td>int64</td>
+      <td>312</td>
+      <td>312</td>
+      <td>0</td>
+    </tr>
+    <tr>
+      <th>3</th>
+      <td>Status</td>
+      <td>object</td>
+      <td>312</td>
+      <td>312</td>
+      <td>0</td>
+    </tr>
+    <tr>
+      <th>4</th>
+      <td>Drug</td>
+      <td>object</td>
+      <td>312</td>
+      <td>312</td>
+      <td>0</td>
+    </tr>
+    <tr>
+      <th>5</th>
+      <td>Sex</td>
+      <td>object</td>
+      <td>312</td>
+      <td>312</td>
+      <td>0</td>
+    </tr>
+    <tr>
+      <th>6</th>
+      <td>Ascites</td>
+      <td>object</td>
+      <td>312</td>
+      <td>312</td>
+      <td>0</td>
+    </tr>
+    <tr>
+      <th>7</th>
+      <td>Hepatomegaly</td>
+      <td>object</td>
+      <td>312</td>
+      <td>312</td>
+      <td>0</td>
+    </tr>
+    <tr>
+      <th>8</th>
+      <td>Spiders</td>
+      <td>object</td>
+      <td>312</td>
+      <td>312</td>
+      <td>0</td>
+    </tr>
+    <tr>
+      <th>9</th>
+      <td>Edema</td>
+      <td>object</td>
+      <td>312</td>
+      <td>312</td>
+      <td>0</td>
+    </tr>
+    <tr>
+      <th>10</th>
+      <td>Bilirubin</td>
+      <td>float64</td>
+      <td>312</td>
+      <td>312</td>
+      <td>0</td>
+    </tr>
+    <tr>
+      <th>11</th>
+      <td>Cholesterol</td>
+      <td>float64</td>
+      <td>312</td>
+      <td>312</td>
+      <td>0</td>
+    </tr>
+    <tr>
+      <th>12</th>
+      <td>Albumin</td>
+      <td>float64</td>
+      <td>312</td>
+      <td>312</td>
+      <td>0</td>
+    </tr>
+    <tr>
+      <th>13</th>
+      <td>Copper</td>
+      <td>float64</td>
+      <td>312</td>
+      <td>312</td>
+      <td>0</td>
+    </tr>
+    <tr>
+      <th>14</th>
+      <td>Alk_Phos</td>
+      <td>float64</td>
+      <td>312</td>
+      <td>312</td>
+      <td>0</td>
+    </tr>
+    <tr>
+      <th>15</th>
+      <td>SGOT</td>
+      <td>float64</td>
+      <td>312</td>
+      <td>312</td>
+      <td>0</td>
+    </tr>
+    <tr>
+      <th>16</th>
+      <td>Tryglicerides</td>
+      <td>float64</td>
+      <td>312</td>
+      <td>312</td>
+      <td>0</td>
+    </tr>
+    <tr>
+      <th>17</th>
+      <td>Platelets</td>
+      <td>float64</td>
+      <td>312</td>
+      <td>312</td>
+      <td>0</td>
+    </tr>
+    <tr>
+      <th>18</th>
+      <td>Prothrombin</td>
+      <td>float64</td>
+      <td>312</td>
+      <td>312</td>
+      <td>0</td>
+    </tr>
+    <tr>
+      <th>19</th>
+      <td>Stage</td>
+      <td>float64</td>
+      <td>312</td>
+      <td>312</td>
+      <td>0</td>
+    </tr>
+  </tbody>
+</table>
+</div>
 
 
 # 2. Summary <a class="anchor" id="Summary"></a>
