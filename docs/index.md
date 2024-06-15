@@ -366,6 +366,14 @@ cirrhosis_survival.head()
 
 ```python
 ##################################
+# Taking the ID column as the index
+##################################
+cirrhosis_survival.set_index(['ID'], inplace=True)
+```
+
+
+```python
+##################################
 # Performing a general exploration of the numeric variables
 ##################################
 print('Numeric Variable Summary:')
@@ -405,17 +413,6 @@ display(cirrhosis_survival.describe(include='number').transpose())
     </tr>
   </thead>
   <tbody>
-    <tr>
-      <th>ID</th>
-      <td>418.0</td>
-      <td>209.500000</td>
-      <td>120.810458</td>
-      <td>1.00</td>
-      <td>105.2500</td>
-      <td>209.50</td>
-      <td>313.75</td>
-      <td>418.00</td>
-    </tr>
     <tr>
       <th>N_Days</th>
       <td>418.0</td>
@@ -790,15 +787,6 @@ display(all_column_quality_summary)
   <tbody>
     <tr>
       <th>0</th>
-      <td>ID</td>
-      <td>int64</td>
-      <td>418</td>
-      <td>418</td>
-      <td>0</td>
-      <td>1.000000</td>
-    </tr>
-    <tr>
-      <th>1</th>
       <td>N_Days</td>
       <td>int64</td>
       <td>418</td>
@@ -807,7 +795,7 @@ display(all_column_quality_summary)
       <td>1.000000</td>
     </tr>
     <tr>
-      <th>2</th>
+      <th>1</th>
       <td>Status</td>
       <td>object</td>
       <td>418</td>
@@ -816,7 +804,7 @@ display(all_column_quality_summary)
       <td>1.000000</td>
     </tr>
     <tr>
-      <th>3</th>
+      <th>2</th>
       <td>Drug</td>
       <td>object</td>
       <td>418</td>
@@ -825,7 +813,7 @@ display(all_column_quality_summary)
       <td>0.746411</td>
     </tr>
     <tr>
-      <th>4</th>
+      <th>3</th>
       <td>Age</td>
       <td>int64</td>
       <td>418</td>
@@ -834,7 +822,7 @@ display(all_column_quality_summary)
       <td>1.000000</td>
     </tr>
     <tr>
-      <th>5</th>
+      <th>4</th>
       <td>Sex</td>
       <td>object</td>
       <td>418</td>
@@ -843,7 +831,7 @@ display(all_column_quality_summary)
       <td>1.000000</td>
     </tr>
     <tr>
-      <th>6</th>
+      <th>5</th>
       <td>Ascites</td>
       <td>object</td>
       <td>418</td>
@@ -852,7 +840,7 @@ display(all_column_quality_summary)
       <td>0.746411</td>
     </tr>
     <tr>
-      <th>7</th>
+      <th>6</th>
       <td>Hepatomegaly</td>
       <td>object</td>
       <td>418</td>
@@ -861,7 +849,7 @@ display(all_column_quality_summary)
       <td>0.746411</td>
     </tr>
     <tr>
-      <th>8</th>
+      <th>7</th>
       <td>Spiders</td>
       <td>object</td>
       <td>418</td>
@@ -870,7 +858,7 @@ display(all_column_quality_summary)
       <td>0.746411</td>
     </tr>
     <tr>
-      <th>9</th>
+      <th>8</th>
       <td>Edema</td>
       <td>object</td>
       <td>418</td>
@@ -879,7 +867,7 @@ display(all_column_quality_summary)
       <td>1.000000</td>
     </tr>
     <tr>
-      <th>10</th>
+      <th>9</th>
       <td>Bilirubin</td>
       <td>float64</td>
       <td>418</td>
@@ -888,7 +876,7 @@ display(all_column_quality_summary)
       <td>1.000000</td>
     </tr>
     <tr>
-      <th>11</th>
+      <th>10</th>
       <td>Cholesterol</td>
       <td>float64</td>
       <td>418</td>
@@ -897,7 +885,7 @@ display(all_column_quality_summary)
       <td>0.679426</td>
     </tr>
     <tr>
-      <th>12</th>
+      <th>11</th>
       <td>Albumin</td>
       <td>float64</td>
       <td>418</td>
@@ -906,7 +894,7 @@ display(all_column_quality_summary)
       <td>1.000000</td>
     </tr>
     <tr>
-      <th>13</th>
+      <th>12</th>
       <td>Copper</td>
       <td>float64</td>
       <td>418</td>
@@ -915,7 +903,7 @@ display(all_column_quality_summary)
       <td>0.741627</td>
     </tr>
     <tr>
-      <th>14</th>
+      <th>13</th>
       <td>Alk_Phos</td>
       <td>float64</td>
       <td>418</td>
@@ -924,7 +912,7 @@ display(all_column_quality_summary)
       <td>0.746411</td>
     </tr>
     <tr>
-      <th>15</th>
+      <th>14</th>
       <td>SGOT</td>
       <td>float64</td>
       <td>418</td>
@@ -933,7 +921,7 @@ display(all_column_quality_summary)
       <td>0.746411</td>
     </tr>
     <tr>
-      <th>16</th>
+      <th>15</th>
       <td>Tryglicerides</td>
       <td>float64</td>
       <td>418</td>
@@ -942,7 +930,7 @@ display(all_column_quality_summary)
       <td>0.674641</td>
     </tr>
     <tr>
-      <th>17</th>
+      <th>16</th>
       <td>Platelets</td>
       <td>float64</td>
       <td>418</td>
@@ -951,7 +939,7 @@ display(all_column_quality_summary)
       <td>0.973684</td>
     </tr>
     <tr>
-      <th>18</th>
+      <th>17</th>
       <td>Prothrombin</td>
       <td>float64</td>
       <td>418</td>
@@ -960,7 +948,7 @@ display(all_column_quality_summary)
       <td>0.995215</td>
     </tr>
     <tr>
-      <th>19</th>
+      <th>18</th>
       <td>Stage</td>
       <td>float64</td>
       <td>418</td>
@@ -1027,7 +1015,7 @@ display(all_column_quality_summary[(all_column_quality_summary['Fill.Rate']<1)].
   </thead>
   <tbody>
     <tr>
-      <th>16</th>
+      <th>15</th>
       <td>Tryglicerides</td>
       <td>float64</td>
       <td>418</td>
@@ -1036,7 +1024,7 @@ display(all_column_quality_summary[(all_column_quality_summary['Fill.Rate']<1)].
       <td>0.674641</td>
     </tr>
     <tr>
-      <th>11</th>
+      <th>10</th>
       <td>Cholesterol</td>
       <td>float64</td>
       <td>418</td>
@@ -1045,7 +1033,7 @@ display(all_column_quality_summary[(all_column_quality_summary['Fill.Rate']<1)].
       <td>0.679426</td>
     </tr>
     <tr>
-      <th>13</th>
+      <th>12</th>
       <td>Copper</td>
       <td>float64</td>
       <td>418</td>
@@ -1054,7 +1042,7 @@ display(all_column_quality_summary[(all_column_quality_summary['Fill.Rate']<1)].
       <td>0.741627</td>
     </tr>
     <tr>
-      <th>3</th>
+      <th>2</th>
       <td>Drug</td>
       <td>object</td>
       <td>418</td>
@@ -1063,7 +1051,7 @@ display(all_column_quality_summary[(all_column_quality_summary['Fill.Rate']<1)].
       <td>0.746411</td>
     </tr>
     <tr>
-      <th>6</th>
+      <th>5</th>
       <td>Ascites</td>
       <td>object</td>
       <td>418</td>
@@ -1072,7 +1060,7 @@ display(all_column_quality_summary[(all_column_quality_summary['Fill.Rate']<1)].
       <td>0.746411</td>
     </tr>
     <tr>
-      <th>7</th>
+      <th>6</th>
       <td>Hepatomegaly</td>
       <td>object</td>
       <td>418</td>
@@ -1081,7 +1069,7 @@ display(all_column_quality_summary[(all_column_quality_summary['Fill.Rate']<1)].
       <td>0.746411</td>
     </tr>
     <tr>
-      <th>8</th>
+      <th>7</th>
       <td>Spiders</td>
       <td>object</td>
       <td>418</td>
@@ -1090,7 +1078,7 @@ display(all_column_quality_summary[(all_column_quality_summary['Fill.Rate']<1)].
       <td>0.746411</td>
     </tr>
     <tr>
-      <th>14</th>
+      <th>13</th>
       <td>Alk_Phos</td>
       <td>float64</td>
       <td>418</td>
@@ -1099,7 +1087,7 @@ display(all_column_quality_summary[(all_column_quality_summary['Fill.Rate']<1)].
       <td>0.746411</td>
     </tr>
     <tr>
-      <th>15</th>
+      <th>14</th>
       <td>SGOT</td>
       <td>float64</td>
       <td>418</td>
@@ -1108,7 +1096,7 @@ display(all_column_quality_summary[(all_column_quality_summary['Fill.Rate']<1)].
       <td>0.746411</td>
     </tr>
     <tr>
-      <th>17</th>
+      <th>16</th>
       <td>Platelets</td>
       <td>float64</td>
       <td>418</td>
@@ -1117,7 +1105,7 @@ display(all_column_quality_summary[(all_column_quality_summary['Fill.Rate']<1)].
       <td>0.973684</td>
     </tr>
     <tr>
-      <th>19</th>
+      <th>18</th>
       <td>Stage</td>
       <td>float64</td>
       <td>418</td>
@@ -1126,7 +1114,7 @@ display(all_column_quality_summary[(all_column_quality_summary['Fill.Rate']<1)].
       <td>0.985646</td>
     </tr>
     <tr>
-      <th>18</th>
+      <th>17</th>
       <td>Prothrombin</td>
       <td>float64</td>
       <td>418</td>
@@ -1153,7 +1141,7 @@ column_low_fill_rate = all_column_quality_summary[(all_column_quality_summary['F
 ##################################
 # Gathering the metadata labels for each observation
 ##################################
-row_metadata_list = cirrhosis_survival["ID"].values.tolist()
+row_metadata_list = cirrhosis_survival.index.values.tolist()
 ```
 
 
@@ -1226,37 +1214,37 @@ display(all_row_quality_summary)
     <tr>
       <th>0</th>
       <td>1</td>
-      <td>20</td>
+      <td>19</td>
       <td>0</td>
-      <td>0.00</td>
+      <td>0.000000</td>
     </tr>
     <tr>
       <th>1</th>
       <td>2</td>
-      <td>20</td>
+      <td>19</td>
       <td>0</td>
-      <td>0.00</td>
+      <td>0.000000</td>
     </tr>
     <tr>
       <th>2</th>
       <td>3</td>
-      <td>20</td>
+      <td>19</td>
       <td>0</td>
-      <td>0.00</td>
+      <td>0.000000</td>
     </tr>
     <tr>
       <th>3</th>
       <td>4</td>
-      <td>20</td>
+      <td>19</td>
       <td>0</td>
-      <td>0.00</td>
+      <td>0.000000</td>
     </tr>
     <tr>
       <th>4</th>
       <td>5</td>
-      <td>20</td>
+      <td>19</td>
       <td>0</td>
-      <td>0.00</td>
+      <td>0.000000</td>
     </tr>
     <tr>
       <th>...</th>
@@ -1268,37 +1256,37 @@ display(all_row_quality_summary)
     <tr>
       <th>413</th>
       <td>414</td>
-      <td>20</td>
+      <td>19</td>
       <td>9</td>
-      <td>0.45</td>
+      <td>0.473684</td>
     </tr>
     <tr>
       <th>414</th>
       <td>415</td>
-      <td>20</td>
+      <td>19</td>
       <td>9</td>
-      <td>0.45</td>
+      <td>0.473684</td>
     </tr>
     <tr>
       <th>415</th>
       <td>416</td>
-      <td>20</td>
+      <td>19</td>
       <td>9</td>
-      <td>0.45</td>
+      <td>0.473684</td>
     </tr>
     <tr>
       <th>416</th>
       <td>417</td>
-      <td>20</td>
+      <td>19</td>
       <td>9</td>
-      <td>0.45</td>
+      <td>0.473684</td>
     </tr>
     <tr>
       <th>417</th>
       <td>418</td>
-      <td>20</td>
+      <td>19</td>
       <td>9</td>
-      <td>0.45</td>
+      <td>0.473684</td>
     </tr>
   </tbody>
 </table>
@@ -1360,37 +1348,37 @@ display(all_row_quality_summary[all_row_quality_summary['Missing.Rate']>0])
     <tr>
       <th>5</th>
       <td>6</td>
-      <td>20</td>
+      <td>19</td>
       <td>1</td>
-      <td>0.05</td>
+      <td>0.052632</td>
     </tr>
     <tr>
       <th>13</th>
       <td>14</td>
-      <td>20</td>
+      <td>19</td>
       <td>2</td>
-      <td>0.10</td>
+      <td>0.105263</td>
     </tr>
     <tr>
       <th>39</th>
       <td>40</td>
-      <td>20</td>
+      <td>19</td>
       <td>2</td>
-      <td>0.10</td>
+      <td>0.105263</td>
     </tr>
     <tr>
       <th>40</th>
       <td>41</td>
-      <td>20</td>
+      <td>19</td>
       <td>2</td>
-      <td>0.10</td>
+      <td>0.105263</td>
     </tr>
     <tr>
       <th>41</th>
       <td>42</td>
-      <td>20</td>
+      <td>19</td>
       <td>2</td>
-      <td>0.10</td>
+      <td>0.105263</td>
     </tr>
     <tr>
       <th>...</th>
@@ -1402,37 +1390,37 @@ display(all_row_quality_summary[all_row_quality_summary['Missing.Rate']>0])
     <tr>
       <th>413</th>
       <td>414</td>
-      <td>20</td>
+      <td>19</td>
       <td>9</td>
-      <td>0.45</td>
+      <td>0.473684</td>
     </tr>
     <tr>
       <th>414</th>
       <td>415</td>
-      <td>20</td>
+      <td>19</td>
       <td>9</td>
-      <td>0.45</td>
+      <td>0.473684</td>
     </tr>
     <tr>
       <th>415</th>
       <td>416</td>
-      <td>20</td>
+      <td>19</td>
       <td>9</td>
-      <td>0.45</td>
+      <td>0.473684</td>
     </tr>
     <tr>
       <th>416</th>
       <td>417</td>
-      <td>20</td>
+      <td>19</td>
       <td>9</td>
-      <td>0.45</td>
+      <td>0.473684</td>
     </tr>
     <tr>
       <th>417</th>
       <td>418</td>
-      <td>20</td>
+      <td>19</td>
       <td>9</td>
-      <td>0.45</td>
+      <td>0.473684</td>
     </tr>
   </tbody>
 </table>
@@ -1449,11 +1437,11 @@ display(all_row_quality_summary[all_row_quality_summary['Missing.Rate']>0])
 print(all_row_quality_summary['Missing.Rate'].value_counts())
 ```
 
-    0.00    276
-    0.45     91
-    0.10     28
-    0.50     15
-    0.05      8
+    0.000000    276
+    0.473684     91
+    0.105263     28
+    0.526316     15
+    0.052632      8
     Name: Missing.Rate, dtype: int64
     
 
@@ -1669,24 +1657,6 @@ display(numeric_column_quality_summary)
   <tbody>
     <tr>
       <th>0</th>
-      <td>ID</td>
-      <td>1.00</td>
-      <td>209.500000</td>
-      <td>209.50</td>
-      <td>418.00</td>
-      <td>1.00</td>
-      <td>314.00</td>
-      <td>1</td>
-      <td>1</td>
-      <td>1.000000</td>
-      <td>418</td>
-      <td>418</td>
-      <td>1.000000</td>
-      <td>0.000000</td>
-      <td>-1.200000</td>
-    </tr>
-    <tr>
-      <th>1</th>
       <td>N_Days</td>
       <td>41.00</td>
       <td>1917.782297</td>
@@ -1704,7 +1674,7 @@ display(numeric_column_quality_summary)
       <td>-0.482139</td>
     </tr>
     <tr>
-      <th>2</th>
+      <th>1</th>
       <td>Age</td>
       <td>9598.00</td>
       <td>18533.351675</td>
@@ -1722,7 +1692,7 @@ display(numeric_column_quality_summary)
       <td>-0.616730</td>
     </tr>
     <tr>
-      <th>3</th>
+      <th>2</th>
       <td>Bilirubin</td>
       <td>0.30</td>
       <td>3.220813</td>
@@ -1740,7 +1710,7 @@ display(numeric_column_quality_summary)
       <td>8.065336</td>
     </tr>
     <tr>
-      <th>4</th>
+      <th>3</th>
       <td>Cholesterol</td>
       <td>120.00</td>
       <td>369.510563</td>
@@ -1758,7 +1728,7 @@ display(numeric_column_quality_summary)
       <td>14.337870</td>
     </tr>
     <tr>
-      <th>5</th>
+      <th>4</th>
       <td>Albumin</td>
       <td>1.96</td>
       <td>3.497440</td>
@@ -1776,7 +1746,7 @@ display(numeric_column_quality_summary)
       <td>0.566745</td>
     </tr>
     <tr>
-      <th>6</th>
+      <th>5</th>
       <td>Copper</td>
       <td>4.00</td>
       <td>97.648387</td>
@@ -1794,7 +1764,7 @@ display(numeric_column_quality_summary)
       <td>7.624023</td>
     </tr>
     <tr>
-      <th>7</th>
+      <th>6</th>
       <td>Alk_Phos</td>
       <td>289.00</td>
       <td>1982.655769</td>
@@ -1812,7 +1782,7 @@ display(numeric_column_quality_summary)
       <td>9.662553</td>
     </tr>
     <tr>
-      <th>8</th>
+      <th>7</th>
       <td>SGOT</td>
       <td>26.35</td>
       <td>122.556346</td>
@@ -1830,7 +1800,7 @@ display(numeric_column_quality_summary)
       <td>4.311976</td>
     </tr>
     <tr>
-      <th>9</th>
+      <th>8</th>
       <td>Tryglicerides</td>
       <td>33.00</td>
       <td>124.702128</td>
@@ -1848,7 +1818,7 @@ display(numeric_column_quality_summary)
       <td>11.802753</td>
     </tr>
     <tr>
-      <th>10</th>
+      <th>9</th>
       <td>Platelets</td>
       <td>62.00</td>
       <td>257.024570</td>
@@ -1866,7 +1836,7 @@ display(numeric_column_quality_summary)
       <td>0.863045</td>
     </tr>
     <tr>
-      <th>11</th>
+      <th>10</th>
       <td>Prothrombin</td>
       <td>9.00</td>
       <td>10.731731</td>
@@ -1884,7 +1854,7 @@ display(numeric_column_quality_summary)
       <td>10.040773</td>
     </tr>
     <tr>
-      <th>12</th>
+      <th>11</th>
       <td>Stage</td>
       <td>1.00</td>
       <td>3.024272</td>
@@ -2179,7 +2149,7 @@ display(cirrhosis_survival.shape)
     
 
 
-    (418, 20)
+    (418, 19)
 
 
 
@@ -2188,7 +2158,7 @@ display(cirrhosis_survival.shape)
 # Filtering out the rows with
 # with Missing.Rate > 0.40
 ##################################
-cirrhosis_survival_filtered_row = cirrhosis_survival.drop(cirrhosis_survival[cirrhosis_survival.ID.isin(row_high_missing_rate['Row.Name'].values.tolist())].index)
+cirrhosis_survival_filtered_row = cirrhosis_survival.drop(cirrhosis_survival[cirrhosis_survival.index.isin(row_high_missing_rate['Row.Name'].values.tolist())].index)
 ```
 
 
@@ -2204,7 +2174,7 @@ display(cirrhosis_survival_filtered_row.shape)
     
 
 
-    (312, 20)
+    (312, 19)
 
 
 
@@ -2265,15 +2235,6 @@ display(all_column_quality_summary)
   <tbody>
     <tr>
       <th>0</th>
-      <td>ID</td>
-      <td>int64</td>
-      <td>312</td>
-      <td>312</td>
-      <td>0</td>
-      <td>1.000000</td>
-    </tr>
-    <tr>
-      <th>1</th>
       <td>N_Days</td>
       <td>int64</td>
       <td>312</td>
@@ -2282,7 +2243,7 @@ display(all_column_quality_summary)
       <td>1.000000</td>
     </tr>
     <tr>
-      <th>2</th>
+      <th>1</th>
       <td>Status</td>
       <td>object</td>
       <td>312</td>
@@ -2291,7 +2252,7 @@ display(all_column_quality_summary)
       <td>1.000000</td>
     </tr>
     <tr>
-      <th>3</th>
+      <th>2</th>
       <td>Drug</td>
       <td>object</td>
       <td>312</td>
@@ -2300,7 +2261,7 @@ display(all_column_quality_summary)
       <td>1.000000</td>
     </tr>
     <tr>
-      <th>4</th>
+      <th>3</th>
       <td>Age</td>
       <td>int64</td>
       <td>312</td>
@@ -2309,7 +2270,7 @@ display(all_column_quality_summary)
       <td>1.000000</td>
     </tr>
     <tr>
-      <th>5</th>
+      <th>4</th>
       <td>Sex</td>
       <td>object</td>
       <td>312</td>
@@ -2318,7 +2279,7 @@ display(all_column_quality_summary)
       <td>1.000000</td>
     </tr>
     <tr>
-      <th>6</th>
+      <th>5</th>
       <td>Ascites</td>
       <td>object</td>
       <td>312</td>
@@ -2327,7 +2288,7 @@ display(all_column_quality_summary)
       <td>1.000000</td>
     </tr>
     <tr>
-      <th>7</th>
+      <th>6</th>
       <td>Hepatomegaly</td>
       <td>object</td>
       <td>312</td>
@@ -2336,7 +2297,7 @@ display(all_column_quality_summary)
       <td>1.000000</td>
     </tr>
     <tr>
-      <th>8</th>
+      <th>7</th>
       <td>Spiders</td>
       <td>object</td>
       <td>312</td>
@@ -2345,7 +2306,7 @@ display(all_column_quality_summary)
       <td>1.000000</td>
     </tr>
     <tr>
-      <th>9</th>
+      <th>8</th>
       <td>Edema</td>
       <td>object</td>
       <td>312</td>
@@ -2354,7 +2315,7 @@ display(all_column_quality_summary)
       <td>1.000000</td>
     </tr>
     <tr>
-      <th>10</th>
+      <th>9</th>
       <td>Bilirubin</td>
       <td>float64</td>
       <td>312</td>
@@ -2363,7 +2324,7 @@ display(all_column_quality_summary)
       <td>1.000000</td>
     </tr>
     <tr>
-      <th>11</th>
+      <th>10</th>
       <td>Cholesterol</td>
       <td>float64</td>
       <td>312</td>
@@ -2372,7 +2333,7 @@ display(all_column_quality_summary)
       <td>0.910256</td>
     </tr>
     <tr>
-      <th>12</th>
+      <th>11</th>
       <td>Albumin</td>
       <td>float64</td>
       <td>312</td>
@@ -2381,7 +2342,7 @@ display(all_column_quality_summary)
       <td>1.000000</td>
     </tr>
     <tr>
-      <th>13</th>
+      <th>12</th>
       <td>Copper</td>
       <td>float64</td>
       <td>312</td>
@@ -2390,7 +2351,7 @@ display(all_column_quality_summary)
       <td>0.993590</td>
     </tr>
     <tr>
-      <th>14</th>
+      <th>13</th>
       <td>Alk_Phos</td>
       <td>float64</td>
       <td>312</td>
@@ -2399,7 +2360,7 @@ display(all_column_quality_summary)
       <td>1.000000</td>
     </tr>
     <tr>
-      <th>15</th>
+      <th>14</th>
       <td>SGOT</td>
       <td>float64</td>
       <td>312</td>
@@ -2408,7 +2369,7 @@ display(all_column_quality_summary)
       <td>1.000000</td>
     </tr>
     <tr>
-      <th>16</th>
+      <th>15</th>
       <td>Tryglicerides</td>
       <td>float64</td>
       <td>312</td>
@@ -2417,7 +2378,7 @@ display(all_column_quality_summary)
       <td>0.903846</td>
     </tr>
     <tr>
-      <th>17</th>
+      <th>16</th>
       <td>Platelets</td>
       <td>float64</td>
       <td>312</td>
@@ -2426,7 +2387,7 @@ display(all_column_quality_summary)
       <td>0.987179</td>
     </tr>
     <tr>
-      <th>18</th>
+      <th>17</th>
       <td>Prothrombin</td>
       <td>float64</td>
       <td>312</td>
@@ -2435,7 +2396,7 @@ display(all_column_quality_summary)
       <td>1.000000</td>
     </tr>
     <tr>
-      <th>19</th>
+      <th>18</th>
       <td>Stage</td>
       <td>float64</td>
       <td>312</td>
@@ -2513,14 +2474,6 @@ display(cleaned_column_quality_summary)
   <tbody>
     <tr>
       <th>0</th>
-      <td>ID</td>
-      <td>int64</td>
-      <td>312</td>
-      <td>312</td>
-      <td>0</td>
-    </tr>
-    <tr>
-      <th>1</th>
       <td>N_Days</td>
       <td>int64</td>
       <td>312</td>
@@ -2528,7 +2481,7 @@ display(cleaned_column_quality_summary)
       <td>0</td>
     </tr>
     <tr>
-      <th>2</th>
+      <th>1</th>
       <td>Status</td>
       <td>object</td>
       <td>312</td>
@@ -2536,7 +2489,7 @@ display(cleaned_column_quality_summary)
       <td>0</td>
     </tr>
     <tr>
-      <th>3</th>
+      <th>2</th>
       <td>Drug</td>
       <td>object</td>
       <td>312</td>
@@ -2544,7 +2497,7 @@ display(cleaned_column_quality_summary)
       <td>0</td>
     </tr>
     <tr>
-      <th>4</th>
+      <th>3</th>
       <td>Age</td>
       <td>int64</td>
       <td>312</td>
@@ -2552,7 +2505,7 @@ display(cleaned_column_quality_summary)
       <td>0</td>
     </tr>
     <tr>
-      <th>5</th>
+      <th>4</th>
       <td>Sex</td>
       <td>object</td>
       <td>312</td>
@@ -2560,7 +2513,7 @@ display(cleaned_column_quality_summary)
       <td>0</td>
     </tr>
     <tr>
-      <th>6</th>
+      <th>5</th>
       <td>Ascites</td>
       <td>object</td>
       <td>312</td>
@@ -2568,7 +2521,7 @@ display(cleaned_column_quality_summary)
       <td>0</td>
     </tr>
     <tr>
-      <th>7</th>
+      <th>6</th>
       <td>Hepatomegaly</td>
       <td>object</td>
       <td>312</td>
@@ -2576,7 +2529,7 @@ display(cleaned_column_quality_summary)
       <td>0</td>
     </tr>
     <tr>
-      <th>8</th>
+      <th>7</th>
       <td>Spiders</td>
       <td>object</td>
       <td>312</td>
@@ -2584,7 +2537,7 @@ display(cleaned_column_quality_summary)
       <td>0</td>
     </tr>
     <tr>
-      <th>9</th>
+      <th>8</th>
       <td>Edema</td>
       <td>object</td>
       <td>312</td>
@@ -2592,7 +2545,7 @@ display(cleaned_column_quality_summary)
       <td>0</td>
     </tr>
     <tr>
-      <th>10</th>
+      <th>9</th>
       <td>Bilirubin</td>
       <td>float64</td>
       <td>312</td>
@@ -2600,7 +2553,7 @@ display(cleaned_column_quality_summary)
       <td>0</td>
     </tr>
     <tr>
-      <th>11</th>
+      <th>10</th>
       <td>Cholesterol</td>
       <td>float64</td>
       <td>312</td>
@@ -2608,7 +2561,7 @@ display(cleaned_column_quality_summary)
       <td>28</td>
     </tr>
     <tr>
-      <th>12</th>
+      <th>11</th>
       <td>Albumin</td>
       <td>float64</td>
       <td>312</td>
@@ -2616,7 +2569,7 @@ display(cleaned_column_quality_summary)
       <td>0</td>
     </tr>
     <tr>
-      <th>13</th>
+      <th>12</th>
       <td>Copper</td>
       <td>float64</td>
       <td>312</td>
@@ -2624,7 +2577,7 @@ display(cleaned_column_quality_summary)
       <td>2</td>
     </tr>
     <tr>
-      <th>14</th>
+      <th>13</th>
       <td>Alk_Phos</td>
       <td>float64</td>
       <td>312</td>
@@ -2632,7 +2585,7 @@ display(cleaned_column_quality_summary)
       <td>0</td>
     </tr>
     <tr>
-      <th>15</th>
+      <th>14</th>
       <td>SGOT</td>
       <td>float64</td>
       <td>312</td>
@@ -2640,7 +2593,7 @@ display(cleaned_column_quality_summary)
       <td>0</td>
     </tr>
     <tr>
-      <th>16</th>
+      <th>15</th>
       <td>Tryglicerides</td>
       <td>float64</td>
       <td>312</td>
@@ -2648,7 +2601,7 @@ display(cleaned_column_quality_summary)
       <td>30</td>
     </tr>
     <tr>
-      <th>17</th>
+      <th>16</th>
       <td>Platelets</td>
       <td>float64</td>
       <td>312</td>
@@ -2656,7 +2609,7 @@ display(cleaned_column_quality_summary)
       <td>4</td>
     </tr>
     <tr>
-      <th>18</th>
+      <th>17</th>
       <td>Prothrombin</td>
       <td>float64</td>
       <td>312</td>
@@ -2664,7 +2617,7 @@ display(cleaned_column_quality_summary)
       <td>0</td>
     </tr>
     <tr>
-      <th>19</th>
+      <th>18</th>
       <td>Stage</td>
       <td>float64</td>
       <td>312</td>
@@ -2715,10 +2668,20 @@ cirrhosis_survival_cleaned_object.head()
       <th>Spiders</th>
       <th>Edema</th>
     </tr>
+    <tr>
+      <th>ID</th>
+      <th></th>
+      <th></th>
+      <th></th>
+      <th></th>
+      <th></th>
+      <th></th>
+      <th></th>
+    </tr>
   </thead>
   <tbody>
     <tr>
-      <th>0</th>
+      <th>1</th>
       <td>D</td>
       <td>D-penicillamine</td>
       <td>F</td>
@@ -2728,7 +2691,7 @@ cirrhosis_survival_cleaned_object.head()
       <td>Y</td>
     </tr>
     <tr>
-      <th>1</th>
+      <th>2</th>
       <td>C</td>
       <td>D-penicillamine</td>
       <td>F</td>
@@ -2738,7 +2701,7 @@ cirrhosis_survival_cleaned_object.head()
       <td>N</td>
     </tr>
     <tr>
-      <th>2</th>
+      <th>3</th>
       <td>D</td>
       <td>D-penicillamine</td>
       <td>M</td>
@@ -2748,7 +2711,7 @@ cirrhosis_survival_cleaned_object.head()
       <td>S</td>
     </tr>
     <tr>
-      <th>3</th>
+      <th>4</th>
       <td>D</td>
       <td>D-penicillamine</td>
       <td>F</td>
@@ -2758,7 +2721,7 @@ cirrhosis_survival_cleaned_object.head()
       <td>S</td>
     </tr>
     <tr>
-      <th>4</th>
+      <th>5</th>
       <td>CL</td>
       <td>Placebo</td>
       <td>F</td>
@@ -2804,39 +2767,38 @@ cirrhosis_survival_cleaned_int.head()
   <thead>
     <tr style="text-align: right;">
       <th></th>
-      <th>ID</th>
       <th>N_Days</th>
       <th>Age</th>
+    </tr>
+    <tr>
+      <th>ID</th>
+      <th></th>
+      <th></th>
     </tr>
   </thead>
   <tbody>
     <tr>
-      <th>0</th>
-      <td>1</td>
+      <th>1</th>
       <td>400</td>
       <td>21464</td>
     </tr>
     <tr>
-      <th>1</th>
-      <td>2</td>
+      <th>2</th>
       <td>4500</td>
       <td>20617</td>
     </tr>
     <tr>
-      <th>2</th>
-      <td>3</td>
+      <th>3</th>
       <td>1012</td>
       <td>25594</td>
     </tr>
     <tr>
-      <th>3</th>
-      <td>4</td>
+      <th>4</th>
       <td>1925</td>
       <td>19994</td>
     </tr>
     <tr>
-      <th>4</th>
-      <td>5</td>
+      <th>5</th>
       <td>1504</td>
       <td>13918</td>
     </tr>
@@ -2888,10 +2850,23 @@ cirrhosis_survival_cleaned_float.head()
       <th>Prothrombin</th>
       <th>Stage</th>
     </tr>
+    <tr>
+      <th>ID</th>
+      <th></th>
+      <th></th>
+      <th></th>
+      <th></th>
+      <th></th>
+      <th></th>
+      <th></th>
+      <th></th>
+      <th></th>
+      <th></th>
+    </tr>
   </thead>
   <tbody>
     <tr>
-      <th>0</th>
+      <th>1</th>
       <td>14.5</td>
       <td>261.0</td>
       <td>2.60</td>
@@ -2904,7 +2879,7 @@ cirrhosis_survival_cleaned_float.head()
       <td>4.0</td>
     </tr>
     <tr>
-      <th>1</th>
+      <th>2</th>
       <td>1.1</td>
       <td>302.0</td>
       <td>4.14</td>
@@ -2917,7 +2892,7 @@ cirrhosis_survival_cleaned_float.head()
       <td>3.0</td>
     </tr>
     <tr>
-      <th>2</th>
+      <th>3</th>
       <td>1.4</td>
       <td>176.0</td>
       <td>3.48</td>
@@ -2930,7 +2905,7 @@ cirrhosis_survival_cleaned_float.head()
       <td>4.0</td>
     </tr>
     <tr>
-      <th>3</th>
+      <th>4</th>
       <td>1.8</td>
       <td>244.0</td>
       <td>2.54</td>
@@ -2943,7 +2918,7 @@ cirrhosis_survival_cleaned_float.head()
       <td>4.0</td>
     </tr>
     <tr>
-      <th>4</th>
+      <th>5</th>
       <td>3.4</td>
       <td>279.0</td>
       <td>3.53</td>
@@ -3066,167 +3041,465 @@ display(imputed_column_quality_summary)
   <tbody>
     <tr>
       <th>0</th>
-      <td>ID</td>
+      <td>N_Days</td>
       <td>int64</td>
-      <td>312</td>
-      <td>312</td>
+      <td>311</td>
+      <td>311</td>
       <td>0</td>
     </tr>
     <tr>
       <th>1</th>
-      <td>N_Days</td>
+      <td>Age</td>
       <td>int64</td>
-      <td>312</td>
-      <td>312</td>
+      <td>311</td>
+      <td>311</td>
       <td>0</td>
     </tr>
     <tr>
       <th>2</th>
-      <td>Age</td>
-      <td>int64</td>
-      <td>312</td>
-      <td>312</td>
+      <td>Status</td>
+      <td>object</td>
+      <td>311</td>
+      <td>311</td>
       <td>0</td>
     </tr>
     <tr>
       <th>3</th>
-      <td>Status</td>
+      <td>Drug</td>
       <td>object</td>
-      <td>312</td>
-      <td>312</td>
+      <td>311</td>
+      <td>311</td>
       <td>0</td>
     </tr>
     <tr>
       <th>4</th>
-      <td>Drug</td>
+      <td>Sex</td>
       <td>object</td>
-      <td>312</td>
-      <td>312</td>
+      <td>311</td>
+      <td>311</td>
       <td>0</td>
     </tr>
     <tr>
       <th>5</th>
-      <td>Sex</td>
+      <td>Ascites</td>
       <td>object</td>
-      <td>312</td>
-      <td>312</td>
+      <td>311</td>
+      <td>311</td>
       <td>0</td>
     </tr>
     <tr>
       <th>6</th>
-      <td>Ascites</td>
+      <td>Hepatomegaly</td>
       <td>object</td>
-      <td>312</td>
-      <td>312</td>
+      <td>311</td>
+      <td>311</td>
       <td>0</td>
     </tr>
     <tr>
       <th>7</th>
-      <td>Hepatomegaly</td>
+      <td>Spiders</td>
       <td>object</td>
-      <td>312</td>
-      <td>312</td>
+      <td>311</td>
+      <td>311</td>
       <td>0</td>
     </tr>
     <tr>
       <th>8</th>
-      <td>Spiders</td>
+      <td>Edema</td>
       <td>object</td>
-      <td>312</td>
-      <td>312</td>
+      <td>311</td>
+      <td>311</td>
       <td>0</td>
     </tr>
     <tr>
       <th>9</th>
-      <td>Edema</td>
-      <td>object</td>
-      <td>312</td>
-      <td>312</td>
+      <td>Bilirubin</td>
+      <td>float64</td>
+      <td>311</td>
+      <td>311</td>
       <td>0</td>
     </tr>
     <tr>
       <th>10</th>
-      <td>Bilirubin</td>
+      <td>Cholesterol</td>
       <td>float64</td>
-      <td>312</td>
-      <td>312</td>
+      <td>311</td>
+      <td>311</td>
       <td>0</td>
     </tr>
     <tr>
       <th>11</th>
-      <td>Cholesterol</td>
+      <td>Albumin</td>
       <td>float64</td>
-      <td>312</td>
-      <td>312</td>
+      <td>311</td>
+      <td>311</td>
       <td>0</td>
     </tr>
     <tr>
       <th>12</th>
-      <td>Albumin</td>
+      <td>Copper</td>
       <td>float64</td>
-      <td>312</td>
-      <td>312</td>
+      <td>311</td>
+      <td>311</td>
       <td>0</td>
     </tr>
     <tr>
       <th>13</th>
-      <td>Copper</td>
+      <td>Alk_Phos</td>
       <td>float64</td>
-      <td>312</td>
-      <td>312</td>
+      <td>311</td>
+      <td>311</td>
       <td>0</td>
     </tr>
     <tr>
       <th>14</th>
-      <td>Alk_Phos</td>
+      <td>SGOT</td>
       <td>float64</td>
-      <td>312</td>
-      <td>312</td>
+      <td>311</td>
+      <td>311</td>
       <td>0</td>
     </tr>
     <tr>
       <th>15</th>
-      <td>SGOT</td>
+      <td>Tryglicerides</td>
       <td>float64</td>
-      <td>312</td>
-      <td>312</td>
+      <td>311</td>
+      <td>311</td>
       <td>0</td>
     </tr>
     <tr>
       <th>16</th>
-      <td>Tryglicerides</td>
+      <td>Platelets</td>
       <td>float64</td>
-      <td>312</td>
-      <td>312</td>
+      <td>311</td>
+      <td>311</td>
       <td>0</td>
     </tr>
     <tr>
       <th>17</th>
-      <td>Platelets</td>
+      <td>Prothrombin</td>
       <td>float64</td>
-      <td>312</td>
-      <td>312</td>
+      <td>311</td>
+      <td>311</td>
       <td>0</td>
     </tr>
     <tr>
       <th>18</th>
-      <td>Prothrombin</td>
-      <td>float64</td>
-      <td>312</td>
-      <td>312</td>
-      <td>0</td>
-    </tr>
-    <tr>
-      <th>19</th>
       <td>Stage</td>
       <td>float64</td>
-      <td>312</td>
-      <td>312</td>
+      <td>311</td>
+      <td>311</td>
       <td>0</td>
     </tr>
   </tbody>
 </table>
 </div>
+
+
+### 1.4.3 Outlier Detection <a class="anchor" id="1.4.3"></a>
+
+1. High number of outliers observed for 4 numeric variables with Outlier.Ratio>0.05 and marginal to high Skewness.
+    * <span style="color: #FF0000">Alk_Phos</span>: Outlier.Count = 35, Outlier.Ratio = 0.112, Skewness=+2.987
+    * <span style="color: #FF0000">Bilirubin</span>: Outlier.Count = 30, Outlier.Ratio = 0.096, Skewness=+2.904
+    * <span style="color: #FF0000">Cholesterol</span>: Outlier.Count = 22, Outlier.Ratio = 0.071, Skewness=+3.487
+    * <span style="color: #FF0000">Copper</span>: Outlier.Count = 17, Outlier.Ratio = 0.055, Skewness=+2.319
+2. Minimal number of outliers observed for 6 numeric variables with Outlier.Ratio>0.00 but <0.05 and normal to marginal Skewness.
+    * <span style="color: #FF0000">Prothrombin</span>: Outlier.Count = 14, Outlier.Ratio = 0.045, Skewness=+1.749
+    * <span style="color: #FF0000">Tryglicerides</span>: Outlier.Count = 13, Outlier.Ratio = 0.042, Skewness=+2.619
+    * <span style="color: #FF0000">Albumin</span>: Outlier.Count = 11, Outlier.Ratio = 0.035, Skewness=-0.581
+    * <span style="color: #FF0000">SGOT</span>: Outlier.Count = 7, Outlier.Ratio = 0.022, Skewness=+1.450
+    * <span style="color: #FF0000">Platelets</span>: Outlier.Count = 4, Outlier.Ratio = 0.013, Skewness=+0.357
+    * <span style="color: #FF0000">Age</span>: Outlier.Count = 1, Outlier.Ratio = 0.003, Skewness=+0.167
+
+
+```python
+##################################
+# Formulating the imputed dataset
+# with numeric columns only
+##################################
+cirrhosis_survival_imputed_numeric = cirrhosis_survival_imputed.select_dtypes(include='number')
+```
+
+
+```python
+##################################
+# Gathering the variable names for each numeric column
+##################################
+numeric_variable_name_list = list(cirrhosis_survival_imputed_numeric.columns)
+```
+
+
+```python
+##################################
+# Gathering the skewness value for each numeric column
+##################################
+numeric_skewness_list = cirrhosis_survival_imputed_numeric.skew()
+```
+
+
+```python
+##################################
+# Computing the interquartile range
+# for all columns
+##################################
+cirrhosis_survival_imputed_numeric_q1 = cirrhosis_survival_imputed_numeric.quantile(0.25)
+cirrhosis_survival_imputed_numeric_q3 = cirrhosis_survival_imputed_numeric.quantile(0.75)
+cirrhosis_survival_imputed_numeric_iqr = cirrhosis_survival_imputed_numeric_q3 - cirrhosis_survival_imputed_numeric_q1
+```
+
+
+```python
+##################################
+# Gathering the outlier count for each numeric column
+# based on the interquartile range criterion
+##################################
+numeric_outlier_count_list = ((cirrhosis_survival_imputed_numeric < (cirrhosis_survival_imputed_numeric_q1 - 1.5 * cirrhosis_survival_imputed_numeric_iqr)) | (cirrhosis_survival_imputed_numeric > (cirrhosis_survival_imputed_numeric_q3 + 1.5 * cirrhosis_survival_imputed_numeric_iqr))).sum()
+```
+
+
+```python
+##################################
+# Gathering the number of observations for each column
+##################################
+numeric_row_count_list = list([len(cirrhosis_survival_imputed_numeric)] * len(cirrhosis_survival_imputed_numeric.columns))
+```
+
+
+```python
+##################################
+# Gathering the unique to count ratio for each categorical column
+##################################
+numeric_outlier_ratio_list = map(truediv, numeric_outlier_count_list, numeric_row_count_list)
+```
+
+
+```python
+##################################
+# Formulating the outlier summary
+# for all numeric columns
+##################################
+numeric_column_outlier_summary = pd.DataFrame(zip(numeric_variable_name_list,
+                                                  numeric_skewness_list,
+                                                  numeric_outlier_count_list,
+                                                  numeric_row_count_list,
+                                                  numeric_outlier_ratio_list), 
+                                        columns=['Numeric.Column.Name',
+                                                 'Skewness',
+                                                 'Outlier.Count',
+                                                 'Row.Count',
+                                                 'Outlier.Ratio'])
+display(numeric_column_outlier_summary)
+```
+
+
+<div>
+<style scoped>
+    .dataframe tbody tr th:only-of-type {
+        vertical-align: middle;
+    }
+
+    .dataframe tbody tr th {
+        vertical-align: top;
+    }
+
+    .dataframe thead th {
+        text-align: right;
+    }
+</style>
+<table border="1" class="dataframe">
+  <thead>
+    <tr style="text-align: right;">
+      <th></th>
+      <th>Numeric.Column.Name</th>
+      <th>Skewness</th>
+      <th>Outlier.Count</th>
+      <th>Row.Count</th>
+      <th>Outlier.Ratio</th>
+    </tr>
+  </thead>
+  <tbody>
+    <tr>
+      <th>0</th>
+      <td>N_Days</td>
+      <td>0.372897</td>
+      <td>0</td>
+      <td>311</td>
+      <td>0.000000</td>
+    </tr>
+    <tr>
+      <th>1</th>
+      <td>Age</td>
+      <td>0.167578</td>
+      <td>1</td>
+      <td>311</td>
+      <td>0.003215</td>
+    </tr>
+    <tr>
+      <th>2</th>
+      <td>Bilirubin</td>
+      <td>2.904006</td>
+      <td>30</td>
+      <td>311</td>
+      <td>0.096463</td>
+    </tr>
+    <tr>
+      <th>3</th>
+      <td>Cholesterol</td>
+      <td>3.487590</td>
+      <td>22</td>
+      <td>311</td>
+      <td>0.070740</td>
+    </tr>
+    <tr>
+      <th>4</th>
+      <td>Albumin</td>
+      <td>-0.581905</td>
+      <td>11</td>
+      <td>311</td>
+      <td>0.035370</td>
+    </tr>
+    <tr>
+      <th>5</th>
+      <td>Copper</td>
+      <td>2.319390</td>
+      <td>17</td>
+      <td>311</td>
+      <td>0.054662</td>
+    </tr>
+    <tr>
+      <th>6</th>
+      <td>Alk_Phos</td>
+      <td>2.987109</td>
+      <td>35</td>
+      <td>311</td>
+      <td>0.112540</td>
+    </tr>
+    <tr>
+      <th>7</th>
+      <td>SGOT</td>
+      <td>1.449979</td>
+      <td>7</td>
+      <td>311</td>
+      <td>0.022508</td>
+    </tr>
+    <tr>
+      <th>8</th>
+      <td>Tryglicerides</td>
+      <td>2.618650</td>
+      <td>13</td>
+      <td>311</td>
+      <td>0.041801</td>
+    </tr>
+    <tr>
+      <th>9</th>
+      <td>Platelets</td>
+      <td>0.356677</td>
+      <td>4</td>
+      <td>311</td>
+      <td>0.012862</td>
+    </tr>
+    <tr>
+      <th>10</th>
+      <td>Prothrombin</td>
+      <td>1.749358</td>
+      <td>14</td>
+      <td>311</td>
+      <td>0.045016</td>
+    </tr>
+    <tr>
+      <th>11</th>
+      <td>Stage</td>
+      <td>-0.517547</td>
+      <td>0</td>
+      <td>311</td>
+      <td>0.000000</td>
+    </tr>
+  </tbody>
+</table>
+</div>
+
+
+
+```python
+##################################
+# Formulating the individual boxplots
+# for all numeric columns
+##################################
+for column in cirrhosis_survival_imputed_numeric:
+        plt.figure(figsize=(17,1))
+        sns.boxplot(data=cirrhosis_survival_imputed_numeric, x=column)
+```
+
+
+    
+![png](output_92_0.png)
+    
+
+
+
+    
+![png](output_92_1.png)
+    
+
+
+
+    
+![png](output_92_2.png)
+    
+
+
+
+    
+![png](output_92_3.png)
+    
+
+
+
+    
+![png](output_92_4.png)
+    
+
+
+
+    
+![png](output_92_5.png)
+    
+
+
+
+    
+![png](output_92_6.png)
+    
+
+
+
+    
+![png](output_92_7.png)
+    
+
+
+
+    
+![png](output_92_8.png)
+    
+
+
+
+    
+![png](output_92_9.png)
+    
+
+
+
+    
+![png](output_92_10.png)
+    
+
+
+
+    
+![png](output_92_11.png)
+    
 
 
 # 2. Summary <a class="anchor" id="Summary"></a>
