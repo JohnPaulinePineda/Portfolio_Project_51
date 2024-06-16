@@ -967,7 +967,7 @@ display(all_column_quality_summary)
 # Counting the number of columns
 # with Fill.Rate < 1.00
 ##################################
-print('Number of Columns with Missing Data:',str(len(all_column_quality_summary[(all_column_quality_summary['Fill.Rate']<1)])))
+print('Number of Columns with Missing Data:', str(len(all_column_quality_summary[(all_column_quality_summary['Fill.Rate']<1)])))
 ```
 
     Number of Columns with Missing Data: 12
@@ -1434,16 +1434,64 @@ display(all_row_quality_summary[all_row_quality_summary['Missing.Rate']>0])
 # Counting the number of rows
 # based on different Fill.Rate categories
 ##################################
-print(all_row_quality_summary['Missing.Rate'].value_counts())
+missing_rate_categories = all_row_quality_summary['Missing.Rate'].value_counts().reset_index()
+missing_rate_categories.columns = ['Missing.Rate.Category','Missing.Rate.Count']
+display(missing_rate_categories.sort_values(['Missing.Rate.Category'], ascending=False))
 ```
 
-    0.000000    276
-    0.473684     91
-    0.105263     28
-    0.526316     15
-    0.052632      8
-    Name: Missing.Rate, dtype: int64
-    
+
+<div>
+<style scoped>
+    .dataframe tbody tr th:only-of-type {
+        vertical-align: middle;
+    }
+
+    .dataframe tbody tr th {
+        vertical-align: top;
+    }
+
+    .dataframe thead th {
+        text-align: right;
+    }
+</style>
+<table border="1" class="dataframe">
+  <thead>
+    <tr style="text-align: right;">
+      <th></th>
+      <th>Missing.Rate.Category</th>
+      <th>Missing.Rate.Count</th>
+    </tr>
+  </thead>
+  <tbody>
+    <tr>
+      <th>3</th>
+      <td>0.526316</td>
+      <td>15</td>
+    </tr>
+    <tr>
+      <th>1</th>
+      <td>0.473684</td>
+      <td>91</td>
+    </tr>
+    <tr>
+      <th>2</th>
+      <td>0.105263</td>
+      <td>28</td>
+    </tr>
+    <tr>
+      <th>4</th>
+      <td>0.052632</td>
+      <td>8</td>
+    </tr>
+    <tr>
+      <th>0</th>
+      <td>0.000000</td>
+      <td>276</td>
+    </tr>
+  </tbody>
+</table>
+</div>
+
 
 
 ```python
@@ -2201,7 +2249,7 @@ all_column_quality_summary = pd.DataFrame(zip(variable_name_list,
                                                  'Non.Null.Count',
                                                  'Null.Count',                                                 
                                                  'Fill.Rate'])
-display(all_column_quality_summary)
+display(all_column_quality_summary.sort_values(['Fill.Rate'], ascending=True))
 
 ```
 
@@ -2234,6 +2282,42 @@ display(all_column_quality_summary)
   </thead>
   <tbody>
     <tr>
+      <th>15</th>
+      <td>Tryglicerides</td>
+      <td>float64</td>
+      <td>312</td>
+      <td>282</td>
+      <td>30</td>
+      <td>0.903846</td>
+    </tr>
+    <tr>
+      <th>10</th>
+      <td>Cholesterol</td>
+      <td>float64</td>
+      <td>312</td>
+      <td>284</td>
+      <td>28</td>
+      <td>0.910256</td>
+    </tr>
+    <tr>
+      <th>16</th>
+      <td>Platelets</td>
+      <td>float64</td>
+      <td>312</td>
+      <td>308</td>
+      <td>4</td>
+      <td>0.987179</td>
+    </tr>
+    <tr>
+      <th>12</th>
+      <td>Copper</td>
+      <td>float64</td>
+      <td>312</td>
+      <td>310</td>
+      <td>2</td>
+      <td>0.993590</td>
+    </tr>
+    <tr>
       <th>0</th>
       <td>N_Days</td>
       <td>int64</td>
@@ -2243,44 +2327,53 @@ display(all_column_quality_summary)
       <td>1.000000</td>
     </tr>
     <tr>
-      <th>1</th>
-      <td>Status</td>
-      <td>object</td>
+      <th>14</th>
+      <td>SGOT</td>
+      <td>float64</td>
       <td>312</td>
       <td>312</td>
       <td>0</td>
       <td>1.000000</td>
     </tr>
     <tr>
-      <th>2</th>
-      <td>Drug</td>
-      <td>object</td>
+      <th>13</th>
+      <td>Alk_Phos</td>
+      <td>float64</td>
       <td>312</td>
       <td>312</td>
       <td>0</td>
       <td>1.000000</td>
     </tr>
     <tr>
-      <th>3</th>
-      <td>Age</td>
-      <td>int64</td>
+      <th>11</th>
+      <td>Albumin</td>
+      <td>float64</td>
       <td>312</td>
       <td>312</td>
       <td>0</td>
       <td>1.000000</td>
     </tr>
     <tr>
-      <th>4</th>
-      <td>Sex</td>
-      <td>object</td>
+      <th>17</th>
+      <td>Prothrombin</td>
+      <td>float64</td>
       <td>312</td>
       <td>312</td>
       <td>0</td>
       <td>1.000000</td>
     </tr>
     <tr>
-      <th>5</th>
-      <td>Ascites</td>
+      <th>9</th>
+      <td>Bilirubin</td>
+      <td>float64</td>
+      <td>312</td>
+      <td>312</td>
+      <td>0</td>
+      <td>1.000000</td>
+    </tr>
+    <tr>
+      <th>7</th>
+      <td>Spiders</td>
       <td>object</td>
       <td>312</td>
       <td>312</td>
@@ -2297,8 +2390,44 @@ display(all_column_quality_summary)
       <td>1.000000</td>
     </tr>
     <tr>
-      <th>7</th>
-      <td>Spiders</td>
+      <th>5</th>
+      <td>Ascites</td>
+      <td>object</td>
+      <td>312</td>
+      <td>312</td>
+      <td>0</td>
+      <td>1.000000</td>
+    </tr>
+    <tr>
+      <th>4</th>
+      <td>Sex</td>
+      <td>object</td>
+      <td>312</td>
+      <td>312</td>
+      <td>0</td>
+      <td>1.000000</td>
+    </tr>
+    <tr>
+      <th>3</th>
+      <td>Age</td>
+      <td>int64</td>
+      <td>312</td>
+      <td>312</td>
+      <td>0</td>
+      <td>1.000000</td>
+    </tr>
+    <tr>
+      <th>2</th>
+      <td>Drug</td>
+      <td>object</td>
+      <td>312</td>
+      <td>312</td>
+      <td>0</td>
+      <td>1.000000</td>
+    </tr>
+    <tr>
+      <th>1</th>
+      <td>Status</td>
       <td>object</td>
       <td>312</td>
       <td>312</td>
@@ -2309,87 +2438,6 @@ display(all_column_quality_summary)
       <th>8</th>
       <td>Edema</td>
       <td>object</td>
-      <td>312</td>
-      <td>312</td>
-      <td>0</td>
-      <td>1.000000</td>
-    </tr>
-    <tr>
-      <th>9</th>
-      <td>Bilirubin</td>
-      <td>float64</td>
-      <td>312</td>
-      <td>312</td>
-      <td>0</td>
-      <td>1.000000</td>
-    </tr>
-    <tr>
-      <th>10</th>
-      <td>Cholesterol</td>
-      <td>float64</td>
-      <td>312</td>
-      <td>284</td>
-      <td>28</td>
-      <td>0.910256</td>
-    </tr>
-    <tr>
-      <th>11</th>
-      <td>Albumin</td>
-      <td>float64</td>
-      <td>312</td>
-      <td>312</td>
-      <td>0</td>
-      <td>1.000000</td>
-    </tr>
-    <tr>
-      <th>12</th>
-      <td>Copper</td>
-      <td>float64</td>
-      <td>312</td>
-      <td>310</td>
-      <td>2</td>
-      <td>0.993590</td>
-    </tr>
-    <tr>
-      <th>13</th>
-      <td>Alk_Phos</td>
-      <td>float64</td>
-      <td>312</td>
-      <td>312</td>
-      <td>0</td>
-      <td>1.000000</td>
-    </tr>
-    <tr>
-      <th>14</th>
-      <td>SGOT</td>
-      <td>float64</td>
-      <td>312</td>
-      <td>312</td>
-      <td>0</td>
-      <td>1.000000</td>
-    </tr>
-    <tr>
-      <th>15</th>
-      <td>Tryglicerides</td>
-      <td>float64</td>
-      <td>312</td>
-      <td>282</td>
-      <td>30</td>
-      <td>0.903846</td>
-    </tr>
-    <tr>
-      <th>16</th>
-      <td>Platelets</td>
-      <td>float64</td>
-      <td>312</td>
-      <td>308</td>
-      <td>4</td>
-      <td>0.987179</td>
-    </tr>
-    <tr>
-      <th>17</th>
-      <td>Prothrombin</td>
-      <td>float64</td>
       <td>312</td>
       <td>312</td>
       <td>0</td>
@@ -2442,7 +2490,7 @@ cleaned_column_quality_summary = pd.DataFrame(zip(list(cirrhosis_survival_cleane
                                                  'Row.Count',
                                                  'Non.Null.Count',
                                                  'Null.Count'])
-display(cleaned_column_quality_summary)
+display(cleaned_column_quality_summary.sort_values(by=['Null.Count'], ascending=False))
 ```
 
 
@@ -2473,84 +2521,12 @@ display(cleaned_column_quality_summary)
   </thead>
   <tbody>
     <tr>
-      <th>0</th>
-      <td>N_Days</td>
-      <td>int64</td>
-      <td>312</td>
-      <td>312</td>
-      <td>0</td>
-    </tr>
-    <tr>
-      <th>1</th>
-      <td>Status</td>
-      <td>object</td>
-      <td>312</td>
-      <td>312</td>
-      <td>0</td>
-    </tr>
-    <tr>
-      <th>2</th>
-      <td>Drug</td>
-      <td>object</td>
-      <td>312</td>
-      <td>312</td>
-      <td>0</td>
-    </tr>
-    <tr>
-      <th>3</th>
-      <td>Age</td>
-      <td>int64</td>
-      <td>312</td>
-      <td>312</td>
-      <td>0</td>
-    </tr>
-    <tr>
-      <th>4</th>
-      <td>Sex</td>
-      <td>object</td>
-      <td>312</td>
-      <td>312</td>
-      <td>0</td>
-    </tr>
-    <tr>
-      <th>5</th>
-      <td>Ascites</td>
-      <td>object</td>
-      <td>312</td>
-      <td>312</td>
-      <td>0</td>
-    </tr>
-    <tr>
-      <th>6</th>
-      <td>Hepatomegaly</td>
-      <td>object</td>
-      <td>312</td>
-      <td>312</td>
-      <td>0</td>
-    </tr>
-    <tr>
-      <th>7</th>
-      <td>Spiders</td>
-      <td>object</td>
-      <td>312</td>
-      <td>312</td>
-      <td>0</td>
-    </tr>
-    <tr>
-      <th>8</th>
-      <td>Edema</td>
-      <td>object</td>
-      <td>312</td>
-      <td>312</td>
-      <td>0</td>
-    </tr>
-    <tr>
-      <th>9</th>
-      <td>Bilirubin</td>
+      <th>15</th>
+      <td>Tryglicerides</td>
       <td>float64</td>
       <td>312</td>
-      <td>312</td>
-      <td>0</td>
+      <td>282</td>
+      <td>30</td>
     </tr>
     <tr>
       <th>10</th>
@@ -2561,12 +2537,12 @@ display(cleaned_column_quality_summary)
       <td>28</td>
     </tr>
     <tr>
-      <th>11</th>
-      <td>Albumin</td>
+      <th>16</th>
+      <td>Platelets</td>
       <td>float64</td>
       <td>312</td>
-      <td>312</td>
-      <td>0</td>
+      <td>308</td>
+      <td>4</td>
     </tr>
     <tr>
       <th>12</th>
@@ -2577,8 +2553,16 @@ display(cleaned_column_quality_summary)
       <td>2</td>
     </tr>
     <tr>
-      <th>13</th>
-      <td>Alk_Phos</td>
+      <th>0</th>
+      <td>N_Days</td>
+      <td>int64</td>
+      <td>312</td>
+      <td>312</td>
+      <td>0</td>
+    </tr>
+    <tr>
+      <th>17</th>
+      <td>Prothrombin</td>
       <td>float64</td>
       <td>312</td>
       <td>312</td>
@@ -2593,25 +2577,89 @@ display(cleaned_column_quality_summary)
       <td>0</td>
     </tr>
     <tr>
-      <th>15</th>
-      <td>Tryglicerides</td>
+      <th>13</th>
+      <td>Alk_Phos</td>
       <td>float64</td>
       <td>312</td>
-      <td>282</td>
-      <td>30</td>
+      <td>312</td>
+      <td>0</td>
     </tr>
     <tr>
-      <th>16</th>
-      <td>Platelets</td>
+      <th>11</th>
+      <td>Albumin</td>
       <td>float64</td>
       <td>312</td>
-      <td>308</td>
-      <td>4</td>
+      <td>312</td>
+      <td>0</td>
     </tr>
     <tr>
-      <th>17</th>
-      <td>Prothrombin</td>
+      <th>9</th>
+      <td>Bilirubin</td>
       <td>float64</td>
+      <td>312</td>
+      <td>312</td>
+      <td>0</td>
+    </tr>
+    <tr>
+      <th>1</th>
+      <td>Status</td>
+      <td>object</td>
+      <td>312</td>
+      <td>312</td>
+      <td>0</td>
+    </tr>
+    <tr>
+      <th>8</th>
+      <td>Edema</td>
+      <td>object</td>
+      <td>312</td>
+      <td>312</td>
+      <td>0</td>
+    </tr>
+    <tr>
+      <th>7</th>
+      <td>Spiders</td>
+      <td>object</td>
+      <td>312</td>
+      <td>312</td>
+      <td>0</td>
+    </tr>
+    <tr>
+      <th>6</th>
+      <td>Hepatomegaly</td>
+      <td>object</td>
+      <td>312</td>
+      <td>312</td>
+      <td>0</td>
+    </tr>
+    <tr>
+      <th>5</th>
+      <td>Ascites</td>
+      <td>object</td>
+      <td>312</td>
+      <td>312</td>
+      <td>0</td>
+    </tr>
+    <tr>
+      <th>4</th>
+      <td>Sex</td>
+      <td>object</td>
+      <td>312</td>
+      <td>312</td>
+      <td>0</td>
+    </tr>
+    <tr>
+      <th>3</th>
+      <td>Age</td>
+      <td>int64</td>
+      <td>312</td>
+      <td>312</td>
+      <td>0</td>
+    </tr>
+    <tr>
+      <th>2</th>
+      <td>Drug</td>
+      <td>object</td>
       <td>312</td>
       <td>312</td>
       <td>0</td>
@@ -3288,7 +3336,7 @@ numeric_column_outlier_summary = pd.DataFrame(zip(numeric_variable_name_list,
                                                  'Outlier.Count',
                                                  'Row.Count',
                                                  'Outlier.Ratio'])
-display(numeric_column_outlier_summary)
+display(numeric_column_outlier_summary.sort_values(by=['Outlier.Count'], ascending=False))
 ```
 
 
@@ -3319,20 +3367,12 @@ display(numeric_column_outlier_summary)
   </thead>
   <tbody>
     <tr>
-      <th>0</th>
-      <td>N_Days</td>
-      <td>0.372897</td>
-      <td>0</td>
+      <th>6</th>
+      <td>Alk_Phos</td>
+      <td>2.987109</td>
+      <td>35</td>
       <td>311</td>
-      <td>0.000000</td>
-    </tr>
-    <tr>
-      <th>1</th>
-      <td>Age</td>
-      <td>0.167578</td>
-      <td>1</td>
-      <td>311</td>
-      <td>0.003215</td>
+      <td>0.112540</td>
     </tr>
     <tr>
       <th>2</th>
@@ -3351,14 +3391,6 @@ display(numeric_column_outlier_summary)
       <td>0.070740</td>
     </tr>
     <tr>
-      <th>4</th>
-      <td>Albumin</td>
-      <td>-0.581905</td>
-      <td>11</td>
-      <td>311</td>
-      <td>0.035370</td>
-    </tr>
-    <tr>
       <th>5</th>
       <td>Copper</td>
       <td>2.319390</td>
@@ -3367,20 +3399,12 @@ display(numeric_column_outlier_summary)
       <td>0.054662</td>
     </tr>
     <tr>
-      <th>6</th>
-      <td>Alk_Phos</td>
-      <td>2.987109</td>
-      <td>35</td>
+      <th>10</th>
+      <td>Prothrombin</td>
+      <td>1.749358</td>
+      <td>14</td>
       <td>311</td>
-      <td>0.112540</td>
-    </tr>
-    <tr>
-      <th>7</th>
-      <td>SGOT</td>
-      <td>1.449979</td>
-      <td>7</td>
-      <td>311</td>
-      <td>0.022508</td>
+      <td>0.045016</td>
     </tr>
     <tr>
       <th>8</th>
@@ -3391,6 +3415,22 @@ display(numeric_column_outlier_summary)
       <td>0.041801</td>
     </tr>
     <tr>
+      <th>4</th>
+      <td>Albumin</td>
+      <td>-0.581905</td>
+      <td>11</td>
+      <td>311</td>
+      <td>0.035370</td>
+    </tr>
+    <tr>
+      <th>7</th>
+      <td>SGOT</td>
+      <td>1.449979</td>
+      <td>7</td>
+      <td>311</td>
+      <td>0.022508</td>
+    </tr>
+    <tr>
       <th>9</th>
       <td>Platelets</td>
       <td>0.356677</td>
@@ -3399,12 +3439,20 @@ display(numeric_column_outlier_summary)
       <td>0.012862</td>
     </tr>
     <tr>
-      <th>10</th>
-      <td>Prothrombin</td>
-      <td>1.749358</td>
-      <td>14</td>
+      <th>1</th>
+      <td>Age</td>
+      <td>0.167578</td>
+      <td>1</td>
       <td>311</td>
-      <td>0.045016</td>
+      <td>0.003215</td>
+    </tr>
+    <tr>
+      <th>0</th>
+      <td>N_Days</td>
+      <td>0.372897</td>
+      <td>0</td>
+      <td>311</td>
+      <td>0.000000</td>
     </tr>
     <tr>
       <th>11</th>
@@ -3499,6 +3547,251 @@ for column in cirrhosis_survival_imputed_numeric:
 
     
 ![png](output_92_11.png)
+    
+
+
+### 1.4.4 Collinearity <a class="anchor" id="1.4.4"></a>
+
+[Pearson’s Correlation Coefficient](https://royalsocietypublishing.org/doi/10.1098/rsta.1896.0007) is a parametric measure of the linear correlation for a pair of features by calculating the ratio between their covariance and the product of their standard deviations. The presence of high absolute correlation values indicate the univariate association between the numeric predictors and the numeric response.
+
+1. All numeric variables were retained since majority reported sufficiently moderate and statistically significant correlation with no excessive multicollinearity.
+2. Among pairwise combinations of numeric variables, the highest Pearson.Correlation.Coefficient values were noted for:
+    * <span style="color: #FF0000">Birilubin</span> and <span style="color: #FF0000">Copper</span>: Pearson.Correlation.Coefficient = +0.456
+    * <span style="color: #FF0000">Birilubin</span> and <span style="color: #FF0000">SGOT</span>: Pearson.Correlation.Coefficient = +0.444
+    * <span style="color: #FF0000">Birilubin</span> and <span style="color: #FF0000">Tryglicerides</span>: Pearson.Correlation.Coefficient = +0.437
+    * <span style="color: #FF0000">Birilubin</span> and <span style="color: #FF0000">Cholesterol</span>: Pearson.Correlation.Coefficient = +0.416
+
+
+```python
+##################################
+# Formulating a function 
+# to plot the correlation matrix
+# for all pairwise combinations
+# of numeric columns
+##################################
+def plot_correlation_matrix(corr, mask=None):
+    f, ax = plt.subplots(figsize=(11, 9))
+    sns.heatmap(corr, 
+                ax=ax,
+                mask=mask,
+                annot=True, 
+                vmin=-1, 
+                vmax=1, 
+                center=0,
+                cmap='coolwarm', 
+                linewidths=1, 
+                linecolor='gray', 
+                cbar_kws={'orientation': 'horizontal'}) 
+```
+
+
+```python
+##################################
+# Computing the correlation coefficients
+# and correlation p-values
+# among pairs of numeric columns
+##################################
+cirrhosis_survival_imputed_numeric_correlation_pairs = {}
+cirrhosis_survival_imputed_numeric_columns = cirrhosis_survival_imputed_numeric.columns.tolist()
+for numeric_column_a, numeric_column_b in itertools.combinations(cirrhosis_survival_imputed_numeric_columns, 2):
+    cirrhosis_survival_imputed_numeric_correlation_pairs[numeric_column_a + '_' + numeric_column_b] = stats.pearsonr(
+        cirrhosis_survival_imputed_numeric.loc[:, numeric_column_a], 
+        cirrhosis_survival_imputed_numeric.loc[:, numeric_column_b])
+```
+
+
+```python
+##################################
+# Formulating the pairwise correlation summary
+# for all numeric columns
+##################################
+cirrhosis_survival_imputed_numeric_summary = cirrhosis_survival_imputed_numeric.from_dict(cirrhosis_survival_imputed_numeric_correlation_pairs, orient='index')
+cirrhosis_survival_imputed_numeric_summary.columns = ['Pearson.Correlation.Coefficient', 'Correlation.PValue']
+display(cirrhosis_survival_imputed_numeric_summary.sort_values(by=['Pearson.Correlation.Coefficient'], ascending=False).head(20))
+```
+
+
+<div>
+<style scoped>
+    .dataframe tbody tr th:only-of-type {
+        vertical-align: middle;
+    }
+
+    .dataframe tbody tr th {
+        vertical-align: top;
+    }
+
+    .dataframe thead th {
+        text-align: right;
+    }
+</style>
+<table border="1" class="dataframe">
+  <thead>
+    <tr style="text-align: right;">
+      <th></th>
+      <th>Pearson.Correlation.Coefficient</th>
+      <th>Correlation.PValue</th>
+    </tr>
+  </thead>
+  <tbody>
+    <tr>
+      <th>Bilirubin_Copper</th>
+      <td>0.456480</td>
+      <td>2.057795e-17</td>
+    </tr>
+    <tr>
+      <th>Bilirubin_SGOT</th>
+      <td>0.444043</td>
+      <td>1.852208e-16</td>
+    </tr>
+    <tr>
+      <th>Bilirubin_Tryglicerides</th>
+      <td>0.437218</td>
+      <td>5.956896e-16</td>
+    </tr>
+    <tr>
+      <th>Bilirubin_Cholesterol</th>
+      <td>0.416075</td>
+      <td>1.888065e-14</td>
+    </tr>
+    <tr>
+      <th>Cholesterol_SGOT</th>
+      <td>0.359592</td>
+      <td>6.324822e-11</td>
+    </tr>
+    <tr>
+      <th>Bilirubin_Prothrombin</th>
+      <td>0.354754</td>
+      <td>1.181651e-10</td>
+    </tr>
+    <tr>
+      <th>Copper_SGOT</th>
+      <td>0.293139</td>
+      <td>1.403023e-07</td>
+    </tr>
+    <tr>
+      <th>Cholesterol_Tryglicerides</th>
+      <td>0.286235</td>
+      <td>2.816557e-07</td>
+    </tr>
+    <tr>
+      <th>Copper_Tryglicerides</th>
+      <td>0.285441</td>
+      <td>3.047992e-07</td>
+    </tr>
+    <tr>
+      <th>Copper_Stage</th>
+      <td>0.268252</td>
+      <td>1.587568e-06</td>
+    </tr>
+    <tr>
+      <th>Prothrombin_Stage</th>
+      <td>0.257093</td>
+      <td>4.367792e-06</td>
+    </tr>
+    <tr>
+      <th>Bilirubin_Stage</th>
+      <td>0.235346</td>
+      <td>2.756487e-05</td>
+    </tr>
+    <tr>
+      <th>Copper_Prothrombin</th>
+      <td>0.216772</td>
+      <td>1.165157e-04</td>
+    </tr>
+    <tr>
+      <th>N_Days_Prothrombin</th>
+      <td>0.207582</td>
+      <td>2.275995e-04</td>
+    </tr>
+    <tr>
+      <th>Albumin_Platelets</th>
+      <td>0.204838</td>
+      <td>2.764242e-04</td>
+    </tr>
+    <tr>
+      <th>Copper_Alk_Phos</th>
+      <td>0.188146</td>
+      <td>8.546790e-04</td>
+    </tr>
+    <tr>
+      <th>Cholesterol_Platelets</th>
+      <td>0.186060</td>
+      <td>9.778573e-04</td>
+    </tr>
+    <tr>
+      <th>Alk_Phos_Tryglicerides</th>
+      <td>0.184062</td>
+      <td>1.110965e-03</td>
+    </tr>
+    <tr>
+      <th>SGOT_Stage</th>
+      <td>0.164321</td>
+      <td>3.661498e-03</td>
+    </tr>
+    <tr>
+      <th>Alk_Phos_Platelets</th>
+      <td>0.146265</td>
+      <td>9.796766e-03</td>
+    </tr>
+  </tbody>
+</table>
+</div>
+
+
+
+```python
+##################################
+# Plotting the correlation matrix
+# for all pairwise combinations
+# of numeric columns
+##################################
+cirrhosis_survival_imputed_numeric_correlation = cirrhosis_survival_imputed_numeric.corr()
+mask = np.triu(cirrhosis_survival_imputed_numeric_correlation)
+plot_correlation_matrix(cirrhosis_survival_imputed_numeric_correlation,mask)
+plt.show()
+```
+
+
+    
+![png](output_97_0.png)
+    
+
+
+
+```python
+##################################
+# Formulating a function 
+# to plot the correlation matrix
+# for all pairwise combinations
+# of numeric columns
+# with significant p-values only
+##################################
+def correlation_significance(df=None):
+    p_matrix = np.zeros(shape=(df.shape[1],df.shape[1]))
+    for col in df.columns:
+        for col2 in df.drop(col,axis=1).columns:
+            _ , p = stats.pearsonr(df[col],df[col2])
+            p_matrix[df.columns.to_list().index(col),df.columns.to_list().index(col2)] = p
+    return p_matrix
+```
+
+
+```python
+##################################
+# Plotting the correlation matrix
+# for all pairwise combinations
+# of numeric columns
+# with significant p-values only
+##################################
+cirrhosis_survival_imputed_numeric_correlation_p_values = correlation_significance(cirrhosis_survival_imputed_numeric)                     
+mask = np.invert(np.tril(cirrhosis_survival_imputed_numeric_correlation_p_values<0.05)) 
+plot_correlation_matrix(cirrhosis_survival_imputed_numeric_correlation,mask)
+```
+
+
+    
+![png](output_99_0.png)
     
 
 
