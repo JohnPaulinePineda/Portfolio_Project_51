@@ -3795,6 +3795,372 @@ plot_correlation_matrix(cirrhosis_survival_imputed_numeric_correlation,mask)
     
 
 
+### 1.4.5 Shape Transformation <a class="anchor" id="1.4.5"></a>
+
+[Yeo-Johnson Transformation](https://academic.oup.com/biomet/article-abstract/87/4/954/232908?redirectedFrom=fulltext&login=false) applies a new family of distributions that can be used without restrictions, extending many of the good properties of the Box-Cox power family. Similar to the Box-Cox transformation, the method also estimates the optimal value of lambda but has the ability to transform both positive and negative values by inflating low variance data and deflating high variance data to create a more uniform data set. While there are no restrictions in terms of the applicable values, the interpretability of the transformed values is more diminished as compared to the other methods.
+
+1. A Yeo-Johnson transformation was applied to all numeric variables to improve distributional shape.
+2. Most variables achieved symmetrical distributions with minimal outliers after transformation.
+    * <span style="color: #FF0000">Cholesterol</span>: Outlier.Count = 11, Outlier.Ratio = 0.035, Skewness=-0.059
+    * <span style="color: #FF0000">Albumin</span>: Outlier.Count = 6, Outlier.Ratio = 0.019, Skewness=+0.020
+    * <span style="color: #FF0000">Tryglicerides</span>: Outlier.Count = 6, Outlier.Ratio = 0.019, Skewness=-0.008
+    * <span style="color: #FF0000">Copper</span>: Outlier.Count = 3, Outlier.Ratio = 0.010, Skewness=-0.001
+    * <span style="color: #FF0000">SGOT</span>: Outlier.Count = 3, Outlier.Ratio = 0.010, Skewness=-0.001
+    * <span style="color: #FF0000">Alk_Phos</span>: Outlier.Count = 2, Outlier.Ratio = 0.006, Skewness=+0.010
+    * <span style="color: #FF0000">Platelets</span>: Outlier.Count = 1, Outlier.Ratio = 0.003, Skewness=+0.022
+    * <span style="color: #FF0000">Age</span>: Outlier.Count = 1, Outlier.Ratio = 0.003, Skewness=+0.167
+
+
+
+```python
+predictors_with_outliers = ['Bilirubin','Cholesterol','Albumin','Copper','Alk_Phos','SGOT','Tryglicerides','Platelets']
+cirrhosis_survival_imputed_numeric_with_outliers = cirrhosis_survival_imputed_numeric[predictors_with_outliers]
+```
+
+
+```python
+##################################
+# Conducting a Yeo-Johnson Transformation
+# to address the distributional
+# shape of the variables
+##################################
+yeo_johnson_transformer = PowerTransformer(method='yeo-johnson',
+                                          standardize=False)
+cirrhosis_survival_imputed_numeric_with_outliers_array = yeo_johnson_transformer.fit_transform(cirrhosis_survival_imputed_numeric_with_outliers)
+```
+
+
+```python
+##################################
+# Formulating a new dataset object
+# for the transformed data
+##################################
+cirrhosis_survival_transformed_numeric_with_outliers = pd.DataFrame(cirrhosis_survival_imputed_numeric_with_outliers_array,
+                                                                    columns=cirrhosis_survival_imputed_numeric_with_outliers.columns)
+cirrhosis_survival_transformed_numeric = pd.concat([cirrhosis_survival_imputed_numeric[['N_Days','Age']],cirrhosis_survival_transformed_numeric_with_outliers], axis=1)
+```
+
+
+```python
+cirrhosis_survival_transformed_numeric.head()
+```
+
+
+
+
+<div>
+<style scoped>
+    .dataframe tbody tr th:only-of-type {
+        vertical-align: middle;
+    }
+
+    .dataframe tbody tr th {
+        vertical-align: top;
+    }
+
+    .dataframe thead th {
+        text-align: right;
+    }
+</style>
+<table border="1" class="dataframe">
+  <thead>
+    <tr style="text-align: right;">
+      <th></th>
+      <th>N_Days</th>
+      <th>Age</th>
+      <th>Bilirubin</th>
+      <th>Cholesterol</th>
+      <th>Albumin</th>
+      <th>Copper</th>
+      <th>Alk_Phos</th>
+      <th>SGOT</th>
+      <th>Tryglicerides</th>
+      <th>Platelets</th>
+    </tr>
+  </thead>
+  <tbody>
+    <tr>
+      <th>1</th>
+      <td>400.0</td>
+      <td>21464.0</td>
+      <td>0.619732</td>
+      <td>1.432144</td>
+      <td>21.485967</td>
+      <td>6.266174</td>
+      <td>2.164598</td>
+      <td>5.145246</td>
+      <td>2.596994</td>
+      <td>35.866346</td>
+    </tr>
+    <tr>
+      <th>2</th>
+      <td>4500.0</td>
+      <td>20617.0</td>
+      <td>0.689000</td>
+      <td>1.440905</td>
+      <td>11.135260</td>
+      <td>4.717665</td>
+      <td>2.267788</td>
+      <td>4.579478</td>
+      <td>2.781609</td>
+      <td>40.648181</td>
+    </tr>
+    <tr>
+      <th>3</th>
+      <td>1012.0</td>
+      <td>25594.0</td>
+      <td>0.847264</td>
+      <td>1.443980</td>
+      <td>22.157066</td>
+      <td>5.752213</td>
+      <td>2.181419</td>
+      <td>5.349723</td>
+      <td>2.696238</td>
+      <td>33.497223</td>
+    </tr>
+    <tr>
+      <th>4</th>
+      <td>1925.0</td>
+      <td>19994.0</td>
+      <td>0.463815</td>
+      <td>1.441293</td>
+      <td>28.789864</td>
+      <td>4.411479</td>
+      <td>2.200631</td>
+      <td>5.104434</td>
+      <td>2.647759</td>
+      <td>50.186573</td>
+    </tr>
+    <tr>
+      <th>5</th>
+      <td>1504.0</td>
+      <td>13918.0</td>
+      <td>0.525336</td>
+      <td>1.446977</td>
+      <td>30.578643</td>
+      <td>4.459750</td>
+      <td>2.193314</td>
+      <td>4.575880</td>
+      <td>3.040744</td>
+      <td>43.618671</td>
+    </tr>
+  </tbody>
+</table>
+</div>
+
+
+
+
+```python
+##################################
+# Formulating the individual boxplots
+# for all transformed numeric columns
+##################################
+for column in cirrhosis_survival_transformed_numeric:
+        plt.figure(figsize=(17,1))
+        sns.boxplot(data=cirrhosis_survival_transformed_numeric, x=column)
+```
+
+
+    
+![png](output_105_0.png)
+    
+
+
+
+    
+![png](output_105_1.png)
+    
+
+
+
+    
+![png](output_105_2.png)
+    
+
+
+
+    
+![png](output_105_3.png)
+    
+
+
+
+    
+![png](output_105_4.png)
+    
+
+
+
+    
+![png](output_105_5.png)
+    
+
+
+
+    
+![png](output_105_6.png)
+    
+
+
+
+    
+![png](output_105_7.png)
+    
+
+
+
+    
+![png](output_105_8.png)
+    
+
+
+
+    
+![png](output_105_9.png)
+    
+
+
+
+```python
+##################################
+# Formulating the outlier summary
+# for all numeric columns
+##################################
+numeric_variable_name_list = list(cirrhosis_survival_transformed_numeric.columns)
+numeric_skewness_list = cirrhosis_survival_transformed_numeric.skew()
+cirrhosis_survival_transformed_numeric_q1 = cirrhosis_survival_transformed_numeric.quantile(0.25)
+cirrhosis_survival_transformed_numeric_q3 = cirrhosis_survival_transformed_numeric.quantile(0.75)
+cirrhosis_survival_transformed_numeric_iqr = cirrhosis_survival_transformed_numeric_q3 - cirrhosis_survival_transformed_numeric_q1
+numeric_outlier_count_list = ((cirrhosis_survival_transformed_numeric < (cirrhosis_survival_transformed_numeric_q1 - 1.5 * cirrhosis_survival_transformed_numeric_iqr)) | (cirrhosis_survival_transformed_numeric > (cirrhosis_survival_transformed_numeric_q3 + 1.5 * cirrhosis_survival_transformed_numeric_iqr))).sum()
+numeric_row_count_list = list([len(cirrhosis_survival_transformed_numeric)] * len(cirrhosis_survival_transformed_numeric.columns))
+numeric_outlier_ratio_list = map(truediv, numeric_outlier_count_list, numeric_row_count_list)
+
+numeric_column_outlier_summary = pd.DataFrame(zip(numeric_variable_name_list,
+                                                  numeric_skewness_list,
+                                                  numeric_outlier_count_list,
+                                                  numeric_row_count_list,
+                                                  numeric_outlier_ratio_list), 
+                                        columns=['Numeric.Column.Name',
+                                                 'Skewness',
+                                                 'Outlier.Count',
+                                                 'Row.Count',
+                                                 'Outlier.Ratio'])
+display(numeric_column_outlier_summary.sort_values(by=['Outlier.Count'], ascending=False))
+```
+
+
+<div>
+<style scoped>
+    .dataframe tbody tr th:only-of-type {
+        vertical-align: middle;
+    }
+
+    .dataframe tbody tr th {
+        vertical-align: top;
+    }
+
+    .dataframe thead th {
+        text-align: right;
+    }
+</style>
+<table border="1" class="dataframe">
+  <thead>
+    <tr style="text-align: right;">
+      <th></th>
+      <th>Numeric.Column.Name</th>
+      <th>Skewness</th>
+      <th>Outlier.Count</th>
+      <th>Row.Count</th>
+      <th>Outlier.Ratio</th>
+    </tr>
+  </thead>
+  <tbody>
+    <tr>
+      <th>3</th>
+      <td>Cholesterol</td>
+      <td>-0.059158</td>
+      <td>11</td>
+      <td>312</td>
+      <td>0.035256</td>
+    </tr>
+    <tr>
+      <th>4</th>
+      <td>Albumin</td>
+      <td>0.020584</td>
+      <td>6</td>
+      <td>312</td>
+      <td>0.019231</td>
+    </tr>
+    <tr>
+      <th>8</th>
+      <td>Tryglicerides</td>
+      <td>-0.008452</td>
+      <td>6</td>
+      <td>312</td>
+      <td>0.019231</td>
+    </tr>
+    <tr>
+      <th>5</th>
+      <td>Copper</td>
+      <td>-0.000884</td>
+      <td>3</td>
+      <td>312</td>
+      <td>0.009615</td>
+    </tr>
+    <tr>
+      <th>7</th>
+      <td>SGOT</td>
+      <td>-0.000418</td>
+      <td>3</td>
+      <td>312</td>
+      <td>0.009615</td>
+    </tr>
+    <tr>
+      <th>6</th>
+      <td>Alk_Phos</td>
+      <td>0.010346</td>
+      <td>2</td>
+      <td>312</td>
+      <td>0.006410</td>
+    </tr>
+    <tr>
+      <th>1</th>
+      <td>Age</td>
+      <td>0.167578</td>
+      <td>1</td>
+      <td>312</td>
+      <td>0.003205</td>
+    </tr>
+    <tr>
+      <th>9</th>
+      <td>Platelets</td>
+      <td>-0.022121</td>
+      <td>1</td>
+      <td>312</td>
+      <td>0.003205</td>
+    </tr>
+    <tr>
+      <th>0</th>
+      <td>N_Days</td>
+      <td>0.372897</td>
+      <td>0</td>
+      <td>312</td>
+      <td>0.000000</td>
+    </tr>
+    <tr>
+      <th>2</th>
+      <td>Bilirubin</td>
+      <td>0.254036</td>
+      <td>0</td>
+      <td>312</td>
+      <td>0.000000</td>
+    </tr>
+  </tbody>
+</table>
+</div>
+
+
 # 2. Summary <a class="anchor" id="Summary"></a>
 
 # 3. References <a class="anchor" id="References"></a>
