@@ -86,7 +86,7 @@ The predictor variables for the study are:
     * **20 columns** (variables)
         * **1/20 metadata** (object)
             * <span style="color: #FF0000">ID</span>
-        * **2/20 target | duration** (categorical | numeric)
+        * **2/20 target | duration** (object | numeric)
              * <span style="color: #FF0000">Status</span>
              * <span style="color: #FF0000">N_Days</span>
         * **10/20 predictor** (numeric)
@@ -100,7 +100,7 @@ The predictor variables for the study are:
              * <span style="color: #FF0000">Triglycerides</span>
              * <span style="color: #FF0000">Platelets</span>
              * <span style="color: #FF0000">Prothrombin</span>
-        * **7/20 predictor** (categorical)
+        * **7/20 predictor** (object)
              * <span style="color: #FF0000">Drug</span>
              * <span style="color: #FF0000">Sex</span>
              * <span style="color: #FF0000">Ascites</span>
@@ -552,11 +552,11 @@ display(cirrhosis_survival.describe(include='number').transpose())
 ##################################
 # Performing a general exploration of the object variables
 ##################################
-print('Categorical Variable Summary:')
+print('object Variable Summary:')
 display(cirrhosis_survival.describe(include='object').transpose())
 ```
 
-    Categorical Variable Summary:
+    object Variable Summary:
     
 
 
@@ -663,7 +663,7 @@ Data quality findings based on assessment are as follows:
     * <span style="color: #FF0000">Platelets</span>: Null.Count = 11, Fill.Rate = 0.974
     * <span style="color: #FF0000">Stage</span>: Null.Count = 6, Fill.Rate = 0.986
     * <span style="color: #FF0000">Prothrombin</span>: Null.Count = 2, Fill.Rate = 0.995
-3. 142 observations noted with at least 1 missing data. From this number, 14 observations reported high Missing.Rate>0.2.
+3. 142 observations noted with at least 1 missing data. From this number, 106 observations reported high Missing.Rate>0.4.
     * 91 Observations: Missing.Rate = 0.450 (9 columns)
     * 15 Observations: Missing.Rate = 0.500 (10 columns)
     * 28 Observations: Missing.Rate = 0.100 (2 columns)
@@ -2178,9 +2178,13 @@ len(object_column_quality_summary[(object_column_quality_summary['Unique.Count.R
 
 
 
-### 1.3.3. Data Preprocessing <a class="anchor" id="1.3.3"></a>
+## 1.4. Data Preprocessing <a class="anchor" id="1.4"></a>
 
-#### 1.3.3.1 Data Cleaning <a class="anchor" id="1.3.3.1"></a>
+### 1.4.1 Data Cleaning <a class="anchor" id="1.4.1"></a>
+
+1. Subsets of rows with high rates of missing data were removed from the dataset:
+    * 106 rows with Missing.Rate>0.4 were exluded for subsequent analysis.
+2. No variables were removed due to zero or near-zero variance.
 
 
 ```python
@@ -2464,7 +2468,7 @@ display(all_column_quality_summary.sort_values(['Fill.Rate'], ascending=True))
 cirrhosis_survival_cleaned = cirrhosis_survival_filtered_row
 ```
 
-#### 1.3.3.2 Missing Data Imputation <a class="anchor" id="1.3.3.2"></a>
+### 1.4.2 Missing Data Imputation <a class="anchor" id="1.4.2"></a>
 
 1. Missing data for float variables were imputed using the iterative imputer algorithm with a  linear regression estimator.
     * <span style="color: #FF0000">Tryglicerides</span>: Null.Count = 30
@@ -2679,7 +2683,7 @@ display(cleaned_column_quality_summary.sort_values(by=['Null.Count'], ascending=
 ```python
 ##################################
 # Formulating the cleaned dataset
-# with categorical columns only
+# with object columns only
 ##################################
 cirrhosis_survival_cleaned_object = cirrhosis_survival_cleaned.select_dtypes(include='object')
 cirrhosis_survival_cleaned_object.head()
@@ -3313,7 +3317,7 @@ numeric_row_count_list = list([len(cirrhosis_survival_imputed_numeric)] * len(ci
 
 ```python
 ##################################
-# Gathering the unique to count ratio for each categorical column
+# Gathering the unique to count ratio for each object column
 ##################################
 numeric_outlier_ratio_list = map(truediv, numeric_outlier_count_list, numeric_row_count_list)
 ```
@@ -4217,6 +4221,177 @@ for column in cirrhosis_survival_scaled_numeric:
     
 ![png](output_111_8.png)
     
+
+
+### 1.4.7 Data Encoding <a class="anchor" id="1.4.7"></a>
+
+1. Binary encoding was applied to a subset of target and predictor object columns in the dataset:
+    * <span style="color: #FF0000">Status</span>
+    * <span style="color: #FF0000">Drug</span>
+    * <span style="color: #FF0000">Sex</span>
+    * <span style="color: #FF0000">Ascites</span>
+    * <span style="color: #FF0000">Hepatomegaly</span>
+    * <span style="color: #FF0000">Spiders</span>
+    * <span style="color: #FF0000">Edema</span>
+1. One-hot encoding was applied to the <span style="color: #FF0000">Stage</span> variable resulting to 4 additional columns in the dataset:
+    * <span style="color: #FF0000">Stage_1.0</span>
+    * <span style="color: #FF0000">Stage_2.0</span>
+    * <span style="color: #FF0000">Stage_3.0</span>
+    * <span style="color: #FF0000">Stage_4.0</span>
+
+
+```python
+##################################
+# Applying a binary encoding transformation
+# for the two-level object columns
+##################################
+cirrhosis_survival_cleaned_object['Sex'] = cirrhosis_survival_cleaned_object['Sex'].replace({'M':0, 'F':1}) 
+cirrhosis_survival_cleaned_object['Ascites'] = cirrhosis_survival_cleaned_object['Ascites'].replace({'N':0, 'Y':1}) 
+cirrhosis_survival_cleaned_object['Drug'] = cirrhosis_survival_cleaned_object['Drug'].replace({'Placebo':0, 'D-penicillamine':1}) 
+cirrhosis_survival_cleaned_object['Hepatomegaly'] = cirrhosis_survival_cleaned_object['Hepatomegaly'].replace({'N':0, 'Y':1}) 
+cirrhosis_survival_cleaned_object['Spiders'] = cirrhosis_survival_cleaned_object['Spiders'].replace({'N':0, 'Y':1}) 
+cirrhosis_survival_cleaned_object['Edema'] = cirrhosis_survival_cleaned_object['Edema'].replace({'N':0, 'Y':1, 'S':1}) 
+cirrhosis_survival_cleaned_object['Status'] = cirrhosis_survival_cleaned_object['Status'].replace({'C':0, 'CL':0, 'D':1}) 
+```
+
+
+```python
+##################################
+# Formulating the multi-level object column stage
+# for encoding transformation
+##################################
+cirrhosis_survival_cleaned_object_stage_encoded = pd.DataFrame(cirrhosis_survival_cleaned_object.loc[:, 'Stage'].to_list(),
+                                                               columns=['Stage'])
+```
+
+
+```python
+##################################
+# Applying a one-hot encoding transformation
+# for the multi-level object column stage
+##################################
+cirrhosis_survival_cleaned_object_stage_encoded = pd.get_dummies(cirrhosis_survival_cleaned_object_stage_encoded, columns=['Stage'])
+```
+
+
+```python
+##################################
+# Applying a one-hot encoding transformation
+# for the multi-level object column stage
+##################################
+cirrhosis_survival_cleaned_encoded_object = pd.concat([cirrhosis_survival_cleaned_object.drop(['Stage'], axis=1), cirrhosis_survival_cleaned_object_stage_encoded], axis=1)
+cirrhosis_survival_cleaned_encoded_object.head()
+```
+
+
+
+
+<div>
+<style scoped>
+    .dataframe tbody tr th:only-of-type {
+        vertical-align: middle;
+    }
+
+    .dataframe tbody tr th {
+        vertical-align: top;
+    }
+
+    .dataframe thead th {
+        text-align: right;
+    }
+</style>
+<table border="1" class="dataframe">
+  <thead>
+    <tr style="text-align: right;">
+      <th></th>
+      <th>Status</th>
+      <th>Drug</th>
+      <th>Sex</th>
+      <th>Ascites</th>
+      <th>Hepatomegaly</th>
+      <th>Spiders</th>
+      <th>Edema</th>
+      <th>Stage_1.0</th>
+      <th>Stage_2.0</th>
+      <th>Stage_3.0</th>
+      <th>Stage_4.0</th>
+    </tr>
+  </thead>
+  <tbody>
+    <tr>
+      <th>1</th>
+      <td>1.0</td>
+      <td>1.0</td>
+      <td>1.0</td>
+      <td>1.0</td>
+      <td>1.0</td>
+      <td>1.0</td>
+      <td>1.0</td>
+      <td>0.0</td>
+      <td>0.0</td>
+      <td>1.0</td>
+      <td>0.0</td>
+    </tr>
+    <tr>
+      <th>2</th>
+      <td>0.0</td>
+      <td>1.0</td>
+      <td>1.0</td>
+      <td>0.0</td>
+      <td>1.0</td>
+      <td>1.0</td>
+      <td>0.0</td>
+      <td>0.0</td>
+      <td>0.0</td>
+      <td>0.0</td>
+      <td>1.0</td>
+    </tr>
+    <tr>
+      <th>3</th>
+      <td>1.0</td>
+      <td>1.0</td>
+      <td>0.0</td>
+      <td>0.0</td>
+      <td>0.0</td>
+      <td>0.0</td>
+      <td>1.0</td>
+      <td>0.0</td>
+      <td>0.0</td>
+      <td>0.0</td>
+      <td>1.0</td>
+    </tr>
+    <tr>
+      <th>4</th>
+      <td>1.0</td>
+      <td>1.0</td>
+      <td>1.0</td>
+      <td>0.0</td>
+      <td>1.0</td>
+      <td>1.0</td>
+      <td>1.0</td>
+      <td>0.0</td>
+      <td>0.0</td>
+      <td>1.0</td>
+      <td>0.0</td>
+    </tr>
+    <tr>
+      <th>5</th>
+      <td>0.0</td>
+      <td>0.0</td>
+      <td>1.0</td>
+      <td>0.0</td>
+      <td>1.0</td>
+      <td>1.0</td>
+      <td>0.0</td>
+      <td>0.0</td>
+      <td>0.0</td>
+      <td>1.0</td>
+      <td>0.0</td>
+    </tr>
+  </tbody>
+</table>
+</div>
+
 
 
 # 2. Summary <a class="anchor" id="Summary"></a>

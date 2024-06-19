@@ -14722,7 +14722,7 @@ body[data-format='mobile'] .jp-OutputArea-child .jp-OutputArea-output {
 <li><span style="color: #FF0000">ID</span></li>
 </ul>
 </li>
-<li><strong>2/20 target | duration</strong> (categorical | numeric)<ul>
+<li><strong>2/20 target | duration</strong> (object | numeric)<ul>
 <li><span style="color: #FF0000">Status</span></li>
 <li><span style="color: #FF0000">N_Days</span></li>
 </ul>
@@ -14740,7 +14740,7 @@ body[data-format='mobile'] .jp-OutputArea-child .jp-OutputArea-output {
 <li><span style="color: #FF0000">Prothrombin</span></li>
 </ul>
 </li>
-<li><strong>7/20 predictor</strong> (categorical)<ul>
+<li><strong>7/20 predictor</strong> (object)<ul>
 <li><span style="color: #FF0000">Drug</span></li>
 <li><span style="color: #FF0000">Sex</span></li>
 <li><span style="color: #FF0000">Ascites</span></li>
@@ -15402,7 +15402,7 @@ dtype: object</pre>
 <div class=" highlight hl-ipython3"><pre><span></span><span class="c1">##################################</span>
 <span class="c1"># Performing a general exploration of the object variables</span>
 <span class="c1">##################################</span>
-<span class="nb">print</span><span class="p">(</span><span class="s1">'Categorical Variable Summary:'</span><span class="p">)</span>
+<span class="nb">print</span><span class="p">(</span><span class="s1">'object Variable Summary:'</span><span class="p">)</span>
 <span class="n">display</span><span class="p">(</span><span class="n">cirrhosis_survival</span><span class="o">.</span><span class="n">describe</span><span class="p">(</span><span class="n">include</span><span class="o">=</span><span class="s1">'object'</span><span class="p">)</span><span class="o">.</span><span class="n">transpose</span><span class="p">())</span>
 </pre></div>
 
@@ -15425,7 +15425,7 @@ dtype: object</pre>
 
 
 <div class="jp-RenderedText jp-OutputArea-output" data-mime-type="text/plain">
-<pre>Categorical Variable Summary:
+<pre>object Variable Summary:
 </pre>
 </div>
 </div>
@@ -15555,7 +15555,7 @@ dtype: object</pre>
 <li><span style="color: #FF0000">Prothrombin</span>: Null.Count = 2, Fill.Rate = 0.995</li>
 </ul>
 </li>
-<li>142 observations noted with at least 1 missing data. From this number, 14 observations reported high Missing.Rate&gt;0.2.<ul>
+<li>142 observations noted with at least 1 missing data. From this number, 106 observations reported high Missing.Rate&gt;0.4.<ul>
 <li>91 Observations: Missing.Rate = 0.450 (9 columns)</li>
 <li>15 Observations: Missing.Rate = 0.500 (10 columns)</li>
 <li>28 Observations: Missing.Rate = 0.100 (2 columns)</li>
@@ -17889,7 +17889,7 @@ dtype: object</pre>
 </div>
 <div class="jp-InputArea jp-Cell-inputArea"><div class="jp-InputPrompt jp-InputArea-prompt">
 </div><div class="jp-RenderedHTMLCommon jp-RenderedMarkdown jp-MarkdownOutput " data-mime-type="text/markdown">
-<h3 id="1.3.3.-Data-Preprocessing-">1.3.3. Data Preprocessing <a class="anchor" id="1.3.3" /><a class="anchor-link" href="#1.3.3.-Data-Preprocessing-">&#182;</a></h3>
+<h2 id="1.4.-Data-Preprocessing-">1.4. Data Preprocessing <a class="anchor" id="1.4" /><a class="anchor-link" href="#1.4.-Data-Preprocessing-">&#182;</a></h2>
 </div>
 </div>
 </div>
@@ -17900,7 +17900,14 @@ dtype: object</pre>
 </div>
 <div class="jp-InputArea jp-Cell-inputArea"><div class="jp-InputPrompt jp-InputArea-prompt">
 </div><div class="jp-RenderedHTMLCommon jp-RenderedMarkdown jp-MarkdownOutput " data-mime-type="text/markdown">
-<h4 id="1.3.3.1-Data-Cleaning-">1.3.3.1 Data Cleaning <a class="anchor" id="1.3.3.1" /><a class="anchor-link" href="#1.3.3.1-Data-Cleaning-">&#182;</a></h4>
+<h3 id="1.4.1-Data-Cleaning-">1.4.1 Data Cleaning <a class="anchor" id="1.4.1" /><a class="anchor-link" href="#1.4.1-Data-Cleaning-">&#182;</a></h3><ol>
+<li>Subsets of rows with high rates of missing data were removed from the dataset:<ul>
+<li>106 rows with Missing.Rate&gt;0.4 were exluded for subsequent analysis.</li>
+</ul>
+</li>
+<li>No variables were removed due to zero or near-zero variance.</li>
+</ol>
+
 </div>
 </div>
 </div>
@@ -18327,7 +18334,7 @@ dtype: object</pre>
 </div>
 <div class="jp-InputArea jp-Cell-inputArea"><div class="jp-InputPrompt jp-InputArea-prompt">
 </div><div class="jp-RenderedHTMLCommon jp-RenderedMarkdown jp-MarkdownOutput " data-mime-type="text/markdown">
-<h4 id="1.3.3.2-Missing-Data-Imputation-">1.3.3.2 Missing Data Imputation <a class="anchor" id="1.3.3.2" /><a class="anchor-link" href="#1.3.3.2-Missing-Data-Imputation-">&#182;</a></h4><ol>
+<h3 id="1.4.2-Missing-Data-Imputation-">1.4.2 Missing Data Imputation <a class="anchor" id="1.4.2" /><a class="anchor-link" href="#1.4.2-Missing-Data-Imputation-">&#182;</a></h3><ol>
 <li>Missing data for float variables were imputed using the iterative imputer algorithm with a  linear regression estimator.<ul>
 <li><span style="color: #FF0000">Tryglicerides</span>: Null.Count = 30</li>
 <li><span style="color: #FF0000">Cholesterol</span>: Null.Count = 28</li>
@@ -18584,7 +18591,7 @@ dtype: object</pre>
      <div class="CodeMirror cm-s-jupyter">
 <div class=" highlight hl-ipython3"><pre><span></span><span class="c1">##################################</span>
 <span class="c1"># Formulating the cleaned dataset</span>
-<span class="c1"># with categorical columns only</span>
+<span class="c1"># with object columns only</span>
 <span class="c1">##################################</span>
 <span class="n">cirrhosis_survival_cleaned_object</span> <span class="o">=</span> <span class="n">cirrhosis_survival_cleaned</span><span class="o">.</span><span class="n">select_dtypes</span><span class="p">(</span><span class="n">include</span><span class="o">=</span><span class="s1">'object'</span><span class="p">)</span>
 <span class="n">cirrhosis_survival_cleaned_object</span><span class="o">.</span><span class="n">head</span><span class="p">()</span>
@@ -19468,7 +19475,7 @@ dtype: object</pre>
 <div class="jp-CodeMirrorEditor jp-Editor jp-InputArea-editor" data-type="inline">
      <div class="CodeMirror cm-s-jupyter">
 <div class=" highlight hl-ipython3"><pre><span></span><span class="c1">##################################</span>
-<span class="c1"># Gathering the unique to count ratio for each categorical column</span>
+<span class="c1"># Gathering the unique to count ratio for each object column</span>
 <span class="c1">##################################</span>
 <span class="n">numeric_outlier_ratio_list</span> <span class="o">=</span> <span class="nb">map</span><span class="p">(</span><span class="n">truediv</span><span class="p">,</span> <span class="n">numeric_outlier_count_list</span><span class="p">,</span> <span class="n">numeric_row_count_list</span><span class="p">)</span>
 </pre></div>
@@ -21077,6 +21084,252 @@ class="
 </div>
 <div class="jp-InputArea jp-Cell-inputArea"><div class="jp-InputPrompt jp-InputArea-prompt">
 </div><div class="jp-RenderedHTMLCommon jp-RenderedMarkdown jp-MarkdownOutput " data-mime-type="text/markdown">
+<h3 id="1.4.7-Data-Encoding-">1.4.7 Data Encoding <a class="anchor" id="1.4.7" /><a class="anchor-link" href="#1.4.7-Data-Encoding-">&#182;</a></h3><ol>
+<li>Binary encoding was applied to a subset of target and predictor object columns in the dataset:<ul>
+<li><span style="color: #FF0000">Status</span></li>
+<li><span style="color: #FF0000">Drug</span></li>
+<li><span style="color: #FF0000">Sex</span></li>
+<li><span style="color: #FF0000">Ascites</span></li>
+<li><span style="color: #FF0000">Hepatomegaly</span></li>
+<li><span style="color: #FF0000">Spiders</span></li>
+<li><span style="color: #FF0000">Edema</span></li>
+</ul>
+</li>
+<li>One-hot encoding was applied to the <span style="color: #FF0000">Stage</span> variable resulting to 4 additional columns in the dataset:<ul>
+<li><span style="color: #FF0000">Stage_1.0</span></li>
+<li><span style="color: #FF0000">Stage_2.0</span></li>
+<li><span style="color: #FF0000">Stage_3.0</span></li>
+<li><span style="color: #FF0000">Stage_4.0</span></li>
+</ul>
+</li>
+</ol>
+
+</div>
+</div>
+</div>
+</div><div class="jp-Cell jp-CodeCell jp-Notebook-cell jp-mod-noOutputs  ">
+<div class="jp-Cell-inputWrapper">
+<div class="jp-Collapser jp-InputCollapser jp-Cell-inputCollapser">
+</div>
+<div class="jp-InputArea jp-Cell-inputArea">
+<div class="jp-InputPrompt jp-InputArea-prompt">In&nbsp;[99]:</div>
+<div class="jp-CodeMirrorEditor jp-Editor jp-InputArea-editor" data-type="inline">
+     <div class="CodeMirror cm-s-jupyter">
+<div class=" highlight hl-ipython3"><pre><span></span><span class="c1">##################################</span>
+<span class="c1"># Applying a binary encoding transformation</span>
+<span class="c1"># for the two-level object columns</span>
+<span class="c1">##################################</span>
+<span class="n">cirrhosis_survival_cleaned_object</span><span class="p">[</span><span class="s1">'Sex'</span><span class="p">]</span> <span class="o">=</span> <span class="n">cirrhosis_survival_cleaned_object</span><span class="p">[</span><span class="s1">'Sex'</span><span class="p">]</span><span class="o">.</span><span class="n">replace</span><span class="p">({</span><span class="s1">'M'</span><span class="p">:</span><span class="mi">0</span><span class="p">,</span> <span class="s1">'F'</span><span class="p">:</span><span class="mi">1</span><span class="p">})</span> 
+<span class="n">cirrhosis_survival_cleaned_object</span><span class="p">[</span><span class="s1">'Ascites'</span><span class="p">]</span> <span class="o">=</span> <span class="n">cirrhosis_survival_cleaned_object</span><span class="p">[</span><span class="s1">'Ascites'</span><span class="p">]</span><span class="o">.</span><span class="n">replace</span><span class="p">({</span><span class="s1">'N'</span><span class="p">:</span><span class="mi">0</span><span class="p">,</span> <span class="s1">'Y'</span><span class="p">:</span><span class="mi">1</span><span class="p">})</span> 
+<span class="n">cirrhosis_survival_cleaned_object</span><span class="p">[</span><span class="s1">'Drug'</span><span class="p">]</span> <span class="o">=</span> <span class="n">cirrhosis_survival_cleaned_object</span><span class="p">[</span><span class="s1">'Drug'</span><span class="p">]</span><span class="o">.</span><span class="n">replace</span><span class="p">({</span><span class="s1">'Placebo'</span><span class="p">:</span><span class="mi">0</span><span class="p">,</span> <span class="s1">'D-penicillamine'</span><span class="p">:</span><span class="mi">1</span><span class="p">})</span> 
+<span class="n">cirrhosis_survival_cleaned_object</span><span class="p">[</span><span class="s1">'Hepatomegaly'</span><span class="p">]</span> <span class="o">=</span> <span class="n">cirrhosis_survival_cleaned_object</span><span class="p">[</span><span class="s1">'Hepatomegaly'</span><span class="p">]</span><span class="o">.</span><span class="n">replace</span><span class="p">({</span><span class="s1">'N'</span><span class="p">:</span><span class="mi">0</span><span class="p">,</span> <span class="s1">'Y'</span><span class="p">:</span><span class="mi">1</span><span class="p">})</span> 
+<span class="n">cirrhosis_survival_cleaned_object</span><span class="p">[</span><span class="s1">'Spiders'</span><span class="p">]</span> <span class="o">=</span> <span class="n">cirrhosis_survival_cleaned_object</span><span class="p">[</span><span class="s1">'Spiders'</span><span class="p">]</span><span class="o">.</span><span class="n">replace</span><span class="p">({</span><span class="s1">'N'</span><span class="p">:</span><span class="mi">0</span><span class="p">,</span> <span class="s1">'Y'</span><span class="p">:</span><span class="mi">1</span><span class="p">})</span> 
+<span class="n">cirrhosis_survival_cleaned_object</span><span class="p">[</span><span class="s1">'Edema'</span><span class="p">]</span> <span class="o">=</span> <span class="n">cirrhosis_survival_cleaned_object</span><span class="p">[</span><span class="s1">'Edema'</span><span class="p">]</span><span class="o">.</span><span class="n">replace</span><span class="p">({</span><span class="s1">'N'</span><span class="p">:</span><span class="mi">0</span><span class="p">,</span> <span class="s1">'Y'</span><span class="p">:</span><span class="mi">1</span><span class="p">,</span> <span class="s1">'S'</span><span class="p">:</span><span class="mi">1</span><span class="p">})</span> 
+<span class="n">cirrhosis_survival_cleaned_object</span><span class="p">[</span><span class="s1">'Status'</span><span class="p">]</span> <span class="o">=</span> <span class="n">cirrhosis_survival_cleaned_object</span><span class="p">[</span><span class="s1">'Status'</span><span class="p">]</span><span class="o">.</span><span class="n">replace</span><span class="p">({</span><span class="s1">'C'</span><span class="p">:</span><span class="mi">0</span><span class="p">,</span> <span class="s1">'CL'</span><span class="p">:</span><span class="mi">0</span><span class="p">,</span> <span class="s1">'D'</span><span class="p">:</span><span class="mi">1</span><span class="p">})</span> 
+</pre></div>
+
+     </div>
+</div>
+</div>
+</div>
+
+</div><div class="jp-Cell jp-CodeCell jp-Notebook-cell jp-mod-noOutputs  ">
+<div class="jp-Cell-inputWrapper">
+<div class="jp-Collapser jp-InputCollapser jp-Cell-inputCollapser">
+</div>
+<div class="jp-InputArea jp-Cell-inputArea">
+<div class="jp-InputPrompt jp-InputArea-prompt">In&nbsp;[100]:</div>
+<div class="jp-CodeMirrorEditor jp-Editor jp-InputArea-editor" data-type="inline">
+     <div class="CodeMirror cm-s-jupyter">
+<div class=" highlight hl-ipython3"><pre><span></span><span class="c1">##################################</span>
+<span class="c1"># Formulating the multi-level object column stage</span>
+<span class="c1"># for encoding transformation</span>
+<span class="c1">##################################</span>
+<span class="n">cirrhosis_survival_cleaned_object_stage_encoded</span> <span class="o">=</span> <span class="n">pd</span><span class="o">.</span><span class="n">DataFrame</span><span class="p">(</span><span class="n">cirrhosis_survival_cleaned_object</span><span class="o">.</span><span class="n">loc</span><span class="p">[:,</span> <span class="s1">'Stage'</span><span class="p">]</span><span class="o">.</span><span class="n">to_list</span><span class="p">(),</span>
+                                                               <span class="n">columns</span><span class="o">=</span><span class="p">[</span><span class="s1">'Stage'</span><span class="p">])</span>
+</pre></div>
+
+     </div>
+</div>
+</div>
+</div>
+
+</div><div class="jp-Cell jp-CodeCell jp-Notebook-cell jp-mod-noOutputs  ">
+<div class="jp-Cell-inputWrapper">
+<div class="jp-Collapser jp-InputCollapser jp-Cell-inputCollapser">
+</div>
+<div class="jp-InputArea jp-Cell-inputArea">
+<div class="jp-InputPrompt jp-InputArea-prompt">In&nbsp;[101]:</div>
+<div class="jp-CodeMirrorEditor jp-Editor jp-InputArea-editor" data-type="inline">
+     <div class="CodeMirror cm-s-jupyter">
+<div class=" highlight hl-ipython3"><pre><span></span><span class="c1">##################################</span>
+<span class="c1"># Applying a one-hot encoding transformation</span>
+<span class="c1"># for the multi-level object column stage</span>
+<span class="c1">##################################</span>
+<span class="n">cirrhosis_survival_cleaned_object_stage_encoded</span> <span class="o">=</span> <span class="n">pd</span><span class="o">.</span><span class="n">get_dummies</span><span class="p">(</span><span class="n">cirrhosis_survival_cleaned_object_stage_encoded</span><span class="p">,</span> <span class="n">columns</span><span class="o">=</span><span class="p">[</span><span class="s1">'Stage'</span><span class="p">])</span>
+</pre></div>
+
+     </div>
+</div>
+</div>
+</div>
+
+</div><div class="jp-Cell jp-CodeCell jp-Notebook-cell   ">
+<div class="jp-Cell-inputWrapper">
+<div class="jp-Collapser jp-InputCollapser jp-Cell-inputCollapser">
+</div>
+<div class="jp-InputArea jp-Cell-inputArea">
+<div class="jp-InputPrompt jp-InputArea-prompt">In&nbsp;[102]:</div>
+<div class="jp-CodeMirrorEditor jp-Editor jp-InputArea-editor" data-type="inline">
+     <div class="CodeMirror cm-s-jupyter">
+<div class=" highlight hl-ipython3"><pre><span></span><span class="c1">##################################</span>
+<span class="c1"># Applying a one-hot encoding transformation</span>
+<span class="c1"># for the multi-level object column stage</span>
+<span class="c1">##################################</span>
+<span class="n">cirrhosis_survival_cleaned_encoded_object</span> <span class="o">=</span> <span class="n">pd</span><span class="o">.</span><span class="n">concat</span><span class="p">([</span><span class="n">cirrhosis_survival_cleaned_object</span><span class="o">.</span><span class="n">drop</span><span class="p">([</span><span class="s1">'Stage'</span><span class="p">],</span> <span class="n">axis</span><span class="o">=</span><span class="mi">1</span><span class="p">),</span> <span class="n">cirrhosis_survival_cleaned_object_stage_encoded</span><span class="p">],</span> <span class="n">axis</span><span class="o">=</span><span class="mi">1</span><span class="p">)</span>
+<span class="n">cirrhosis_survival_cleaned_encoded_object</span><span class="o">.</span><span class="n">head</span><span class="p">()</span>
+</pre></div>
+
+     </div>
+</div>
+</div>
+</div>
+
+<div class="jp-Cell-outputWrapper">
+<div class="jp-Collapser jp-OutputCollapser jp-Cell-outputCollapser">
+</div>
+
+
+<div class="jp-OutputArea jp-Cell-outputArea">
+
+<div class="jp-OutputArea-child">
+
+    
+    <div class="jp-OutputPrompt jp-OutputArea-prompt">Out[102]:</div>
+
+
+
+<div class="jp-RenderedHTMLCommon jp-RenderedHTML jp-OutputArea-output jp-OutputArea-executeResult" data-mime-type="text/html">
+<div>
+<style scoped>
+    .dataframe tbody tr th:only-of-type {
+        vertical-align: middle;
+    }
+
+    .dataframe tbody tr th {
+        vertical-align: top;
+    }
+
+    .dataframe thead th {
+        text-align: right;
+    }
+</style>
+<table border="1" class="dataframe">
+  <thead>
+    <tr style="text-align: right;">
+      <th></th>
+      <th>Status</th>
+      <th>Drug</th>
+      <th>Sex</th>
+      <th>Ascites</th>
+      <th>Hepatomegaly</th>
+      <th>Spiders</th>
+      <th>Edema</th>
+      <th>Stage_1.0</th>
+      <th>Stage_2.0</th>
+      <th>Stage_3.0</th>
+      <th>Stage_4.0</th>
+    </tr>
+  </thead>
+  <tbody>
+    <tr>
+      <th>1</th>
+      <td>1.0</td>
+      <td>1.0</td>
+      <td>1.0</td>
+      <td>1.0</td>
+      <td>1.0</td>
+      <td>1.0</td>
+      <td>1.0</td>
+      <td>0.0</td>
+      <td>0.0</td>
+      <td>1.0</td>
+      <td>0.0</td>
+    </tr>
+    <tr>
+      <th>2</th>
+      <td>0.0</td>
+      <td>1.0</td>
+      <td>1.0</td>
+      <td>0.0</td>
+      <td>1.0</td>
+      <td>1.0</td>
+      <td>0.0</td>
+      <td>0.0</td>
+      <td>0.0</td>
+      <td>0.0</td>
+      <td>1.0</td>
+    </tr>
+    <tr>
+      <th>3</th>
+      <td>1.0</td>
+      <td>1.0</td>
+      <td>0.0</td>
+      <td>0.0</td>
+      <td>0.0</td>
+      <td>0.0</td>
+      <td>1.0</td>
+      <td>0.0</td>
+      <td>0.0</td>
+      <td>0.0</td>
+      <td>1.0</td>
+    </tr>
+    <tr>
+      <th>4</th>
+      <td>1.0</td>
+      <td>1.0</td>
+      <td>1.0</td>
+      <td>0.0</td>
+      <td>1.0</td>
+      <td>1.0</td>
+      <td>1.0</td>
+      <td>0.0</td>
+      <td>0.0</td>
+      <td>1.0</td>
+      <td>0.0</td>
+    </tr>
+    <tr>
+      <th>5</th>
+      <td>0.0</td>
+      <td>0.0</td>
+      <td>1.0</td>
+      <td>0.0</td>
+      <td>1.0</td>
+      <td>1.0</td>
+      <td>0.0</td>
+      <td>0.0</td>
+      <td>0.0</td>
+      <td>1.0</td>
+      <td>0.0</td>
+    </tr>
+  </tbody>
+</table>
+</div>
+</div>
+
+</div>
+
+</div>
+
+</div>
+
+</div>
+<div class="jp-Cell jp-MarkdownCell jp-Notebook-cell">
+<div class="jp-Cell-inputWrapper">
+<div class="jp-Collapser jp-InputCollapser jp-Cell-inputCollapser">
+</div>
+<div class="jp-InputArea jp-Cell-inputArea"><div class="jp-InputPrompt jp-InputArea-prompt">
+</div><div class="jp-RenderedHTMLCommon jp-RenderedMarkdown jp-MarkdownOutput " data-mime-type="text/markdown">
 <h1 id="2.-Summary-">2. Summary <a class="anchor" id="Summary" /><a class="anchor-link" href="#2.-Summary-">&#182;</a></h1>
 </div>
 </div>
@@ -21124,7 +21377,7 @@ class="
 <div class="jp-Collapser jp-InputCollapser jp-Cell-inputCollapser">
 </div>
 <div class="jp-InputArea jp-Cell-inputArea">
-<div class="jp-InputPrompt jp-InputArea-prompt">In&nbsp;[99]:</div>
+<div class="jp-InputPrompt jp-InputArea-prompt">In&nbsp;[103]:</div>
 <div class="jp-CodeMirrorEditor jp-Editor jp-InputArea-editor" data-type="inline">
      <div class="CodeMirror cm-s-jupyter">
 <div class=" highlight hl-ipython3"><pre><span></span><span class="kn">from</span> <span class="nn">IPython.display</span> <span class="kn">import</span> <span class="n">display</span><span class="p">,</span> <span class="n">HTML</span>
