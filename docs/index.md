@@ -2,7 +2,7 @@
 # Supervised Learning : Modelling Right-Censored Survival Time and Status Responses for Prediction
 
 ***
-### John Pauline Pineda <br> <br> *June 23, 2024*
+### John Pauline Pineda <br> <br> *July 6, 2024*
 ***
 
 * [**1. Table of Contents**](#TOC)
@@ -122,6 +122,7 @@ import itertools
 %matplotlib inline
 
 from operator import add,mul,truediv
+from sklearn.model_selection import train_test_split
 from sklearn.experimental import enable_iterative_imputer
 from sklearn.impute import IterativeImputer
 from sklearn.linear_model import LinearRegression
@@ -374,9 +375,17 @@ cirrhosis_survival.set_index(['ID'], inplace=True)
 
 ```python
 ##################################
-# Taking the ID column as the index
+# Changing the data type for Stage
 ##################################
 cirrhosis_survival['Stage'] = cirrhosis_survival['Stage'].astype('object')
+```
+
+
+```python
+##################################
+# Changing the data type for Status
+##################################
+cirrhosis_survival['Status'] = cirrhosis_survival['Status'].replace({'C':False, 'CL':False, 'D':True}) 
 ```
 
 
@@ -586,13 +595,6 @@ display(cirrhosis_survival.describe(include='object').transpose())
   </thead>
   <tbody>
     <tr>
-      <th>Status</th>
-      <td>418</td>
-      <td>3</td>
-      <td>C</td>
-      <td>232</td>
-    </tr>
-    <tr>
       <th>Drug</th>
       <td>312</td>
       <td>2</td>
@@ -801,7 +803,7 @@ display(all_column_quality_summary)
     <tr>
       <th>1</th>
       <td>Status</td>
-      <td>object</td>
+      <td>bool</td>
       <td>418</td>
       <td>418</td>
       <td>0</td>
@@ -2047,18 +2049,6 @@ display(object_column_quality_summary)
   <tbody>
     <tr>
       <th>0</th>
-      <td>Status</td>
-      <td>C</td>
-      <td>D</td>
-      <td>232</td>
-      <td>161</td>
-      <td>1.440994</td>
-      <td>3</td>
-      <td>418</td>
-      <td>0.007177</td>
-    </tr>
-    <tr>
-      <th>1</th>
       <td>Drug</td>
       <td>D-penicillamine</td>
       <td>Placebo</td>
@@ -2070,7 +2060,7 @@ display(object_column_quality_summary)
       <td>0.004785</td>
     </tr>
     <tr>
-      <th>2</th>
+      <th>1</th>
       <td>Sex</td>
       <td>F</td>
       <td>M</td>
@@ -2082,7 +2072,7 @@ display(object_column_quality_summary)
       <td>0.004785</td>
     </tr>
     <tr>
-      <th>3</th>
+      <th>2</th>
       <td>Ascites</td>
       <td>N</td>
       <td>Y</td>
@@ -2094,7 +2084,7 @@ display(object_column_quality_summary)
       <td>0.004785</td>
     </tr>
     <tr>
-      <th>4</th>
+      <th>3</th>
       <td>Hepatomegaly</td>
       <td>Y</td>
       <td>N</td>
@@ -2106,7 +2096,7 @@ display(object_column_quality_summary)
       <td>0.004785</td>
     </tr>
     <tr>
-      <th>5</th>
+      <th>4</th>
       <td>Spiders</td>
       <td>N</td>
       <td>Y</td>
@@ -2118,7 +2108,7 @@ display(object_column_quality_summary)
       <td>0.004785</td>
     </tr>
     <tr>
-      <th>6</th>
+      <th>5</th>
       <td>Edema</td>
       <td>N</td>
       <td>S</td>
@@ -2130,7 +2120,7 @@ display(object_column_quality_summary)
       <td>0.007177</td>
     </tr>
     <tr>
-      <th>7</th>
+      <th>6</th>
       <td>Stage</td>
       <td>3.0</td>
       <td>4.0</td>
@@ -2430,7 +2420,7 @@ display(all_column_quality_summary.sort_values(['Fill.Rate'], ascending=True))
     <tr>
       <th>1</th>
       <td>Status</td>
-      <td>object</td>
+      <td>bool</td>
       <td>312</td>
       <td>312</td>
       <td>0</td>
@@ -2470,11 +2460,14 @@ cirrhosis_survival_cleaned = cirrhosis_survival_filtered_row
 
 ### 1.4.2 Missing Data Imputation <a class="anchor" id="1.4.2"></a>
 
-1. Missing data for float variables were imputed using the iterative imputer algorithm with a  linear regression estimator.
-    * <span style="color: #FF0000">Tryglicerides</span>: Null.Count = 30
-    * <span style="color: #FF0000">Cholesterol</span>: Null.Count = 28
-    * <span style="color: #FF0000">Platelets</span>: Null.Count = 4
-    * <span style="color: #FF0000">Copper</span>: Null.Count = 2
+1. To prevent data leakage, the original dataset was divided into training and testing subsets prior to imputation.
+2. Missing data in the training subset for float variables were imputed using the iterative imputer algorithm with a  linear regression estimator.
+    * <span style="color: #FF0000">Tryglicerides</span>: Null.Count = 20
+    * <span style="color: #FF0000">Cholesterol</span>: Null.Count = 18
+    * <span style="color: #FF0000">Platelets</span>: Null.Count = 2
+    * <span style="color: #FF0000">Copper</span>: Null.Count = 1
+3. Missing data in the testing subset for float variables will be treated with iterative imputing downstream using a pipeline involving the final preprocessing steps.
+
 
 
 ```python
@@ -2605,7 +2598,7 @@ display(cleaned_column_quality_summary.sort_values(by=['Null.Count'], ascending=
     <tr>
       <th>1</th>
       <td>Status</td>
-      <td>object</td>
+      <td>bool</td>
       <td>312</td>
       <td>312</td>
       <td>0</td>
@@ -2682,11 +2675,426 @@ display(cleaned_column_quality_summary.sort_values(by=['Null.Count'], ascending=
 
 ```python
 ##################################
-# Formulating the cleaned dataset
+# Creating training and testing data
+##################################
+X = cirrhosis_survival_cleaned.drop(columns=['Status', 'N_Days'])
+y = cirrhosis_survival_cleaned[['Status', 'N_Days']]
+y = y.to_records(index=False)
+X_train, X_test, y_train, y_test = train_test_split(X, y, test_size=0.30, stratify=y['Status'], random_state=88888888)
+cirrhosis_survival_X_train_cleaned = X_train.copy()
+cirrhosis_survival_y_train_cleaned = y_train.copy()
+cirrhosis_survival_X_test_cleaned = X_test.copy()
+cirrhosis_survival_y_test_cleaned = X_train.copy()
+```
+
+
+```python
+##################################
+# Gathering the training data information
+##################################
+print(f'Training Dataset Dimensions: Predictors: {X_train.shape}, Target|Duration: {y_train.shape}')
+```
+
+    Training Dataset Dimensions: Predictors: (218, 17), Target|Duration: (218,)
+    
+
+
+```python
+##################################
+# Gathering the testing data information
+##################################
+print(f'Testing Dataset Dimensions: Predictors: {X_test.shape}, Target|Duration: {y_test.shape}')
+```
+
+    Testing Dataset Dimensions: Predictors: (94, 17), Target|Duration: (94,)
+    
+
+
+```python
+##################################
+# Formulating the summary
+# for all cleaned columns
+# from the training data
+##################################
+X_train_cleaned_column_quality_summary = pd.DataFrame(zip(list(cirrhosis_survival_X_train_cleaned.columns),
+                                                  list(cirrhosis_survival_X_train_cleaned.dtypes),
+                                                  list([len(cirrhosis_survival_X_train_cleaned)] * len(cirrhosis_survival_X_train_cleaned.columns)),
+                                                  list(cirrhosis_survival_X_train_cleaned.count()),
+                                                  list(cirrhosis_survival_X_train_cleaned.isna().sum(axis=0))), 
+                                        columns=['Column.Name',
+                                                 'Column.Type',
+                                                 'Row.Count',
+                                                 'Non.Null.Count',
+                                                 'Null.Count'])
+display(X_train_cleaned_column_quality_summary.sort_values(by=['Null.Count'], ascending=False))
+```
+
+
+<div>
+<style scoped>
+    .dataframe tbody tr th:only-of-type {
+        vertical-align: middle;
+    }
+
+    .dataframe tbody tr th {
+        vertical-align: top;
+    }
+
+    .dataframe thead th {
+        text-align: right;
+    }
+</style>
+<table border="1" class="dataframe">
+  <thead>
+    <tr style="text-align: right;">
+      <th></th>
+      <th>Column.Name</th>
+      <th>Column.Type</th>
+      <th>Row.Count</th>
+      <th>Non.Null.Count</th>
+      <th>Null.Count</th>
+    </tr>
+  </thead>
+  <tbody>
+    <tr>
+      <th>13</th>
+      <td>Tryglicerides</td>
+      <td>float64</td>
+      <td>218</td>
+      <td>200</td>
+      <td>18</td>
+    </tr>
+    <tr>
+      <th>8</th>
+      <td>Cholesterol</td>
+      <td>float64</td>
+      <td>218</td>
+      <td>202</td>
+      <td>16</td>
+    </tr>
+    <tr>
+      <th>14</th>
+      <td>Platelets</td>
+      <td>float64</td>
+      <td>218</td>
+      <td>215</td>
+      <td>3</td>
+    </tr>
+    <tr>
+      <th>10</th>
+      <td>Copper</td>
+      <td>float64</td>
+      <td>218</td>
+      <td>217</td>
+      <td>1</td>
+    </tr>
+    <tr>
+      <th>9</th>
+      <td>Albumin</td>
+      <td>float64</td>
+      <td>218</td>
+      <td>218</td>
+      <td>0</td>
+    </tr>
+    <tr>
+      <th>15</th>
+      <td>Prothrombin</td>
+      <td>float64</td>
+      <td>218</td>
+      <td>218</td>
+      <td>0</td>
+    </tr>
+    <tr>
+      <th>12</th>
+      <td>SGOT</td>
+      <td>float64</td>
+      <td>218</td>
+      <td>218</td>
+      <td>0</td>
+    </tr>
+    <tr>
+      <th>11</th>
+      <td>Alk_Phos</td>
+      <td>float64</td>
+      <td>218</td>
+      <td>218</td>
+      <td>0</td>
+    </tr>
+    <tr>
+      <th>0</th>
+      <td>Drug</td>
+      <td>object</td>
+      <td>218</td>
+      <td>218</td>
+      <td>0</td>
+    </tr>
+    <tr>
+      <th>1</th>
+      <td>Age</td>
+      <td>int64</td>
+      <td>218</td>
+      <td>218</td>
+      <td>0</td>
+    </tr>
+    <tr>
+      <th>7</th>
+      <td>Bilirubin</td>
+      <td>float64</td>
+      <td>218</td>
+      <td>218</td>
+      <td>0</td>
+    </tr>
+    <tr>
+      <th>6</th>
+      <td>Edema</td>
+      <td>object</td>
+      <td>218</td>
+      <td>218</td>
+      <td>0</td>
+    </tr>
+    <tr>
+      <th>5</th>
+      <td>Spiders</td>
+      <td>object</td>
+      <td>218</td>
+      <td>218</td>
+      <td>0</td>
+    </tr>
+    <tr>
+      <th>4</th>
+      <td>Hepatomegaly</td>
+      <td>object</td>
+      <td>218</td>
+      <td>218</td>
+      <td>0</td>
+    </tr>
+    <tr>
+      <th>3</th>
+      <td>Ascites</td>
+      <td>object</td>
+      <td>218</td>
+      <td>218</td>
+      <td>0</td>
+    </tr>
+    <tr>
+      <th>2</th>
+      <td>Sex</td>
+      <td>object</td>
+      <td>218</td>
+      <td>218</td>
+      <td>0</td>
+    </tr>
+    <tr>
+      <th>16</th>
+      <td>Stage</td>
+      <td>object</td>
+      <td>218</td>
+      <td>218</td>
+      <td>0</td>
+    </tr>
+  </tbody>
+</table>
+</div>
+
+
+
+```python
+##################################
+# Formulating the summary
+# for all cleaned columns
+# from the testing data
+##################################
+X_test_cleaned_column_quality_summary = pd.DataFrame(zip(list(cirrhosis_survival_X_test_cleaned.columns),
+                                                  list(cirrhosis_survival_X_test_cleaned.dtypes),
+                                                  list([len(cirrhosis_survival_X_test_cleaned)] * len(cirrhosis_survival_X_test_cleaned.columns)),
+                                                  list(cirrhosis_survival_X_test_cleaned.count()),
+                                                  list(cirrhosis_survival_X_test_cleaned.isna().sum(axis=0))), 
+                                        columns=['Column.Name',
+                                                 'Column.Type',
+                                                 'Row.Count',
+                                                 'Non.Null.Count',
+                                                 'Null.Count'])
+display(X_test_cleaned_column_quality_summary.sort_values(by=['Null.Count'], ascending=False))
+
+```
+
+
+<div>
+<style scoped>
+    .dataframe tbody tr th:only-of-type {
+        vertical-align: middle;
+    }
+
+    .dataframe tbody tr th {
+        vertical-align: top;
+    }
+
+    .dataframe thead th {
+        text-align: right;
+    }
+</style>
+<table border="1" class="dataframe">
+  <thead>
+    <tr style="text-align: right;">
+      <th></th>
+      <th>Column.Name</th>
+      <th>Column.Type</th>
+      <th>Row.Count</th>
+      <th>Non.Null.Count</th>
+      <th>Null.Count</th>
+    </tr>
+  </thead>
+  <tbody>
+    <tr>
+      <th>8</th>
+      <td>Cholesterol</td>
+      <td>float64</td>
+      <td>94</td>
+      <td>82</td>
+      <td>12</td>
+    </tr>
+    <tr>
+      <th>13</th>
+      <td>Tryglicerides</td>
+      <td>float64</td>
+      <td>94</td>
+      <td>82</td>
+      <td>12</td>
+    </tr>
+    <tr>
+      <th>14</th>
+      <td>Platelets</td>
+      <td>float64</td>
+      <td>94</td>
+      <td>93</td>
+      <td>1</td>
+    </tr>
+    <tr>
+      <th>10</th>
+      <td>Copper</td>
+      <td>float64</td>
+      <td>94</td>
+      <td>93</td>
+      <td>1</td>
+    </tr>
+    <tr>
+      <th>9</th>
+      <td>Albumin</td>
+      <td>float64</td>
+      <td>94</td>
+      <td>94</td>
+      <td>0</td>
+    </tr>
+    <tr>
+      <th>15</th>
+      <td>Prothrombin</td>
+      <td>float64</td>
+      <td>94</td>
+      <td>94</td>
+      <td>0</td>
+    </tr>
+    <tr>
+      <th>12</th>
+      <td>SGOT</td>
+      <td>float64</td>
+      <td>94</td>
+      <td>94</td>
+      <td>0</td>
+    </tr>
+    <tr>
+      <th>11</th>
+      <td>Alk_Phos</td>
+      <td>float64</td>
+      <td>94</td>
+      <td>94</td>
+      <td>0</td>
+    </tr>
+    <tr>
+      <th>0</th>
+      <td>Drug</td>
+      <td>object</td>
+      <td>94</td>
+      <td>94</td>
+      <td>0</td>
+    </tr>
+    <tr>
+      <th>1</th>
+      <td>Age</td>
+      <td>int64</td>
+      <td>94</td>
+      <td>94</td>
+      <td>0</td>
+    </tr>
+    <tr>
+      <th>7</th>
+      <td>Bilirubin</td>
+      <td>float64</td>
+      <td>94</td>
+      <td>94</td>
+      <td>0</td>
+    </tr>
+    <tr>
+      <th>6</th>
+      <td>Edema</td>
+      <td>object</td>
+      <td>94</td>
+      <td>94</td>
+      <td>0</td>
+    </tr>
+    <tr>
+      <th>5</th>
+      <td>Spiders</td>
+      <td>object</td>
+      <td>94</td>
+      <td>94</td>
+      <td>0</td>
+    </tr>
+    <tr>
+      <th>4</th>
+      <td>Hepatomegaly</td>
+      <td>object</td>
+      <td>94</td>
+      <td>94</td>
+      <td>0</td>
+    </tr>
+    <tr>
+      <th>3</th>
+      <td>Ascites</td>
+      <td>object</td>
+      <td>94</td>
+      <td>94</td>
+      <td>0</td>
+    </tr>
+    <tr>
+      <th>2</th>
+      <td>Sex</td>
+      <td>object</td>
+      <td>94</td>
+      <td>94</td>
+      <td>0</td>
+    </tr>
+    <tr>
+      <th>16</th>
+      <td>Stage</td>
+      <td>object</td>
+      <td>94</td>
+      <td>94</td>
+      <td>0</td>
+    </tr>
+  </tbody>
+</table>
+</div>
+
+
+
+```python
+##################################
+# Formulating the cleaned training dataset
 # with object columns only
 ##################################
-cirrhosis_survival_cleaned_object = cirrhosis_survival_cleaned.select_dtypes(include='object')
-cirrhosis_survival_cleaned_object.head()
+cirrhosis_survival_X_train_cleaned_object = cirrhosis_survival_X_train_cleaned.select_dtypes(include='object')
+cirrhosis_survival_X_train_cleaned_object.reset_index(drop=True, inplace=True)
+cirrhosis_survival_X_train_cleaned_object.head()
 ```
 
 
@@ -2710,7 +3118,6 @@ cirrhosis_survival_cleaned_object.head()
   <thead>
     <tr style="text-align: right;">
       <th></th>
-      <th>Status</th>
       <th>Drug</th>
       <th>Sex</th>
       <th>Ascites</th>
@@ -2719,73 +3126,57 @@ cirrhosis_survival_cleaned_object.head()
       <th>Edema</th>
       <th>Stage</th>
     </tr>
-    <tr>
-      <th>ID</th>
-      <th></th>
-      <th></th>
-      <th></th>
-      <th></th>
-      <th></th>
-      <th></th>
-      <th></th>
-      <th></th>
-    </tr>
   </thead>
   <tbody>
     <tr>
+      <th>0</th>
+      <td>D-penicillamine</td>
+      <td>F</td>
+      <td>N</td>
+      <td>N</td>
+      <td>N</td>
+      <td>N</td>
+      <td>2.0</td>
+    </tr>
+    <tr>
       <th>1</th>
-      <td>D</td>
-      <td>D-penicillamine</td>
-      <td>F</td>
-      <td>Y</td>
-      <td>Y</td>
-      <td>Y</td>
-      <td>Y</td>
-      <td>4.0</td>
-    </tr>
-    <tr>
-      <th>2</th>
-      <td>C</td>
-      <td>D-penicillamine</td>
-      <td>F</td>
-      <td>N</td>
-      <td>Y</td>
-      <td>Y</td>
-      <td>N</td>
-      <td>3.0</td>
-    </tr>
-    <tr>
-      <th>3</th>
-      <td>D</td>
       <td>D-penicillamine</td>
       <td>M</td>
       <td>N</td>
       <td>N</td>
       <td>N</td>
-      <td>S</td>
+      <td>N</td>
+      <td>3.0</td>
+    </tr>
+    <tr>
+      <th>2</th>
+      <td>D-penicillamine</td>
+      <td>F</td>
+      <td>N</td>
+      <td>N</td>
+      <td>N</td>
+      <td>N</td>
+      <td>2.0</td>
+    </tr>
+    <tr>
+      <th>3</th>
+      <td>Placebo</td>
+      <td>F</td>
+      <td>Y</td>
+      <td>Y</td>
+      <td>Y</td>
+      <td>Y</td>
       <td>4.0</td>
     </tr>
     <tr>
       <th>4</th>
-      <td>D</td>
-      <td>D-penicillamine</td>
-      <td>F</td>
-      <td>N</td>
-      <td>Y</td>
-      <td>Y</td>
-      <td>S</td>
-      <td>4.0</td>
-    </tr>
-    <tr>
-      <th>5</th>
-      <td>CL</td>
       <td>Placebo</td>
       <td>F</td>
       <td>N</td>
       <td>Y</td>
-      <td>Y</td>
       <td>N</td>
-      <td>3.0</td>
+      <td>N</td>
+      <td>2.0</td>
     </tr>
   </tbody>
 </table>
@@ -2796,11 +3187,12 @@ cirrhosis_survival_cleaned_object.head()
 
 ```python
 ##################################
-# Formulating the cleaned dataset
+# Formulating the cleaned training dataset
 # with integer columns only
 ##################################
-cirrhosis_survival_cleaned_int = cirrhosis_survival_cleaned.select_dtypes(include='int')
-cirrhosis_survival_cleaned_int.head()
+cirrhosis_survival_X_train_cleaned_int = cirrhosis_survival_X_train_cleaned.select_dtypes(include='int')
+cirrhosis_survival_X_train_cleaned_int.reset_index(drop=True, inplace=True)
+cirrhosis_survival_X_train_cleaned_int.head()
 ```
 
 
@@ -2824,40 +3216,29 @@ cirrhosis_survival_cleaned_int.head()
   <thead>
     <tr style="text-align: right;">
       <th></th>
-      <th>N_Days</th>
       <th>Age</th>
-    </tr>
-    <tr>
-      <th>ID</th>
-      <th></th>
-      <th></th>
     </tr>
   </thead>
   <tbody>
     <tr>
+      <th>0</th>
+      <td>13329</td>
+    </tr>
+    <tr>
       <th>1</th>
-      <td>400</td>
-      <td>21464</td>
+      <td>12912</td>
     </tr>
     <tr>
       <th>2</th>
-      <td>4500</td>
-      <td>20617</td>
+      <td>17180</td>
     </tr>
     <tr>
       <th>3</th>
-      <td>1012</td>
-      <td>25594</td>
+      <td>17884</td>
     </tr>
     <tr>
       <th>4</th>
-      <td>1925</td>
-      <td>19994</td>
-    </tr>
-    <tr>
-      <th>5</th>
-      <td>1504</td>
-      <td>13918</td>
+      <td>15177</td>
     </tr>
   </tbody>
 </table>
@@ -2868,11 +3249,12 @@ cirrhosis_survival_cleaned_int.head()
 
 ```python
 ##################################
-# Formulating the cleaned dataset
+# Formulating the cleaned training dataset
 # with float columns only
 ##################################
-cirrhosis_survival_cleaned_float = cirrhosis_survival_cleaned.select_dtypes(include='float')
-cirrhosis_survival_cleaned_float.head()
+cirrhosis_survival_X_train_cleaned_float = cirrhosis_survival_X_train_cleaned.select_dtypes(include='float')
+cirrhosis_survival_X_train_cleaned_float.reset_index(drop=True, inplace=True)
+cirrhosis_survival_X_train_cleaned_float.head()
 ```
 
 
@@ -2906,79 +3288,67 @@ cirrhosis_survival_cleaned_float.head()
       <th>Platelets</th>
       <th>Prothrombin</th>
     </tr>
-    <tr>
-      <th>ID</th>
-      <th></th>
-      <th></th>
-      <th></th>
-      <th></th>
-      <th></th>
-      <th></th>
-      <th></th>
-      <th></th>
-      <th></th>
-    </tr>
   </thead>
   <tbody>
     <tr>
+      <th>0</th>
+      <td>3.4</td>
+      <td>450.0</td>
+      <td>3.37</td>
+      <td>32.0</td>
+      <td>1408.0</td>
+      <td>116.25</td>
+      <td>118.0</td>
+      <td>313.0</td>
+      <td>11.2</td>
+    </tr>
+    <tr>
       <th>1</th>
-      <td>14.5</td>
-      <td>261.0</td>
-      <td>2.60</td>
-      <td>156.0</td>
-      <td>1718.0</td>
-      <td>137.95</td>
-      <td>172.0</td>
-      <td>190.0</td>
-      <td>12.2</td>
+      <td>2.4</td>
+      <td>646.0</td>
+      <td>3.83</td>
+      <td>102.0</td>
+      <td>855.0</td>
+      <td>127.00</td>
+      <td>194.0</td>
+      <td>306.0</td>
+      <td>10.3</td>
     </tr>
     <tr>
       <th>2</th>
-      <td>1.1</td>
-      <td>302.0</td>
-      <td>4.14</td>
-      <td>54.0</td>
-      <td>7394.8</td>
-      <td>113.52</td>
-      <td>88.0</td>
-      <td>221.0</td>
+      <td>0.9</td>
+      <td>346.0</td>
+      <td>3.77</td>
+      <td>59.0</td>
+      <td>794.0</td>
+      <td>125.55</td>
+      <td>56.0</td>
+      <td>336.0</td>
       <td>10.6</td>
     </tr>
     <tr>
       <th>3</th>
-      <td>1.4</td>
-      <td>176.0</td>
-      <td>3.48</td>
-      <td>210.0</td>
-      <td>516.0</td>
-      <td>96.10</td>
-      <td>55.0</td>
-      <td>151.0</td>
-      <td>12.0</td>
+      <td>2.5</td>
+      <td>188.0</td>
+      <td>3.67</td>
+      <td>57.0</td>
+      <td>1273.0</td>
+      <td>119.35</td>
+      <td>102.0</td>
+      <td>110.0</td>
+      <td>11.1</td>
     </tr>
     <tr>
       <th>4</th>
-      <td>1.8</td>
-      <td>244.0</td>
-      <td>2.54</td>
-      <td>64.0</td>
-      <td>6121.8</td>
-      <td>60.63</td>
-      <td>92.0</td>
-      <td>183.0</td>
+      <td>4.7</td>
+      <td>296.0</td>
+      <td>3.44</td>
+      <td>114.0</td>
+      <td>9933.2</td>
+      <td>206.40</td>
+      <td>101.0</td>
+      <td>195.0</td>
       <td>10.3</td>
-    </tr>
-    <tr>
-      <th>5</th>
-      <td>3.4</td>
-      <td>279.0</td>
-      <td>3.53</td>
-      <td>143.0</td>
-      <td>671.0</td>
-      <td>113.15</td>
-      <td>72.0</td>
-      <td>136.0</td>
-      <td>10.9</td>
     </tr>
   </tbody>
 </table>
@@ -3018,29 +3388,129 @@ iterative_imputer = IterativeImputer(
 ##################################
 # Implementing the iterative imputer 
 ##################################
-cirrhosis_survival_imputed_float_array = iterative_imputer.fit_transform(cirrhosis_survival_cleaned_float)
+cirrhosis_survival_X_train_imputed_float_array = iterative_imputer.fit_transform(cirrhosis_survival_X_train_cleaned_float)
 ```
 
 
 ```python
 ##################################
-# Transforming the imputed data
+# Transforming the imputed training data
 # from an array to a dataframe
 ##################################
-cirrhosis_survival_imputed_float = pd.DataFrame(cirrhosis_survival_imputed_float_array, 
-                                                columns = cirrhosis_survival_cleaned_float.columns)
+cirrhosis_survival_X_train_imputed_float = pd.DataFrame(cirrhosis_survival_X_train_imputed_float_array, 
+                                                        columns = cirrhosis_survival_X_train_cleaned_float.columns)
+cirrhosis_survival_X_train_imputed_float.head()
 ```
+
+
+
+
+<div>
+<style scoped>
+    .dataframe tbody tr th:only-of-type {
+        vertical-align: middle;
+    }
+
+    .dataframe tbody tr th {
+        vertical-align: top;
+    }
+
+    .dataframe thead th {
+        text-align: right;
+    }
+</style>
+<table border="1" class="dataframe">
+  <thead>
+    <tr style="text-align: right;">
+      <th></th>
+      <th>Bilirubin</th>
+      <th>Cholesterol</th>
+      <th>Albumin</th>
+      <th>Copper</th>
+      <th>Alk_Phos</th>
+      <th>SGOT</th>
+      <th>Tryglicerides</th>
+      <th>Platelets</th>
+      <th>Prothrombin</th>
+    </tr>
+  </thead>
+  <tbody>
+    <tr>
+      <th>0</th>
+      <td>3.4</td>
+      <td>450.0</td>
+      <td>3.37</td>
+      <td>32.0</td>
+      <td>1408.0</td>
+      <td>116.25</td>
+      <td>118.0</td>
+      <td>313.0</td>
+      <td>11.2</td>
+    </tr>
+    <tr>
+      <th>1</th>
+      <td>2.4</td>
+      <td>646.0</td>
+      <td>3.83</td>
+      <td>102.0</td>
+      <td>855.0</td>
+      <td>127.00</td>
+      <td>194.0</td>
+      <td>306.0</td>
+      <td>10.3</td>
+    </tr>
+    <tr>
+      <th>2</th>
+      <td>0.9</td>
+      <td>346.0</td>
+      <td>3.77</td>
+      <td>59.0</td>
+      <td>794.0</td>
+      <td>125.55</td>
+      <td>56.0</td>
+      <td>336.0</td>
+      <td>10.6</td>
+    </tr>
+    <tr>
+      <th>3</th>
+      <td>2.5</td>
+      <td>188.0</td>
+      <td>3.67</td>
+      <td>57.0</td>
+      <td>1273.0</td>
+      <td>119.35</td>
+      <td>102.0</td>
+      <td>110.0</td>
+      <td>11.1</td>
+    </tr>
+    <tr>
+      <th>4</th>
+      <td>4.7</td>
+      <td>296.0</td>
+      <td>3.44</td>
+      <td>114.0</td>
+      <td>9933.2</td>
+      <td>206.40</td>
+      <td>101.0</td>
+      <td>195.0</td>
+      <td>10.3</td>
+    </tr>
+  </tbody>
+</table>
+</div>
+
+
 
 
 ```python
 ##################################
-# Formulating the imputed dataset
+# Formulating the imputed training dataset
 ##################################
-cirrhosis_survival_imputed = pd.concat([cirrhosis_survival_cleaned_int,
-                                        cirrhosis_survival_cleaned_object,
-                                        cirrhosis_survival_imputed_float], 
-                                       axis=1, 
-                                       join='inner')  
+cirrhosis_survival_X_train_imputed = pd.concat([cirrhosis_survival_X_train_cleaned_int,
+                                                cirrhosis_survival_X_train_cleaned_object,
+                                                cirrhosis_survival_X_train_imputed_float], 
+                                               axis=1, 
+                                               join='inner')  
 ```
 
 
@@ -3049,17 +3519,17 @@ cirrhosis_survival_imputed = pd.concat([cirrhosis_survival_cleaned_int,
 # Formulating the summary
 # for all imputed columns
 ##################################
-imputed_column_quality_summary = pd.DataFrame(zip(list(cirrhosis_survival_imputed.columns),
-                                                  list(cirrhosis_survival_imputed.dtypes),
-                                                  list([len(cirrhosis_survival_imputed)] * len(cirrhosis_survival_imputed.columns)),
-                                                  list(cirrhosis_survival_imputed.count()),
-                                                  list(cirrhosis_survival_imputed.isna().sum(axis=0))), 
-                                        columns=['Column.Name',
-                                                 'Column.Type',
-                                                 'Row.Count',
-                                                 'Non.Null.Count',
-                                                 'Null.Count'])
-display(imputed_column_quality_summary)
+X_train_imputed_column_quality_summary = pd.DataFrame(zip(list(cirrhosis_survival_X_train_imputed.columns),
+                                                         list(cirrhosis_survival_X_train_imputed.dtypes),
+                                                         list([len(cirrhosis_survival_X_train_imputed)] * len(cirrhosis_survival_X_train_imputed.columns)),
+                                                         list(cirrhosis_survival_X_train_imputed.count()),
+                                                         list(cirrhosis_survival_X_train_imputed.isna().sum(axis=0))), 
+                                                     columns=['Column.Name',
+                                                              'Column.Type',
+                                                              'Row.Count',
+                                                              'Non.Null.Count',
+                                                              'Null.Count'])
+display(X_train_imputed_column_quality_summary)
 ```
 
 
@@ -3091,154 +3561,138 @@ display(imputed_column_quality_summary)
   <tbody>
     <tr>
       <th>0</th>
-      <td>N_Days</td>
+      <td>Age</td>
       <td>int64</td>
-      <td>311</td>
-      <td>311</td>
+      <td>218</td>
+      <td>218</td>
       <td>0</td>
     </tr>
     <tr>
       <th>1</th>
-      <td>Age</td>
-      <td>int64</td>
-      <td>311</td>
-      <td>311</td>
+      <td>Drug</td>
+      <td>object</td>
+      <td>218</td>
+      <td>218</td>
       <td>0</td>
     </tr>
     <tr>
       <th>2</th>
-      <td>Status</td>
+      <td>Sex</td>
       <td>object</td>
-      <td>311</td>
-      <td>311</td>
+      <td>218</td>
+      <td>218</td>
       <td>0</td>
     </tr>
     <tr>
       <th>3</th>
-      <td>Drug</td>
+      <td>Ascites</td>
       <td>object</td>
-      <td>311</td>
-      <td>311</td>
+      <td>218</td>
+      <td>218</td>
       <td>0</td>
     </tr>
     <tr>
       <th>4</th>
-      <td>Sex</td>
+      <td>Hepatomegaly</td>
       <td>object</td>
-      <td>311</td>
-      <td>311</td>
+      <td>218</td>
+      <td>218</td>
       <td>0</td>
     </tr>
     <tr>
       <th>5</th>
-      <td>Ascites</td>
+      <td>Spiders</td>
       <td>object</td>
-      <td>311</td>
-      <td>311</td>
+      <td>218</td>
+      <td>218</td>
       <td>0</td>
     </tr>
     <tr>
       <th>6</th>
-      <td>Hepatomegaly</td>
+      <td>Edema</td>
       <td>object</td>
-      <td>311</td>
-      <td>311</td>
+      <td>218</td>
+      <td>218</td>
       <td>0</td>
     </tr>
     <tr>
       <th>7</th>
-      <td>Spiders</td>
+      <td>Stage</td>
       <td>object</td>
-      <td>311</td>
-      <td>311</td>
+      <td>218</td>
+      <td>218</td>
       <td>0</td>
     </tr>
     <tr>
       <th>8</th>
-      <td>Edema</td>
-      <td>object</td>
-      <td>311</td>
-      <td>311</td>
+      <td>Bilirubin</td>
+      <td>float64</td>
+      <td>218</td>
+      <td>218</td>
       <td>0</td>
     </tr>
     <tr>
       <th>9</th>
-      <td>Stage</td>
-      <td>object</td>
-      <td>311</td>
-      <td>311</td>
+      <td>Cholesterol</td>
+      <td>float64</td>
+      <td>218</td>
+      <td>218</td>
       <td>0</td>
     </tr>
     <tr>
       <th>10</th>
-      <td>Bilirubin</td>
+      <td>Albumin</td>
       <td>float64</td>
-      <td>311</td>
-      <td>311</td>
+      <td>218</td>
+      <td>218</td>
       <td>0</td>
     </tr>
     <tr>
       <th>11</th>
-      <td>Cholesterol</td>
+      <td>Copper</td>
       <td>float64</td>
-      <td>311</td>
-      <td>311</td>
+      <td>218</td>
+      <td>218</td>
       <td>0</td>
     </tr>
     <tr>
       <th>12</th>
-      <td>Albumin</td>
+      <td>Alk_Phos</td>
       <td>float64</td>
-      <td>311</td>
-      <td>311</td>
+      <td>218</td>
+      <td>218</td>
       <td>0</td>
     </tr>
     <tr>
       <th>13</th>
-      <td>Copper</td>
+      <td>SGOT</td>
       <td>float64</td>
-      <td>311</td>
-      <td>311</td>
+      <td>218</td>
+      <td>218</td>
       <td>0</td>
     </tr>
     <tr>
       <th>14</th>
-      <td>Alk_Phos</td>
+      <td>Tryglicerides</td>
       <td>float64</td>
-      <td>311</td>
-      <td>311</td>
+      <td>218</td>
+      <td>218</td>
       <td>0</td>
     </tr>
     <tr>
       <th>15</th>
-      <td>SGOT</td>
+      <td>Platelets</td>
       <td>float64</td>
-      <td>311</td>
-      <td>311</td>
+      <td>218</td>
+      <td>218</td>
       <td>0</td>
     </tr>
     <tr>
       <th>16</th>
-      <td>Tryglicerides</td>
-      <td>float64</td>
-      <td>311</td>
-      <td>311</td>
-      <td>0</td>
-    </tr>
-    <tr>
-      <th>17</th>
-      <td>Platelets</td>
-      <td>float64</td>
-      <td>311</td>
-      <td>311</td>
-      <td>0</td>
-    </tr>
-    <tr>
-      <th>18</th>
       <td>Prothrombin</td>
       <td>float64</td>
-      <td>311</td>
-      <td>311</td>
+      <td>218</td>
+      <td>218</td>
       <td>0</td>
     </tr>
   </tbody>
@@ -3248,18 +3702,18 @@ display(imputed_column_quality_summary)
 
 ### 1.4.3 Outlier Detection <a class="anchor" id="1.4.3"></a>
 
-1. High number of outliers observed for 4 numeric variables with Outlier.Ratio>0.05 and marginal to high Skewness.
-    * <span style="color: #FF0000">Alk_Phos</span>: Outlier.Count = 35, Outlier.Ratio = 0.112, Skewness=+2.987
-    * <span style="color: #FF0000">Bilirubin</span>: Outlier.Count = 30, Outlier.Ratio = 0.096, Skewness=+2.904
-    * <span style="color: #FF0000">Cholesterol</span>: Outlier.Count = 22, Outlier.Ratio = 0.071, Skewness=+3.487
-    * <span style="color: #FF0000">Copper</span>: Outlier.Count = 17, Outlier.Ratio = 0.055, Skewness=+2.319
-2. Minimal number of outliers observed for 6 numeric variables with Outlier.Ratio>0.00 but <0.05 and normal to marginal Skewness.
-    * <span style="color: #FF0000">Prothrombin</span>: Outlier.Count = 14, Outlier.Ratio = 0.045, Skewness=+1.749
-    * <span style="color: #FF0000">Tryglicerides</span>: Outlier.Count = 13, Outlier.Ratio = 0.042, Skewness=+2.619
-    * <span style="color: #FF0000">Albumin</span>: Outlier.Count = 11, Outlier.Ratio = 0.035, Skewness=-0.581
-    * <span style="color: #FF0000">SGOT</span>: Outlier.Count = 7, Outlier.Ratio = 0.022, Skewness=+1.450
-    * <span style="color: #FF0000">Platelets</span>: Outlier.Count = 4, Outlier.Ratio = 0.013, Skewness=+0.357
-    * <span style="color: #FF0000">Age</span>: Outlier.Count = 1, Outlier.Ratio = 0.003, Skewness=+0.167
+1. High number of outliers observed in the training subset for 4 numeric variables with Outlier.Ratio>0.05 and marginal to high Skewness.
+    * <span style="color: #FF0000">Alk_Phos</span>: Outlier.Count = 25, Outlier.Ratio = 0.114, Skewness=+3.035
+    * <span style="color: #FF0000">Bilirubin</span>: Outlier.Count = 18, Outlier.Ratio = 0.083, Skewness=+3.121
+    * <span style="color: #FF0000">Cholesterol</span>: Outlier.Count = 17, Outlier.Ratio = 0.078, Skewness=+3.761
+    * <span style="color: #FF0000">Prothrombin</span>: Outlier.Count = 12, Outlier.Ratio = 0.055, Skewness=+1.009
+2. Minimal number of outliers observed in the training subset for 5 numeric variables with Outlier.Ratio>0.00 but <0.05 and normal to marginal Skewness.
+    * <span style="color: #FF0000">Copper</span>: Outlier.Count = 8, Outlier.Ratio = 0.037, Skewness=+1.485
+    * <span style="color: #FF0000">Albumin</span>: Outlier.Count = 6, Outlier.Ratio = 0.027, Skewness=-0.589
+    * <span style="color: #FF0000">SGOT</span>: Outlier.Count = 4, Outlier.Ratio = 0.018, Skewness=+0.934
+    * <span style="color: #FF0000">Tryglicerides</span>: Outlier.Count = 4, Outlier.Ratio = 0.018, Skewness=+2.817
+    * <span style="color: #FF0000">Platelets</span>: Outlier.Count = 4, Outlier.Ratio = 0.018, Skewness=+0.374
+    * <span style="color: #FF0000">Age</span>: Outlier.Count = 1, Outlier.Ratio = 0.004, Skewness=+0.223
 
 
 ```python
@@ -3267,7 +3721,7 @@ display(imputed_column_quality_summary)
 # Formulating the imputed dataset
 # with numeric columns only
 ##################################
-cirrhosis_survival_imputed_numeric = cirrhosis_survival_imputed.select_dtypes(include='number')
+cirrhosis_survival_X_train_imputed_numeric = cirrhosis_survival_X_train_imputed.select_dtypes(include='number')
 ```
 
 
@@ -3275,7 +3729,7 @@ cirrhosis_survival_imputed_numeric = cirrhosis_survival_imputed.select_dtypes(in
 ##################################
 # Gathering the variable names for each numeric column
 ##################################
-numeric_variable_name_list = list(cirrhosis_survival_imputed_numeric.columns)
+X_train_numeric_variable_name_list = list(cirrhosis_survival_X_train_imputed_numeric.columns)
 ```
 
 
@@ -3283,7 +3737,7 @@ numeric_variable_name_list = list(cirrhosis_survival_imputed_numeric.columns)
 ##################################
 # Gathering the skewness value for each numeric column
 ##################################
-numeric_skewness_list = cirrhosis_survival_imputed_numeric.skew()
+X_train_numeric_skewness_list = cirrhosis_survival_X_train_imputed_numeric.skew()
 ```
 
 
@@ -3292,9 +3746,9 @@ numeric_skewness_list = cirrhosis_survival_imputed_numeric.skew()
 # Computing the interquartile range
 # for all columns
 ##################################
-cirrhosis_survival_imputed_numeric_q1 = cirrhosis_survival_imputed_numeric.quantile(0.25)
-cirrhosis_survival_imputed_numeric_q3 = cirrhosis_survival_imputed_numeric.quantile(0.75)
-cirrhosis_survival_imputed_numeric_iqr = cirrhosis_survival_imputed_numeric_q3 - cirrhosis_survival_imputed_numeric_q1
+cirrhosis_survival_X_train_imputed_numeric_q1 = cirrhosis_survival_X_train_imputed_numeric.quantile(0.25)
+cirrhosis_survival_X_train_imputed_numeric_q3 = cirrhosis_survival_X_train_imputed_numeric.quantile(0.75)
+cirrhosis_survival_X_train_imputed_numeric_iqr = cirrhosis_survival_X_train_imputed_numeric_q3 - cirrhosis_survival_X_train_imputed_numeric_q1
 ```
 
 
@@ -3303,7 +3757,7 @@ cirrhosis_survival_imputed_numeric_iqr = cirrhosis_survival_imputed_numeric_q3 -
 # Gathering the outlier count for each numeric column
 # based on the interquartile range criterion
 ##################################
-numeric_outlier_count_list = ((cirrhosis_survival_imputed_numeric < (cirrhosis_survival_imputed_numeric_q1 - 1.5 * cirrhosis_survival_imputed_numeric_iqr)) | (cirrhosis_survival_imputed_numeric > (cirrhosis_survival_imputed_numeric_q3 + 1.5 * cirrhosis_survival_imputed_numeric_iqr))).sum()
+X_train_numeric_outlier_count_list = ((cirrhosis_survival_X_train_imputed_numeric < (cirrhosis_survival_X_train_imputed_numeric_q1 - 1.5 * cirrhosis_survival_X_train_imputed_numeric_iqr)) | (cirrhosis_survival_X_train_imputed_numeric > (cirrhosis_survival_X_train_imputed_numeric_q3 + 1.5 * cirrhosis_survival_X_train_imputed_numeric_iqr))).sum()
 ```
 
 
@@ -3311,7 +3765,7 @@ numeric_outlier_count_list = ((cirrhosis_survival_imputed_numeric < (cirrhosis_s
 ##################################
 # Gathering the number of observations for each column
 ##################################
-numeric_row_count_list = list([len(cirrhosis_survival_imputed_numeric)] * len(cirrhosis_survival_imputed_numeric.columns))
+X_train_numeric_row_count_list = list([len(cirrhosis_survival_X_train_imputed_numeric)] * len(cirrhosis_survival_X_train_imputed_numeric.columns))
 ```
 
 
@@ -3319,7 +3773,7 @@ numeric_row_count_list = list([len(cirrhosis_survival_imputed_numeric)] * len(ci
 ##################################
 # Gathering the unique to count ratio for each object column
 ##################################
-numeric_outlier_ratio_list = map(truediv, numeric_outlier_count_list, numeric_row_count_list)
+X_train_numeric_outlier_ratio_list = map(truediv, X_train_numeric_outlier_count_list, X_train_numeric_row_count_list)
 ```
 
 
@@ -3328,17 +3782,17 @@ numeric_outlier_ratio_list = map(truediv, numeric_outlier_count_list, numeric_ro
 # Formulating the outlier summary
 # for all numeric columns
 ##################################
-numeric_column_outlier_summary = pd.DataFrame(zip(numeric_variable_name_list,
-                                                  numeric_skewness_list,
-                                                  numeric_outlier_count_list,
-                                                  numeric_row_count_list,
-                                                  numeric_outlier_ratio_list), 
-                                        columns=['Numeric.Column.Name',
-                                                 'Skewness',
-                                                 'Outlier.Count',
-                                                 'Row.Count',
-                                                 'Outlier.Ratio'])
-display(numeric_column_outlier_summary.sort_values(by=['Outlier.Count'], ascending=False))
+X_train_numeric_column_outlier_summary = pd.DataFrame(zip(X_train_numeric_variable_name_list,
+                                                          X_train_numeric_skewness_list,
+                                                          X_train_numeric_outlier_count_list,
+                                                          X_train_numeric_row_count_list,
+                                                          X_train_numeric_outlier_ratio_list), 
+                                                      columns=['Numeric.Column.Name',
+                                                               'Skewness',
+                                                               'Outlier.Count',
+                                                               'Row.Count',
+                                                               'Outlier.Ratio'])
+display(X_train_numeric_column_outlier_summary.sort_values(by=['Outlier.Count'], ascending=False))
 ```
 
 
@@ -3369,92 +3823,84 @@ display(numeric_column_outlier_summary.sort_values(by=['Outlier.Count'], ascendi
   </thead>
   <tbody>
     <tr>
-      <th>6</th>
-      <td>Alk_Phos</td>
-      <td>2.987109</td>
-      <td>35</td>
-      <td>311</td>
-      <td>0.112540</td>
-    </tr>
-    <tr>
-      <th>2</th>
-      <td>Bilirubin</td>
-      <td>2.904006</td>
-      <td>30</td>
-      <td>311</td>
-      <td>0.096463</td>
-    </tr>
-    <tr>
-      <th>3</th>
-      <td>Cholesterol</td>
-      <td>3.488611</td>
-      <td>22</td>
-      <td>311</td>
-      <td>0.070740</td>
-    </tr>
-    <tr>
       <th>5</th>
-      <td>Copper</td>
-      <td>2.320176</td>
-      <td>17</td>
-      <td>311</td>
-      <td>0.054662</td>
-    </tr>
-    <tr>
-      <th>10</th>
-      <td>Prothrombin</td>
-      <td>1.749358</td>
-      <td>14</td>
-      <td>311</td>
-      <td>0.045016</td>
-    </tr>
-    <tr>
-      <th>8</th>
-      <td>Tryglicerides</td>
-      <td>2.620584</td>
-      <td>13</td>
-      <td>311</td>
-      <td>0.041801</td>
-    </tr>
-    <tr>
-      <th>4</th>
-      <td>Albumin</td>
-      <td>-0.581905</td>
-      <td>11</td>
-      <td>311</td>
-      <td>0.035370</td>
-    </tr>
-    <tr>
-      <th>7</th>
-      <td>SGOT</td>
-      <td>1.449979</td>
-      <td>7</td>
-      <td>311</td>
-      <td>0.022508</td>
-    </tr>
-    <tr>
-      <th>9</th>
-      <td>Platelets</td>
-      <td>0.358932</td>
-      <td>4</td>
-      <td>311</td>
-      <td>0.012862</td>
+      <td>Alk_Phos</td>
+      <td>3.035777</td>
+      <td>25</td>
+      <td>218</td>
+      <td>0.114679</td>
     </tr>
     <tr>
       <th>1</th>
-      <td>Age</td>
-      <td>0.167578</td>
-      <td>1</td>
-      <td>311</td>
-      <td>0.003215</td>
+      <td>Bilirubin</td>
+      <td>3.121255</td>
+      <td>18</td>
+      <td>218</td>
+      <td>0.082569</td>
+    </tr>
+    <tr>
+      <th>2</th>
+      <td>Cholesterol</td>
+      <td>3.760943</td>
+      <td>17</td>
+      <td>218</td>
+      <td>0.077982</td>
+    </tr>
+    <tr>
+      <th>9</th>
+      <td>Prothrombin</td>
+      <td>1.009263</td>
+      <td>12</td>
+      <td>218</td>
+      <td>0.055046</td>
+    </tr>
+    <tr>
+      <th>4</th>
+      <td>Copper</td>
+      <td>1.485547</td>
+      <td>8</td>
+      <td>218</td>
+      <td>0.036697</td>
+    </tr>
+    <tr>
+      <th>3</th>
+      <td>Albumin</td>
+      <td>-0.589651</td>
+      <td>6</td>
+      <td>218</td>
+      <td>0.027523</td>
+    </tr>
+    <tr>
+      <th>6</th>
+      <td>SGOT</td>
+      <td>0.934535</td>
+      <td>4</td>
+      <td>218</td>
+      <td>0.018349</td>
+    </tr>
+    <tr>
+      <th>7</th>
+      <td>Tryglicerides</td>
+      <td>2.817187</td>
+      <td>4</td>
+      <td>218</td>
+      <td>0.018349</td>
+    </tr>
+    <tr>
+      <th>8</th>
+      <td>Platelets</td>
+      <td>0.374251</td>
+      <td>4</td>
+      <td>218</td>
+      <td>0.018349</td>
     </tr>
     <tr>
       <th>0</th>
-      <td>N_Days</td>
-      <td>0.372897</td>
-      <td>0</td>
-      <td>311</td>
-      <td>0.000000</td>
+      <td>Age</td>
+      <td>0.223080</td>
+      <td>1</td>
+      <td>218</td>
+      <td>0.004587</td>
     </tr>
   </tbody>
 </table>
@@ -3467,74 +3913,68 @@ display(numeric_column_outlier_summary.sort_values(by=['Outlier.Count'], ascendi
 # Formulating the individual boxplots
 # for all numeric columns
 ##################################
-for column in cirrhosis_survival_imputed_numeric:
+for column in cirrhosis_survival_X_train_imputed_numeric:
         plt.figure(figsize=(17,1))
-        sns.boxplot(data=cirrhosis_survival_imputed_numeric, x=column)
+        sns.boxplot(data=cirrhosis_survival_X_train_imputed_numeric, x=column)
 ```
 
 
     
-![png](output_93_0.png)
+![png](output_99_0.png)
     
 
 
 
     
-![png](output_93_1.png)
+![png](output_99_1.png)
     
 
 
 
     
-![png](output_93_2.png)
+![png](output_99_2.png)
     
 
 
 
     
-![png](output_93_3.png)
+![png](output_99_3.png)
     
 
 
 
     
-![png](output_93_4.png)
+![png](output_99_4.png)
     
 
 
 
     
-![png](output_93_5.png)
+![png](output_99_5.png)
     
 
 
 
     
-![png](output_93_6.png)
+![png](output_99_6.png)
     
 
 
 
     
-![png](output_93_7.png)
+![png](output_99_7.png)
     
 
 
 
     
-![png](output_93_8.png)
+![png](output_99_8.png)
     
 
 
 
     
-![png](output_93_9.png)
-    
-
-
-
-    
-![png](output_93_10.png)
+![png](output_99_9.png)
     
 
 
@@ -3542,12 +3982,13 @@ for column in cirrhosis_survival_imputed_numeric:
 
 [Pearson’s Correlation Coefficient](https://royalsocietypublishing.org/doi/10.1098/rsta.1896.0007) is a parametric measure of the linear correlation for a pair of features by calculating the ratio between their covariance and the product of their standard deviations. The presence of high absolute correlation values indicate the univariate association between the numeric predictors and the numeric response.
 
-1. All numeric variables were retained since majority reported sufficiently moderate and statistically significant correlation with no excessive multicollinearity.
-2. Among pairwise combinations of numeric variables, the highest Pearson.Correlation.Coefficient values were noted for:
-    * <span style="color: #FF0000">Birilubin</span> and <span style="color: #FF0000">Copper</span>: Pearson.Correlation.Coefficient = +0.456
+1. All numeric variables in the training subset were retained since majority reported sufficiently moderate and statistically significant correlation with no excessive multicollinearity.
+2. Among pairwise combinations of numeric variables in the training subset, the highest Pearson.Correlation.Coefficient values were noted for:
+    * <span style="color: #FF0000">Birilubin</span> and <span style="color: #FF0000">Copper</span>: Pearson.Correlation.Coefficient = +0.503
     * <span style="color: #FF0000">Birilubin</span> and <span style="color: #FF0000">SGOT</span>: Pearson.Correlation.Coefficient = +0.444
-    * <span style="color: #FF0000">Birilubin</span> and <span style="color: #FF0000">Tryglicerides</span>: Pearson.Correlation.Coefficient = +0.437
-    * <span style="color: #FF0000">Birilubin</span> and <span style="color: #FF0000">Cholesterol</span>: Pearson.Correlation.Coefficient = +0.416
+    * <span style="color: #FF0000">Birilubin</span> and <span style="color: #FF0000">Tryglicerides</span>: Pearson.Correlation.Coefficient = +0.389
+    * <span style="color: #FF0000">Birilubin</span> and <span style="color: #FF0000">Cholesterol</span>: Pearson.Correlation.Coefficient = +0.348
+    * <span style="color: #FF0000">Birilubin</span> and <span style="color: #FF0000">Prothrombin</span>: Pearson.Correlation.Coefficient = +0.344
 
 
 ```python
@@ -3579,12 +4020,12 @@ def plot_correlation_matrix(corr, mask=None):
 # and correlation p-values
 # among pairs of numeric columns
 ##################################
-cirrhosis_survival_imputed_numeric_correlation_pairs = {}
-cirrhosis_survival_imputed_numeric_columns = cirrhosis_survival_imputed_numeric.columns.tolist()
-for numeric_column_a, numeric_column_b in itertools.combinations(cirrhosis_survival_imputed_numeric_columns, 2):
-    cirrhosis_survival_imputed_numeric_correlation_pairs[numeric_column_a + '_' + numeric_column_b] = stats.pearsonr(
-        cirrhosis_survival_imputed_numeric.loc[:, numeric_column_a], 
-        cirrhosis_survival_imputed_numeric.loc[:, numeric_column_b])
+cirrhosis_survival_X_train_imputed_numeric_correlation_pairs = {}
+cirrhosis_survival_X_train_imputed_numeric_columns = cirrhosis_survival_X_train_imputed_numeric.columns.tolist()
+for numeric_column_a, numeric_column_b in itertools.combinations(cirrhosis_survival_X_train_imputed_numeric_columns, 2):
+    cirrhosis_survival_X_train_imputed_numeric_correlation_pairs[numeric_column_a + '_' + numeric_column_b] = stats.pearsonr(
+        cirrhosis_survival_X_train_imputed_numeric.loc[:, numeric_column_a], 
+        cirrhosis_survival_X_train_imputed_numeric.loc[:, numeric_column_b])
 ```
 
 
@@ -3593,9 +4034,9 @@ for numeric_column_a, numeric_column_b in itertools.combinations(cirrhosis_survi
 # Formulating the pairwise correlation summary
 # for all numeric columns
 ##################################
-cirrhosis_survival_imputed_numeric_summary = cirrhosis_survival_imputed_numeric.from_dict(cirrhosis_survival_imputed_numeric_correlation_pairs, orient='index')
-cirrhosis_survival_imputed_numeric_summary.columns = ['Pearson.Correlation.Coefficient', 'Correlation.PValue']
-display(cirrhosis_survival_imputed_numeric_summary.sort_values(by=['Pearson.Correlation.Coefficient'], ascending=False).head(20))
+cirrhosis_survival_X_train_imputed_numeric_summary = cirrhosis_survival_X_train_imputed_numeric.from_dict(cirrhosis_survival_X_train_imputed_numeric_correlation_pairs, orient='index')
+cirrhosis_survival_X_train_imputed_numeric_summary.columns = ['Pearson.Correlation.Coefficient', 'Correlation.PValue']
+display(cirrhosis_survival_X_train_imputed_numeric_summary.sort_values(by=['Pearson.Correlation.Coefficient'], ascending=False).head(20))
 ```
 
 
@@ -3623,104 +4064,104 @@ display(cirrhosis_survival_imputed_numeric_summary.sort_values(by=['Pearson.Corr
   </thead>
   <tbody>
     <tr>
-      <th>Bilirubin_Copper</th>
-      <td>0.456432</td>
-      <td>2.075570e-17</td>
+      <th>Bilirubin_SGOT</th>
+      <td>0.503007</td>
+      <td>2.210899e-15</td>
     </tr>
     <tr>
-      <th>Bilirubin_SGOT</th>
-      <td>0.444043</td>
-      <td>1.852208e-16</td>
+      <th>Bilirubin_Copper</th>
+      <td>0.444366</td>
+      <td>5.768566e-12</td>
     </tr>
     <tr>
       <th>Bilirubin_Tryglicerides</th>
-      <td>0.438062</td>
-      <td>5.162408e-16</td>
+      <td>0.389493</td>
+      <td>2.607951e-09</td>
     </tr>
     <tr>
       <th>Bilirubin_Cholesterol</th>
-      <td>0.415789</td>
-      <td>1.975084e-14</td>
-    </tr>
-    <tr>
-      <th>Cholesterol_SGOT</th>
-      <td>0.359626</td>
-      <td>6.296982e-11</td>
+      <td>0.348174</td>
+      <td>1.311597e-07</td>
     </tr>
     <tr>
       <th>Bilirubin_Prothrombin</th>
-      <td>0.354754</td>
-      <td>1.181651e-10</td>
+      <td>0.344724</td>
+      <td>1.775156e-07</td>
     </tr>
     <tr>
       <th>Copper_SGOT</th>
-      <td>0.293005</td>
-      <td>1.422364e-07</td>
+      <td>0.305052</td>
+      <td>4.475849e-06</td>
     </tr>
     <tr>
-      <th>Cholesterol_Tryglicerides</th>
-      <td>0.286788</td>
-      <td>2.665322e-07</td>
-    </tr>
-    <tr>
-      <th>Copper_Tryglicerides</th>
-      <td>0.285710</td>
-      <td>2.967594e-07</td>
-    </tr>
-    <tr>
-      <th>Copper_Prothrombin</th>
-      <td>0.216304</td>
-      <td>1.206386e-04</td>
-    </tr>
-    <tr>
-      <th>N_Days_Prothrombin</th>
-      <td>0.207582</td>
-      <td>2.275995e-04</td>
-    </tr>
-    <tr>
-      <th>Albumin_Platelets</th>
-      <td>0.203761</td>
-      <td>2.981463e-04</td>
-    </tr>
-    <tr>
-      <th>Copper_Alk_Phos</th>
-      <td>0.188072</td>
-      <td>8.587936e-04</td>
-    </tr>
-    <tr>
-      <th>Cholesterol_Platelets</th>
-      <td>0.186600</td>
-      <td>9.445006e-04</td>
+      <th>Cholesterol_SGOT</th>
+      <td>0.280530</td>
+      <td>2.635566e-05</td>
     </tr>
     <tr>
       <th>Alk_Phos_Tryglicerides</th>
-      <td>0.181366</td>
-      <td>1.317070e-03</td>
+      <td>0.265538</td>
+      <td>7.199789e-05</td>
+    </tr>
+    <tr>
+      <th>Cholesterol_Tryglicerides</th>
+      <td>0.257973</td>
+      <td>1.169491e-04</td>
+    </tr>
+    <tr>
+      <th>Copper_Tryglicerides</th>
+      <td>0.256448</td>
+      <td>1.287335e-04</td>
+    </tr>
+    <tr>
+      <th>Copper_Prothrombin</th>
+      <td>0.232051</td>
+      <td>5.528189e-04</td>
+    </tr>
+    <tr>
+      <th>Copper_Alk_Phos</th>
+      <td>0.215001</td>
+      <td>1.404964e-03</td>
     </tr>
     <tr>
       <th>Alk_Phos_Platelets</th>
-      <td>0.144544</td>
-      <td>1.070421e-02</td>
-    </tr>
-    <tr>
-      <th>Cholesterol_Alk_Phos</th>
-      <td>0.142920</td>
-      <td>1.162805e-02</td>
-    </tr>
-    <tr>
-      <th>Cholesterol_Copper</th>
-      <td>0.131255</td>
-      <td>2.059045e-02</td>
-    </tr>
-    <tr>
-      <th>Tryglicerides_Platelets</th>
-      <td>0.122431</td>
-      <td>3.088704e-02</td>
+      <td>0.182762</td>
+      <td>6.814702e-03</td>
     </tr>
     <tr>
       <th>SGOT_Tryglicerides</th>
-      <td>0.119710</td>
-      <td>3.484125e-02</td>
+      <td>0.176605</td>
+      <td>8.972028e-03</td>
+    </tr>
+    <tr>
+      <th>SGOT_Prothrombin</th>
+      <td>0.170928</td>
+      <td>1.147644e-02</td>
+    </tr>
+    <tr>
+      <th>Albumin_Platelets</th>
+      <td>0.170836</td>
+      <td>1.152154e-02</td>
+    </tr>
+    <tr>
+      <th>Cholesterol_Copper</th>
+      <td>0.165834</td>
+      <td>1.422873e-02</td>
+    </tr>
+    <tr>
+      <th>Cholesterol_Alk_Phos</th>
+      <td>0.165814</td>
+      <td>1.424066e-02</td>
+    </tr>
+    <tr>
+      <th>Age_Prothrombin</th>
+      <td>0.157493</td>
+      <td>1.999022e-02</td>
+    </tr>
+    <tr>
+      <th>Cholesterol_Platelets</th>
+      <td>0.152235</td>
+      <td>2.458130e-02</td>
     </tr>
   </tbody>
 </table>
@@ -3734,15 +4175,15 @@ display(cirrhosis_survival_imputed_numeric_summary.sort_values(by=['Pearson.Corr
 # for all pairwise combinations
 # of numeric columns
 ##################################
-cirrhosis_survival_imputed_numeric_correlation = cirrhosis_survival_imputed_numeric.corr()
-mask = np.triu(cirrhosis_survival_imputed_numeric_correlation)
-plot_correlation_matrix(cirrhosis_survival_imputed_numeric_correlation,mask)
+cirrhosis_survival_X_train_imputed_numeric_correlation = cirrhosis_survival_X_train_imputed_numeric.corr()
+mask = np.triu(cirrhosis_survival_X_train_imputed_numeric_correlation)
+plot_correlation_matrix(cirrhosis_survival_X_train_imputed_numeric_correlation,mask)
 plt.show()
 ```
 
 
     
-![png](output_98_0.png)
+![png](output_104_0.png)
     
 
 
@@ -3772,14 +4213,14 @@ def correlation_significance(df=None):
 # of numeric columns
 # with significant p-values only
 ##################################
-cirrhosis_survival_imputed_numeric_correlation_p_values = correlation_significance(cirrhosis_survival_imputed_numeric)                     
-mask = np.invert(np.tril(cirrhosis_survival_imputed_numeric_correlation_p_values<0.05)) 
-plot_correlation_matrix(cirrhosis_survival_imputed_numeric_correlation,mask)
+cirrhosis_survival_X_train_imputed_numeric_correlation_p_values = correlation_significance(cirrhosis_survival_X_train_imputed_numeric)                     
+mask = np.invert(np.tril(cirrhosis_survival_X_train_imputed_numeric_correlation_p_values<0.05)) 
+plot_correlation_matrix(cirrhosis_survival_X_train_imputed_numeric_correlation,mask)
 ```
 
 
     
-![png](output_100_0.png)
+![png](output_106_0.png)
     
 
 
@@ -3787,16 +4228,17 @@ plot_correlation_matrix(cirrhosis_survival_imputed_numeric_correlation,mask)
 
 [Yeo-Johnson Transformation](https://academic.oup.com/biomet/article-abstract/87/4/954/232908?redirectedFrom=fulltext&login=false) applies a new family of distributions that can be used without restrictions, extending many of the good properties of the Box-Cox power family. Similar to the Box-Cox transformation, the method also estimates the optimal value of lambda but has the ability to transform both positive and negative values by inflating low variance data and deflating high variance data to create a more uniform data set. While there are no restrictions in terms of the applicable values, the interpretability of the transformed values is more diminished as compared to the other methods.
 
-1. A Yeo-Johnson transformation was applied to all numeric variables to improve distributional shape.
-2. Most variables achieved symmetrical distributions with minimal outliers after transformation.
-    * <span style="color: #FF0000">Cholesterol</span>: Outlier.Count = 11, Outlier.Ratio = 0.035, Skewness=-0.059
-    * <span style="color: #FF0000">Albumin</span>: Outlier.Count = 6, Outlier.Ratio = 0.019, Skewness=+0.020
-    * <span style="color: #FF0000">Tryglicerides</span>: Outlier.Count = 6, Outlier.Ratio = 0.019, Skewness=-0.008
-    * <span style="color: #FF0000">Copper</span>: Outlier.Count = 3, Outlier.Ratio = 0.010, Skewness=-0.001
-    * <span style="color: #FF0000">SGOT</span>: Outlier.Count = 3, Outlier.Ratio = 0.010, Skewness=-0.001
-    * <span style="color: #FF0000">Alk_Phos</span>: Outlier.Count = 2, Outlier.Ratio = 0.006, Skewness=+0.010
-    * <span style="color: #FF0000">Platelets</span>: Outlier.Count = 1, Outlier.Ratio = 0.003, Skewness=+0.022
-    * <span style="color: #FF0000">Age</span>: Outlier.Count = 1, Outlier.Ratio = 0.003, Skewness=+0.167
+1. A Yeo-Johnson transformation was applied to all numeric variables in the training subset to improve distributional shape.
+2. Most variables in the training subset achieved symmetrical distributions with minimal outliers after transformation.
+    * <span style="color: #FF0000">Cholesterol</span>: Outlier.Count = 9, Outlier.Ratio = 0.041, Skewness=-0.083
+    * <span style="color: #FF0000">Albumin</span>: Outlier.Count = 4, Outlier.Ratio = 0.018, Skewness=+0.006
+    * <span style="color: #FF0000">Platelets</span>: Outlier.Count = 2, Outlier.Ratio = 0.009, Skewness=-0.019
+    * <span style="color: #FF0000">Age</span>: Outlier.Count = 1, Outlier.Ratio = 0.004, Skewness=+0.223
+    * <span style="color: #FF0000">Copper</span>: Outlier.Count = 1, Outlier.Ratio = 0.004, Skewness=-0.010
+    * <span style="color: #FF0000">Alk_Phos</span>: Outlier.Count = 1, Outlier.Ratio = 0.004, Skewness=+0.027
+    * <span style="color: #FF0000">SGOT</span>: Outlier.Count = 1, Outlier.Ratio = 0.004, Skewness=-0.001
+    * <span style="color: #FF0000">Tryglicerides</span>: Outlier.Count = 1, Outlier.Ratio = 0.004, Skewness=+0.000
+3. Outlier data in the testing subset for numeric variables will be treated with Yeo-Johnson transformation downstream using a pipeline involving the final preprocessing steps.
 
 
 
@@ -3805,8 +4247,8 @@ plot_correlation_matrix(cirrhosis_survival_imputed_numeric_correlation,mask)
 # Formulating a data subset containing
 # variables with noted outliers
 ##################################
-predictors_with_outliers = ['Bilirubin','Cholesterol','Albumin','Copper','Alk_Phos','SGOT','Tryglicerides','Platelets']
-cirrhosis_survival_imputed_numeric_with_outliers = cirrhosis_survival_imputed_numeric[predictors_with_outliers]
+X_train_predictors_with_outliers = ['Bilirubin','Cholesterol','Albumin','Copper','Alk_Phos','SGOT','Tryglicerides','Platelets','Prothrombin']
+cirrhosis_survival_X_train_imputed_numeric_with_outliers = cirrhosis_survival_X_train_imputed_numeric[X_train_predictors_with_outliers]
 ```
 
 
@@ -3818,7 +4260,7 @@ cirrhosis_survival_imputed_numeric_with_outliers = cirrhosis_survival_imputed_nu
 ##################################
 yeo_johnson_transformer = PowerTransformer(method='yeo-johnson',
                                           standardize=False)
-cirrhosis_survival_imputed_numeric_with_outliers_array = yeo_johnson_transformer.fit_transform(cirrhosis_survival_imputed_numeric_with_outliers)
+cirrhosis_survival_X_train_imputed_numeric_with_outliers_array = yeo_johnson_transformer.fit_transform(cirrhosis_survival_X_train_imputed_numeric_with_outliers)
 ```
 
 
@@ -3827,14 +4269,16 @@ cirrhosis_survival_imputed_numeric_with_outliers_array = yeo_johnson_transformer
 # Formulating a new dataset object
 # for the transformed data
 ##################################
-cirrhosis_survival_transformed_numeric_with_outliers = pd.DataFrame(cirrhosis_survival_imputed_numeric_with_outliers_array,
-                                                                    columns=cirrhosis_survival_imputed_numeric_with_outliers.columns)
-cirrhosis_survival_transformed_numeric = pd.concat([cirrhosis_survival_imputed_numeric[['Age']],cirrhosis_survival_transformed_numeric_with_outliers], axis=1)
+cirrhosis_survival_X_train_transformed_numeric_with_outliers = pd.DataFrame(cirrhosis_survival_X_train_imputed_numeric_with_outliers_array,
+                                                                            columns=cirrhosis_survival_X_train_imputed_numeric_with_outliers.columns)
+cirrhosis_survival_X_train_transformed_numeric = pd.concat([cirrhosis_survival_X_train_imputed_numeric[['Age']],
+                                                            cirrhosis_survival_X_train_transformed_numeric_with_outliers], 
+                                                           axis=1)
 ```
 
 
 ```python
-cirrhosis_survival_transformed_numeric.head()
+cirrhosis_survival_X_train_transformed_numeric.head()
 ```
 
 
@@ -3867,68 +4311,74 @@ cirrhosis_survival_transformed_numeric.head()
       <th>SGOT</th>
       <th>Tryglicerides</th>
       <th>Platelets</th>
+      <th>Prothrombin</th>
     </tr>
   </thead>
   <tbody>
     <tr>
+      <th>0</th>
+      <td>13329</td>
+      <td>0.830251</td>
+      <td>1.528771</td>
+      <td>25.311621</td>
+      <td>4.367652</td>
+      <td>2.066062</td>
+      <td>7.115310</td>
+      <td>3.357597</td>
+      <td>58.787709</td>
+      <td>0.236575</td>
+    </tr>
+    <tr>
       <th>1</th>
-      <td>21464.0</td>
-      <td>0.619732</td>
-      <td>1.433604</td>
-      <td>21.485967</td>
-      <td>6.274730</td>
-      <td>2.164598</td>
-      <td>5.145246</td>
-      <td>2.589446</td>
-      <td>35.781442</td>
+      <td>12912</td>
+      <td>0.751147</td>
+      <td>1.535175</td>
+      <td>34.049208</td>
+      <td>6.244827</td>
+      <td>2.047167</td>
+      <td>7.303237</td>
+      <td>3.581345</td>
+      <td>57.931137</td>
+      <td>0.236572</td>
     </tr>
     <tr>
       <th>2</th>
-      <td>20617.0</td>
-      <td>0.689000</td>
-      <td>1.442401</td>
-      <td>11.135260</td>
-      <td>4.722634</td>
-      <td>2.267788</td>
-      <td>4.579478</td>
-      <td>2.772713</td>
-      <td>40.547428</td>
+      <td>17180</td>
+      <td>0.491099</td>
+      <td>1.523097</td>
+      <td>32.812930</td>
+      <td>5.320861</td>
+      <td>2.043970</td>
+      <td>7.278682</td>
+      <td>2.990077</td>
+      <td>61.554228</td>
+      <td>0.236573</td>
     </tr>
     <tr>
       <th>3</th>
-      <td>25594.0</td>
-      <td>0.847264</td>
-      <td>1.445490</td>
-      <td>22.157066</td>
-      <td>5.759480</td>
-      <td>2.181419</td>
-      <td>5.349723</td>
-      <td>2.687986</td>
-      <td>33.419944</td>
+      <td>17884</td>
+      <td>0.760957</td>
+      <td>1.505628</td>
+      <td>30.818146</td>
+      <td>5.264915</td>
+      <td>2.062590</td>
+      <td>7.170942</td>
+      <td>3.288822</td>
+      <td>29.648190</td>
+      <td>0.236575</td>
     </tr>
     <tr>
       <th>4</th>
-      <td>19994.0</td>
-      <td>0.463815</td>
-      <td>1.442791</td>
-      <td>28.789864</td>
-      <td>4.415846</td>
-      <td>2.200631</td>
-      <td>5.104434</td>
-      <td>2.639857</td>
-      <td>50.646774</td>
-    </tr>
-    <tr>
-      <th>5</th>
-      <td>13918.0</td>
-      <td>0.525336</td>
-      <td>1.448500</td>
-      <td>30.578643</td>
-      <td>4.464210</td>
-      <td>2.193314</td>
-      <td>4.575880</td>
-      <td>3.029665</td>
-      <td>43.507788</td>
+      <td>15177</td>
+      <td>0.893603</td>
+      <td>1.519249</td>
+      <td>26.533792</td>
+      <td>6.440904</td>
+      <td>2.109170</td>
+      <td>8.385199</td>
+      <td>3.284118</td>
+      <td>43.198326</td>
+      <td>0.236572</td>
     </tr>
   </tbody>
 </table>
@@ -3942,62 +4392,68 @@ cirrhosis_survival_transformed_numeric.head()
 # Formulating the individual boxplots
 # for all transformed numeric columns
 ##################################
-for column in cirrhosis_survival_transformed_numeric:
+for column in cirrhosis_survival_X_train_transformed_numeric:
         plt.figure(figsize=(17,1))
-        sns.boxplot(data=cirrhosis_survival_transformed_numeric, x=column)
+        sns.boxplot(data=cirrhosis_survival_X_train_transformed_numeric, x=column)
 ```
 
 
     
-![png](output_106_0.png)
+![png](output_112_0.png)
     
 
 
 
     
-![png](output_106_1.png)
+![png](output_112_1.png)
     
 
 
 
     
-![png](output_106_2.png)
+![png](output_112_2.png)
     
 
 
 
     
-![png](output_106_3.png)
+![png](output_112_3.png)
     
 
 
 
     
-![png](output_106_4.png)
+![png](output_112_4.png)
     
 
 
 
     
-![png](output_106_5.png)
+![png](output_112_5.png)
     
 
 
 
     
-![png](output_106_6.png)
+![png](output_112_6.png)
     
 
 
 
     
-![png](output_106_7.png)
+![png](output_112_7.png)
     
 
 
 
     
-![png](output_106_8.png)
+![png](output_112_8.png)
+    
+
+
+
+    
+![png](output_112_9.png)
     
 
 
@@ -4007,26 +4463,26 @@ for column in cirrhosis_survival_transformed_numeric:
 # Formulating the outlier summary
 # for all numeric columns
 ##################################
-numeric_variable_name_list = list(cirrhosis_survival_transformed_numeric.columns)
-numeric_skewness_list = cirrhosis_survival_transformed_numeric.skew()
-cirrhosis_survival_transformed_numeric_q1 = cirrhosis_survival_transformed_numeric.quantile(0.25)
-cirrhosis_survival_transformed_numeric_q3 = cirrhosis_survival_transformed_numeric.quantile(0.75)
-cirrhosis_survival_transformed_numeric_iqr = cirrhosis_survival_transformed_numeric_q3 - cirrhosis_survival_transformed_numeric_q1
-numeric_outlier_count_list = ((cirrhosis_survival_transformed_numeric < (cirrhosis_survival_transformed_numeric_q1 - 1.5 * cirrhosis_survival_transformed_numeric_iqr)) | (cirrhosis_survival_transformed_numeric > (cirrhosis_survival_transformed_numeric_q3 + 1.5 * cirrhosis_survival_transformed_numeric_iqr))).sum()
-numeric_row_count_list = list([len(cirrhosis_survival_transformed_numeric)] * len(cirrhosis_survival_transformed_numeric.columns))
-numeric_outlier_ratio_list = map(truediv, numeric_outlier_count_list, numeric_row_count_list)
+X_train_numeric_variable_name_list = list(cirrhosis_survival_X_train_transformed_numeric.columns)
+X_train_numeric_skewness_list = cirrhosis_survival_X_train_transformed_numeric.skew()
+cirrhosis_survival_X_train_transformed_numeric_q1 = cirrhosis_survival_X_train_transformed_numeric.quantile(0.25)
+cirrhosis_survival_X_train_transformed_numeric_q3 = cirrhosis_survival_X_train_transformed_numeric.quantile(0.75)
+cirrhosis_survival_X_train_transformed_numeric_iqr = cirrhosis_survival_X_train_transformed_numeric_q3 - cirrhosis_survival_X_train_transformed_numeric_q1
+X_train_numeric_outlier_count_list = ((cirrhosis_survival_X_train_transformed_numeric < (cirrhosis_survival_X_train_transformed_numeric_q1 - 1.5 * cirrhosis_survival_X_train_transformed_numeric_iqr)) | (cirrhosis_survival_X_train_transformed_numeric > (cirrhosis_survival_X_train_transformed_numeric_q3 + 1.5 * cirrhosis_survival_X_train_transformed_numeric_iqr))).sum()
+X_train_numeric_row_count_list = list([len(cirrhosis_survival_X_train_transformed_numeric)] * len(cirrhosis_survival_X_train_transformed_numeric.columns))
+X_train_numeric_outlier_ratio_list = map(truediv, X_train_numeric_outlier_count_list, X_train_numeric_row_count_list)
 
-numeric_column_outlier_summary = pd.DataFrame(zip(numeric_variable_name_list,
-                                                  numeric_skewness_list,
-                                                  numeric_outlier_count_list,
-                                                  numeric_row_count_list,
-                                                  numeric_outlier_ratio_list), 
+X_train_numeric_column_outlier_summary = pd.DataFrame(zip(X_train_numeric_variable_name_list,
+                                                          X_train_numeric_skewness_list,
+                                                          X_train_numeric_outlier_count_list,
+                                                          X_train_numeric_row_count_list,
+                                                          X_train_numeric_outlier_ratio_list),                                                      
                                         columns=['Numeric.Column.Name',
                                                  'Skewness',
                                                  'Outlier.Count',
                                                  'Row.Count',
                                                  'Outlier.Ratio'])
-display(numeric_column_outlier_summary.sort_values(by=['Outlier.Count'], ascending=False))
+display(X_train_numeric_column_outlier_summary.sort_values(by=['Outlier.Count'], ascending=False))
 ```
 
 
@@ -4059,73 +4515,81 @@ display(numeric_column_outlier_summary.sort_values(by=['Outlier.Count'], ascendi
     <tr>
       <th>2</th>
       <td>Cholesterol</td>
-      <td>-0.059268</td>
-      <td>11</td>
-      <td>312</td>
-      <td>0.035256</td>
+      <td>-0.083072</td>
+      <td>9</td>
+      <td>218</td>
+      <td>0.041284</td>
     </tr>
     <tr>
       <th>3</th>
       <td>Albumin</td>
-      <td>0.020584</td>
-      <td>6</td>
-      <td>312</td>
-      <td>0.019231</td>
-    </tr>
-    <tr>
-      <th>7</th>
-      <td>Tryglicerides</td>
-      <td>-0.008621</td>
+      <td>0.006523</td>
       <td>4</td>
-      <td>312</td>
-      <td>0.012821</td>
-    </tr>
-    <tr>
-      <th>4</th>
-      <td>Copper</td>
-      <td>-0.000867</td>
-      <td>3</td>
-      <td>312</td>
-      <td>0.009615</td>
-    </tr>
-    <tr>
-      <th>6</th>
-      <td>SGOT</td>
-      <td>-0.000418</td>
-      <td>3</td>
-      <td>312</td>
-      <td>0.009615</td>
-    </tr>
-    <tr>
-      <th>5</th>
-      <td>Alk_Phos</td>
-      <td>0.010346</td>
-      <td>2</td>
-      <td>312</td>
-      <td>0.006410</td>
-    </tr>
-    <tr>
-      <th>0</th>
-      <td>Age</td>
-      <td>0.167578</td>
-      <td>1</td>
-      <td>312</td>
-      <td>0.003205</td>
+      <td>218</td>
+      <td>0.018349</td>
     </tr>
     <tr>
       <th>8</th>
       <td>Platelets</td>
-      <td>-0.021615</td>
+      <td>-0.019323</td>
+      <td>2</td>
+      <td>218</td>
+      <td>0.009174</td>
+    </tr>
+    <tr>
+      <th>0</th>
+      <td>Age</td>
+      <td>0.223080</td>
       <td>1</td>
-      <td>312</td>
-      <td>0.003205</td>
+      <td>218</td>
+      <td>0.004587</td>
+    </tr>
+    <tr>
+      <th>4</th>
+      <td>Copper</td>
+      <td>-0.010240</td>
+      <td>1</td>
+      <td>218</td>
+      <td>0.004587</td>
+    </tr>
+    <tr>
+      <th>5</th>
+      <td>Alk_Phos</td>
+      <td>0.027977</td>
+      <td>1</td>
+      <td>218</td>
+      <td>0.004587</td>
+    </tr>
+    <tr>
+      <th>7</th>
+      <td>Tryglicerides</td>
+      <td>-0.000881</td>
+      <td>1</td>
+      <td>218</td>
+      <td>0.004587</td>
+    </tr>
+    <tr>
+      <th>9</th>
+      <td>Prothrombin</td>
+      <td>0.000000</td>
+      <td>1</td>
+      <td>218</td>
+      <td>0.004587</td>
     </tr>
     <tr>
       <th>1</th>
       <td>Bilirubin</td>
-      <td>0.254036</td>
+      <td>0.263101</td>
       <td>0</td>
-      <td>312</td>
+      <td>218</td>
+      <td>0.000000</td>
+    </tr>
+    <tr>
+      <th>6</th>
+      <td>SGOT</td>
+      <td>-0.008416</td>
+      <td>0</td>
+      <td>218</td>
       <td>0.000000</td>
     </tr>
   </tbody>
@@ -4135,7 +4599,8 @@ display(numeric_column_outlier_summary.sort_values(by=['Outlier.Count'], ascendi
 
 ### 1.4.6 Centering and Scaling <a class="anchor" id="1.4.6"></a>
 
-1. All numeric variables were transformed using the standardization method to achieve a comparable scale between values.
+1. All numeric variables in the training subset were transformed using the standardization method to achieve a comparable scale between values.
+2. Original data in the testing subset for numeric variables will be treated with standardization scaling downstream using a pipeline involving the final preprocessing steps.
 
 
 ```python
@@ -4145,7 +4610,7 @@ display(numeric_column_outlier_summary.sort_values(by=['Outlier.Count'], ascendi
 # variables into comparable scale
 ##################################
 standardization_scaler = StandardScaler()
-cirrhosis_survival_transformed_numeric_array = standardization_scaler.fit_transform(cirrhosis_survival_transformed_numeric)
+cirrhosis_survival_X_train_transformed_numeric_array = standardization_scaler.fit_transform(cirrhosis_survival_X_train_transformed_numeric)
 ```
 
 
@@ -4154,8 +4619,8 @@ cirrhosis_survival_transformed_numeric_array = standardization_scaler.fit_transf
 # Formulating a new dataset object
 # for the scaled data
 ##################################
-cirrhosis_survival_scaled_numeric = pd.DataFrame(cirrhosis_survival_transformed_numeric_array,
-                                                 columns=cirrhosis_survival_transformed_numeric.columns)
+cirrhosis_survival_X_train_scaled_numeric = pd.DataFrame(cirrhosis_survival_X_train_transformed_numeric_array,
+                                                         columns=cirrhosis_survival_X_train_transformed_numeric.columns)
 ```
 
 
@@ -4164,68 +4629,74 @@ cirrhosis_survival_scaled_numeric = pd.DataFrame(cirrhosis_survival_transformed_
 # Formulating the individual boxplots
 # for all transformed numeric columns
 ##################################
-for column in cirrhosis_survival_scaled_numeric:
+for column in cirrhosis_survival_X_train_scaled_numeric:
         plt.figure(figsize=(17,1))
-        sns.boxplot(data=cirrhosis_survival_scaled_numeric, x=column)
+        sns.boxplot(data=cirrhosis_survival_X_train_scaled_numeric, x=column)
 ```
 
 
     
-![png](output_111_0.png)
+![png](output_117_0.png)
     
 
 
 
     
-![png](output_111_1.png)
+![png](output_117_1.png)
     
 
 
 
     
-![png](output_111_2.png)
+![png](output_117_2.png)
     
 
 
 
     
-![png](output_111_3.png)
+![png](output_117_3.png)
     
 
 
 
     
-![png](output_111_4.png)
+![png](output_117_4.png)
     
 
 
 
     
-![png](output_111_5.png)
+![png](output_117_5.png)
     
 
 
 
     
-![png](output_111_6.png)
+![png](output_117_6.png)
     
 
 
 
     
-![png](output_111_7.png)
+![png](output_117_7.png)
     
 
 
 
     
-![png](output_111_8.png)
+![png](output_117_8.png)
+    
+
+
+
+    
+![png](output_117_9.png)
     
 
 
 ### 1.4.7 Data Encoding <a class="anchor" id="1.4.7"></a>
 
-1. Binary encoding was applied to a subset of target and predictor object columns in the dataset:
+1. Binary encoding was applied to the predictor object columns in the training subset:
     * <span style="color: #FF0000">Status</span>
     * <span style="color: #FF0000">Drug</span>
     * <span style="color: #FF0000">Sex</span>
@@ -4233,11 +4704,12 @@ for column in cirrhosis_survival_scaled_numeric:
     * <span style="color: #FF0000">Hepatomegaly</span>
     * <span style="color: #FF0000">Spiders</span>
     * <span style="color: #FF0000">Edema</span>
-1. One-hot encoding was applied to the <span style="color: #FF0000">Stage</span> variable resulting to 4 additional columns in the dataset:
+1. One-hot encoding was applied to the <span style="color: #FF0000">Stage</span> variable resulting to 4 additional columns in the training subset:
     * <span style="color: #FF0000">Stage_1.0</span>
     * <span style="color: #FF0000">Stage_2.0</span>
     * <span style="color: #FF0000">Stage_3.0</span>
     * <span style="color: #FF0000">Stage_4.0</span>
+3. Original data in the testing subset for object variables will be treated with binary and one-hot encoding downstream using a pipeline involving the final preprocessing steps.
 
 
 ```python
@@ -4245,13 +4717,12 @@ for column in cirrhosis_survival_scaled_numeric:
 # Applying a binary encoding transformation
 # for the two-level object columns
 ##################################
-cirrhosis_survival_cleaned_object['Sex'] = cirrhosis_survival_cleaned_object['Sex'].replace({'M':0, 'F':1}) 
-cirrhosis_survival_cleaned_object['Ascites'] = cirrhosis_survival_cleaned_object['Ascites'].replace({'N':0, 'Y':1}) 
-cirrhosis_survival_cleaned_object['Drug'] = cirrhosis_survival_cleaned_object['Drug'].replace({'Placebo':0, 'D-penicillamine':1}) 
-cirrhosis_survival_cleaned_object['Hepatomegaly'] = cirrhosis_survival_cleaned_object['Hepatomegaly'].replace({'N':0, 'Y':1}) 
-cirrhosis_survival_cleaned_object['Spiders'] = cirrhosis_survival_cleaned_object['Spiders'].replace({'N':0, 'Y':1}) 
-cirrhosis_survival_cleaned_object['Edema'] = cirrhosis_survival_cleaned_object['Edema'].replace({'N':0, 'Y':1, 'S':1}) 
-cirrhosis_survival_cleaned_object['Status'] = cirrhosis_survival_cleaned_object['Status'].replace({'C':0, 'CL':0, 'D':1}) 
+cirrhosis_survival_X_train_cleaned_object['Sex'] = cirrhosis_survival_X_train_cleaned_object['Sex'].replace({'M':0, 'F':1}) 
+cirrhosis_survival_X_train_cleaned_object['Ascites'] = cirrhosis_survival_X_train_cleaned_object['Ascites'].replace({'N':0, 'Y':1}) 
+cirrhosis_survival_X_train_cleaned_object['Drug'] = cirrhosis_survival_X_train_cleaned_object['Drug'].replace({'Placebo':0, 'D-penicillamine':1}) 
+cirrhosis_survival_X_train_cleaned_object['Hepatomegaly'] = cirrhosis_survival_X_train_cleaned_object['Hepatomegaly'].replace({'N':0, 'Y':1}) 
+cirrhosis_survival_X_train_cleaned_object['Spiders'] = cirrhosis_survival_X_train_cleaned_object['Spiders'].replace({'N':0, 'Y':1}) 
+cirrhosis_survival_X_train_cleaned_object['Edema'] = cirrhosis_survival_X_train_cleaned_object['Edema'].replace({'N':0, 'Y':1, 'S':1}) 
 ```
 
 
@@ -4260,8 +4731,8 @@ cirrhosis_survival_cleaned_object['Status'] = cirrhosis_survival_cleaned_object[
 # Formulating the multi-level object column stage
 # for encoding transformation
 ##################################
-cirrhosis_survival_cleaned_object_stage_encoded = pd.DataFrame(cirrhosis_survival_cleaned_object.loc[:, 'Stage'].to_list(),
-                                                               columns=['Stage'])
+cirrhosis_survival_X_train_cleaned_object_stage_encoded = pd.DataFrame(cirrhosis_survival_X_train_cleaned_object.loc[:, 'Stage'].to_list(),
+                                                                       columns=['Stage'])
 ```
 
 
@@ -4270,7 +4741,7 @@ cirrhosis_survival_cleaned_object_stage_encoded = pd.DataFrame(cirrhosis_surviva
 # Applying a one-hot encoding transformation
 # for the multi-level object column stage
 ##################################
-cirrhosis_survival_cleaned_object_stage_encoded = pd.get_dummies(cirrhosis_survival_cleaned_object_stage_encoded, columns=['Stage'])
+cirrhosis_survival_X_train_cleaned_object_stage_encoded = pd.get_dummies(cirrhosis_survival_X_train_cleaned_object_stage_encoded, columns=['Stage'])
 ```
 
 
@@ -4279,8 +4750,9 @@ cirrhosis_survival_cleaned_object_stage_encoded = pd.get_dummies(cirrhosis_survi
 # Applying a one-hot encoding transformation
 # for the multi-level object column stage
 ##################################
-cirrhosis_survival_cleaned_encoded_object = pd.concat([cirrhosis_survival_cleaned_object.drop(['Stage'], axis=1), cirrhosis_survival_cleaned_object_stage_encoded], axis=1)
-cirrhosis_survival_cleaned_encoded_object.head()
+cirrhosis_survival_X_train_cleaned_encoded_object = pd.concat([cirrhosis_survival_X_train_cleaned_object.drop(['Stage'], axis=1), 
+                                                               cirrhosis_survival_X_train_cleaned_object_stage_encoded], axis=1)
+cirrhosis_survival_X_train_cleaned_encoded_object.head()
 ```
 
 
@@ -4304,7 +4776,6 @@ cirrhosis_survival_cleaned_encoded_object.head()
   <thead>
     <tr style="text-align: right;">
       <th></th>
-      <th>Status</th>
       <th>Drug</th>
       <th>Sex</th>
       <th>Ascites</th>
@@ -4319,74 +4790,278 @@ cirrhosis_survival_cleaned_encoded_object.head()
   </thead>
   <tbody>
     <tr>
+      <th>0</th>
+      <td>1</td>
+      <td>1</td>
+      <td>0</td>
+      <td>0</td>
+      <td>0</td>
+      <td>0</td>
+      <td>0</td>
+      <td>1</td>
+      <td>0</td>
+      <td>0</td>
+    </tr>
+    <tr>
       <th>1</th>
-      <td>1.0</td>
-      <td>1.0</td>
-      <td>1.0</td>
-      <td>1.0</td>
-      <td>1.0</td>
-      <td>1.0</td>
-      <td>1.0</td>
-      <td>0.0</td>
-      <td>0.0</td>
-      <td>1.0</td>
-      <td>0.0</td>
+      <td>1</td>
+      <td>0</td>
+      <td>0</td>
+      <td>0</td>
+      <td>0</td>
+      <td>0</td>
+      <td>0</td>
+      <td>0</td>
+      <td>1</td>
+      <td>0</td>
     </tr>
     <tr>
       <th>2</th>
-      <td>0.0</td>
-      <td>1.0</td>
-      <td>1.0</td>
-      <td>0.0</td>
-      <td>1.0</td>
-      <td>1.0</td>
-      <td>0.0</td>
-      <td>0.0</td>
-      <td>0.0</td>
-      <td>0.0</td>
-      <td>1.0</td>
+      <td>1</td>
+      <td>1</td>
+      <td>0</td>
+      <td>0</td>
+      <td>0</td>
+      <td>0</td>
+      <td>0</td>
+      <td>1</td>
+      <td>0</td>
+      <td>0</td>
     </tr>
     <tr>
       <th>3</th>
-      <td>1.0</td>
-      <td>1.0</td>
-      <td>0.0</td>
-      <td>0.0</td>
-      <td>0.0</td>
-      <td>0.0</td>
-      <td>1.0</td>
-      <td>0.0</td>
-      <td>0.0</td>
-      <td>0.0</td>
-      <td>1.0</td>
+      <td>0</td>
+      <td>1</td>
+      <td>1</td>
+      <td>1</td>
+      <td>1</td>
+      <td>1</td>
+      <td>0</td>
+      <td>0</td>
+      <td>0</td>
+      <td>1</td>
     </tr>
     <tr>
       <th>4</th>
-      <td>1.0</td>
-      <td>1.0</td>
-      <td>1.0</td>
-      <td>0.0</td>
-      <td>1.0</td>
-      <td>1.0</td>
-      <td>1.0</td>
-      <td>0.0</td>
-      <td>0.0</td>
-      <td>1.0</td>
-      <td>0.0</td>
+      <td>0</td>
+      <td>1</td>
+      <td>0</td>
+      <td>1</td>
+      <td>0</td>
+      <td>0</td>
+      <td>0</td>
+      <td>1</td>
+      <td>0</td>
+      <td>0</td>
+    </tr>
+  </tbody>
+</table>
+</div>
+
+
+
+### 1.4.7 Preprocessed Data Description <a class="anchor" id="1.4.7"></a>
+
+1. The preprocessed training subset is comprised of:
+    * **218 rows** (observations)
+    * **21 columns** (variables)
+        * **2/22 target | duration** (boolean | numeric)
+             * <span style="color: #FF0000">Status</span>
+             * <span style="color: #FF0000">N_Days</span>
+        * **10/22 predictor** (numeric)
+             * <span style="color: #FF0000">Age</span>
+             * <span style="color: #FF0000">Bilirubin</span>
+             * <span style="color: #FF0000">Cholesterol</span>
+             * <span style="color: #FF0000">Albumin</span>
+             * <span style="color: #FF0000">Copper</span>
+             * <span style="color: #FF0000">Alk_Phos</span>
+             * <span style="color: #FF0000">SGOT</span>
+             * <span style="color: #FF0000">Triglycerides</span>
+             * <span style="color: #FF0000">Platelets</span>
+             * <span style="color: #FF0000">Prothrombin</span>
+        * **10/21 predictor** (object)
+             * <span style="color: #FF0000">Drug</span>
+             * <span style="color: #FF0000">Sex</span>
+             * <span style="color: #FF0000">Ascites</span>
+             * <span style="color: #FF0000">Hepatomegaly</span>
+             * <span style="color: #FF0000">Spiders</span>
+             * <span style="color: #FF0000">Edema</span>
+             * <span style="color: #FF0000">Stage_1.0</span>
+             * <span style="color: #FF0000">Stage_2.0</span>
+             * <span style="color: #FF0000">Stage_3.0</span>
+             * <span style="color: #FF0000">Stage_4.0</span>
+
+
+```python
+##################################
+# Consolidating all preprocessed
+# numeric and object predictors
+# for the training subset
+##################################
+cirrhosis_survival_X_train_preprocessed = pd.concat([cirrhosis_survival_X_train_scaled_numeric,
+                                                     cirrhosis_survival_X_train_cleaned_encoded_object], 
+                                                     axis=1)
+cirrhosis_survival_X_train_preprocessed.head()
+```
+
+
+
+
+<div>
+<style scoped>
+    .dataframe tbody tr th:only-of-type {
+        vertical-align: middle;
+    }
+
+    .dataframe tbody tr th {
+        vertical-align: top;
+    }
+
+    .dataframe thead th {
+        text-align: right;
+    }
+</style>
+<table border="1" class="dataframe">
+  <thead>
+    <tr style="text-align: right;">
+      <th></th>
+      <th>Age</th>
+      <th>Bilirubin</th>
+      <th>Cholesterol</th>
+      <th>Albumin</th>
+      <th>Copper</th>
+      <th>Alk_Phos</th>
+      <th>SGOT</th>
+      <th>Tryglicerides</th>
+      <th>Platelets</th>
+      <th>Prothrombin</th>
+      <th>Drug</th>
+      <th>Sex</th>
+      <th>Ascites</th>
+      <th>Hepatomegaly</th>
+      <th>Spiders</th>
+      <th>Edema</th>
+      <th>Stage_1.0</th>
+      <th>Stage_2.0</th>
+      <th>Stage_3.0</th>
+      <th>Stage_4.0</th>
+    </tr>
+  </thead>
+  <tbody>
+    <tr>
+      <th>0</th>
+      <td>-1.296446</td>
+      <td>0.863802</td>
+      <td>0.885512</td>
+      <td>-0.451884</td>
+      <td>-0.971563</td>
+      <td>0.140990</td>
+      <td>0.104609</td>
+      <td>0.155256</td>
+      <td>0.539120</td>
+      <td>0.747580</td>
+      <td>1</td>
+      <td>1</td>
+      <td>0</td>
+      <td>0</td>
+      <td>0</td>
+      <td>0</td>
+      <td>0</td>
+      <td>1</td>
+      <td>0</td>
+      <td>0</td>
     </tr>
     <tr>
-      <th>5</th>
-      <td>0.0</td>
-      <td>0.0</td>
-      <td>1.0</td>
-      <td>0.0</td>
-      <td>1.0</td>
-      <td>1.0</td>
-      <td>0.0</td>
-      <td>0.0</td>
-      <td>0.0</td>
-      <td>1.0</td>
-      <td>0.0</td>
+      <th>1</th>
+      <td>-1.405311</td>
+      <td>0.516350</td>
+      <td>1.556983</td>
+      <td>0.827618</td>
+      <td>0.468389</td>
+      <td>-0.705337</td>
+      <td>0.301441</td>
+      <td>1.275281</td>
+      <td>0.472266</td>
+      <td>-0.315794</td>
+      <td>1</td>
+      <td>0</td>
+      <td>0</td>
+      <td>0</td>
+      <td>0</td>
+      <td>0</td>
+      <td>0</td>
+      <td>0</td>
+      <td>1</td>
+      <td>0</td>
+    </tr>
+    <tr>
+      <th>2</th>
+      <td>-0.291081</td>
+      <td>-0.625875</td>
+      <td>0.290561</td>
+      <td>0.646582</td>
+      <td>-0.240371</td>
+      <td>-0.848544</td>
+      <td>0.275723</td>
+      <td>-1.684460</td>
+      <td>0.755044</td>
+      <td>0.087130</td>
+      <td>1</td>
+      <td>1</td>
+      <td>0</td>
+      <td>0</td>
+      <td>0</td>
+      <td>0</td>
+      <td>0</td>
+      <td>1</td>
+      <td>0</td>
+      <td>0</td>
+    </tr>
+    <tr>
+      <th>3</th>
+      <td>-0.107291</td>
+      <td>0.559437</td>
+      <td>-1.541148</td>
+      <td>0.354473</td>
+      <td>-0.283286</td>
+      <td>-0.014525</td>
+      <td>0.162878</td>
+      <td>-0.189015</td>
+      <td>-1.735183</td>
+      <td>0.649171</td>
+      <td>0</td>
+      <td>1</td>
+      <td>1</td>
+      <td>1</td>
+      <td>1</td>
+      <td>1</td>
+      <td>0</td>
+      <td>0</td>
+      <td>0</td>
+      <td>1</td>
+    </tr>
+    <tr>
+      <th>4</th>
+      <td>-0.813996</td>
+      <td>1.142068</td>
+      <td>-0.112859</td>
+      <td>-0.272913</td>
+      <td>0.618797</td>
+      <td>2.071847</td>
+      <td>1.434674</td>
+      <td>-0.212560</td>
+      <td>-0.677612</td>
+      <td>-0.315794</td>
+      <td>0</td>
+      <td>1</td>
+      <td>0</td>
+      <td>1</td>
+      <td>0</td>
+      <td>0</td>
+      <td>0</td>
+      <td>1</td>
+      <td>0</td>
+      <td>0</td>
     </tr>
   </tbody>
 </table>
