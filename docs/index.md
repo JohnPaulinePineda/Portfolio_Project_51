@@ -128,6 +128,8 @@ from sklearn.impute import IterativeImputer
 from sklearn.linear_model import LinearRegression
 from sklearn.preprocessing import PowerTransformer
 from sklearn.preprocessing import StandardScaler
+from sklearn.pipeline import Pipeline
+from sklearn.compose import ColumnTransformer
 from scipy import stats
 ```
 
@@ -2677,14 +2679,14 @@ display(cleaned_column_quality_summary.sort_values(by=['Null.Count'], ascending=
 ##################################
 # Creating training and testing data
 ##################################
-X = cirrhosis_survival_cleaned.drop(columns=['Status', 'N_Days'])
-y = cirrhosis_survival_cleaned[['Status', 'N_Days']]
-y = y.to_records(index=False)
-X_train, X_test, y_train, y_test = train_test_split(X, y, test_size=0.30, stratify=y['Status'], random_state=88888888)
-cirrhosis_survival_X_train_cleaned = X_train.copy()
-cirrhosis_survival_y_train_cleaned = y_train.copy()
-cirrhosis_survival_X_test_cleaned = X_test.copy()
-cirrhosis_survival_y_test_cleaned = X_train.copy()
+cirrhosis_survival_train, cirrhosis_survival_test = train_test_split(cirrhosis_survival_cleaned, 
+                                                                     test_size=0.30, 
+                                                                     stratify=cirrhosis_survival_cleaned['Status'], 
+                                                                     random_state=88888888)
+cirrhosis_survival_X_train_cleaned = cirrhosis_survival_train.drop(columns=['Status', 'N_Days'])
+cirrhosis_survival_y_train_cleaned = cirrhosis_survival_train[['Status', 'N_Days']]
+cirrhosis_survival_X_test_cleaned = cirrhosis_survival_test.drop(columns=['Status', 'N_Days'])
+cirrhosis_survival_y_test_cleaned = cirrhosis_survival_test[['Status', 'N_Days']]
 ```
 
 
@@ -2692,10 +2694,10 @@ cirrhosis_survival_y_test_cleaned = X_train.copy()
 ##################################
 # Gathering the training data information
 ##################################
-print(f'Training Dataset Dimensions: Predictors: {X_train.shape}, Target|Duration: {y_train.shape}')
+print(f'Training Dataset Dimensions: Predictors: {cirrhosis_survival_X_train_cleaned.shape}, Target|Duration: {cirrhosis_survival_y_train_cleaned.shape}')
 ```
 
-    Training Dataset Dimensions: Predictors: (218, 17), Target|Duration: (218,)
+    Training Dataset Dimensions: Predictors: (218, 17), Target|Duration: (218, 2)
     
 
 
@@ -2703,10 +2705,10 @@ print(f'Training Dataset Dimensions: Predictors: {X_train.shape}, Target|Duratio
 ##################################
 # Gathering the testing data information
 ##################################
-print(f'Testing Dataset Dimensions: Predictors: {X_test.shape}, Target|Duration: {y_test.shape}')
+print(f'Testing Dataset Dimensions: Predictors: {cirrhosis_survival_X_test_cleaned.shape}, Target|Duration: {cirrhosis_survival_y_test_cleaned.shape}')
 ```
 
-    Testing Dataset Dimensions: Predictors: (94, 17), Target|Duration: (94,)
+    Testing Dataset Dimensions: Predictors: (94, 17), Target|Duration: (94, 2)
     
 
 
@@ -4864,7 +4866,35 @@ cirrhosis_survival_X_train_cleaned_encoded_object.head()
 
 1. The preprocessed training subset is comprised of:
     * **218 rows** (observations)
-    * **21 columns** (variables)
+    * **22 columns** (variables)
+        * **2/22 target | duration** (boolean | numeric)
+             * <span style="color: #FF0000">Status</span>
+             * <span style="color: #FF0000">N_Days</span>
+        * **10/22 predictor** (numeric)
+             * <span style="color: #FF0000">Age</span>
+             * <span style="color: #FF0000">Bilirubin</span>
+             * <span style="color: #FF0000">Cholesterol</span>
+             * <span style="color: #FF0000">Albumin</span>
+             * <span style="color: #FF0000">Copper</span>
+             * <span style="color: #FF0000">Alk_Phos</span>
+             * <span style="color: #FF0000">SGOT</span>
+             * <span style="color: #FF0000">Triglycerides</span>
+             * <span style="color: #FF0000">Platelets</span>
+             * <span style="color: #FF0000">Prothrombin</span>
+        * **10/21 predictor** (object)
+             * <span style="color: #FF0000">Drug</span>
+             * <span style="color: #FF0000">Sex</span>
+             * <span style="color: #FF0000">Ascites</span>
+             * <span style="color: #FF0000">Hepatomegaly</span>
+             * <span style="color: #FF0000">Spiders</span>
+             * <span style="color: #FF0000">Edema</span>
+             * <span style="color: #FF0000">Stage_1.0</span>
+             * <span style="color: #FF0000">Stage_2.0</span>
+             * <span style="color: #FF0000">Stage_3.0</span>
+             * <span style="color: #FF0000">Stage_4.0</span>
+2. The preprocessed testing subset is comprised of:
+    * **92 rows** (observations)
+    * **22 columns** (variables)
         * **2/22 target | duration** (boolean | numeric)
              * <span style="color: #FF0000">Status</span>
              * <span style="color: #FF0000">N_Days</span>
@@ -5066,6 +5096,1101 @@ cirrhosis_survival_X_train_preprocessed.head()
   </tbody>
 </table>
 </div>
+
+
+
+
+```python
+##################################
+# Creating a pre-processing pipeline
+# for numeric predictors
+##################################
+cirrhosis_survival_numeric_predictors = ['Age', 'Bilirubin','Cholesterol', 'Albumin','Copper', 'Alk_Phos','SGOT', 'Tryglicerides','Platelets', 'Prothrombin']
+numeric_transformer = Pipeline(steps=[
+    ('imputer', IterativeImputer(estimator = lr,
+                                 max_iter = 10,
+                                 tol = 1e-10,
+                                 imputation_order = 'ascending',
+                                 random_state=88888888)),
+    ('yeo_johnson', PowerTransformer(method='yeo-johnson',
+                                    standardize=False)),
+    ('scaler', StandardScaler())])
+
+preprocessor = ColumnTransformer(
+    transformers=[('num', numeric_transformer, cirrhosis_survival_numeric_predictors)])
+```
+
+
+```python
+##################################
+# Fitting and transforming 
+# training subset numeric predictors
+##################################
+cirrhosis_survival_X_train_numeric_preprocessed = preprocessor.fit_transform(cirrhosis_survival_X_train_cleaned)
+cirrhosis_survival_X_train_numeric_preprocessed = pd.DataFrame(cirrhosis_survival_X_train_numeric_preprocessed,
+                                                                columns=cirrhosis_survival_numeric_predictors)
+cirrhosis_survival_X_train_numeric_preprocessed.head()
+```
+
+
+
+
+<div>
+<style scoped>
+    .dataframe tbody tr th:only-of-type {
+        vertical-align: middle;
+    }
+
+    .dataframe tbody tr th {
+        vertical-align: top;
+    }
+
+    .dataframe thead th {
+        text-align: right;
+    }
+</style>
+<table border="1" class="dataframe">
+  <thead>
+    <tr style="text-align: right;">
+      <th></th>
+      <th>Age</th>
+      <th>Bilirubin</th>
+      <th>Cholesterol</th>
+      <th>Albumin</th>
+      <th>Copper</th>
+      <th>Alk_Phos</th>
+      <th>SGOT</th>
+      <th>Tryglicerides</th>
+      <th>Platelets</th>
+      <th>Prothrombin</th>
+    </tr>
+  </thead>
+  <tbody>
+    <tr>
+      <th>0</th>
+      <td>-1.342097</td>
+      <td>0.863802</td>
+      <td>0.886087</td>
+      <td>-0.451884</td>
+      <td>-0.972098</td>
+      <td>0.140990</td>
+      <td>0.104609</td>
+      <td>0.155130</td>
+      <td>0.540960</td>
+      <td>0.747580</td>
+    </tr>
+    <tr>
+      <th>1</th>
+      <td>-1.470901</td>
+      <td>0.516350</td>
+      <td>1.554523</td>
+      <td>0.827618</td>
+      <td>0.467579</td>
+      <td>-0.705337</td>
+      <td>0.301441</td>
+      <td>1.275222</td>
+      <td>0.474140</td>
+      <td>-0.315794</td>
+    </tr>
+    <tr>
+      <th>2</th>
+      <td>-0.239814</td>
+      <td>-0.625875</td>
+      <td>0.293280</td>
+      <td>0.646582</td>
+      <td>-0.241205</td>
+      <td>-0.848544</td>
+      <td>0.275723</td>
+      <td>-1.684460</td>
+      <td>0.756741</td>
+      <td>0.087130</td>
+    </tr>
+    <tr>
+      <th>3</th>
+      <td>-0.052733</td>
+      <td>0.559437</td>
+      <td>-1.534283</td>
+      <td>0.354473</td>
+      <td>-0.284113</td>
+      <td>-0.014525</td>
+      <td>0.162878</td>
+      <td>-0.189139</td>
+      <td>-1.735375</td>
+      <td>0.649171</td>
+    </tr>
+    <tr>
+      <th>4</th>
+      <td>-0.795010</td>
+      <td>1.142068</td>
+      <td>-0.108933</td>
+      <td>-0.272913</td>
+      <td>0.618030</td>
+      <td>2.071847</td>
+      <td>1.434674</td>
+      <td>-0.212684</td>
+      <td>-0.675951</td>
+      <td>-0.315794</td>
+    </tr>
+  </tbody>
+</table>
+</div>
+
+
+
+
+```python
+##################################
+# Performing pre-processing operations
+# for object predictors
+# in the training subset
+##################################
+cirrhosis_survival_object_predictors = ['Drug', 'Sex','Ascites', 'Hepatomegaly','Spiders', 'Edema','Stage']
+cirrhosis_survival_X_train_object = cirrhosis_survival_X_train_cleaned.copy()
+cirrhosis_survival_X_train_object = cirrhosis_survival_X_train_object[cirrhosis_survival_object_predictors]
+cirrhosis_survival_X_train_object.reset_index(drop=True, inplace=True)
+cirrhosis_survival_X_train_object.head()
+```
+
+
+
+
+<div>
+<style scoped>
+    .dataframe tbody tr th:only-of-type {
+        vertical-align: middle;
+    }
+
+    .dataframe tbody tr th {
+        vertical-align: top;
+    }
+
+    .dataframe thead th {
+        text-align: right;
+    }
+</style>
+<table border="1" class="dataframe">
+  <thead>
+    <tr style="text-align: right;">
+      <th></th>
+      <th>Drug</th>
+      <th>Sex</th>
+      <th>Ascites</th>
+      <th>Hepatomegaly</th>
+      <th>Spiders</th>
+      <th>Edema</th>
+      <th>Stage</th>
+    </tr>
+  </thead>
+  <tbody>
+    <tr>
+      <th>0</th>
+      <td>D-penicillamine</td>
+      <td>F</td>
+      <td>N</td>
+      <td>N</td>
+      <td>N</td>
+      <td>N</td>
+      <td>2.0</td>
+    </tr>
+    <tr>
+      <th>1</th>
+      <td>D-penicillamine</td>
+      <td>M</td>
+      <td>N</td>
+      <td>N</td>
+      <td>N</td>
+      <td>N</td>
+      <td>3.0</td>
+    </tr>
+    <tr>
+      <th>2</th>
+      <td>D-penicillamine</td>
+      <td>F</td>
+      <td>N</td>
+      <td>N</td>
+      <td>N</td>
+      <td>N</td>
+      <td>2.0</td>
+    </tr>
+    <tr>
+      <th>3</th>
+      <td>Placebo</td>
+      <td>F</td>
+      <td>Y</td>
+      <td>Y</td>
+      <td>Y</td>
+      <td>Y</td>
+      <td>4.0</td>
+    </tr>
+    <tr>
+      <th>4</th>
+      <td>Placebo</td>
+      <td>F</td>
+      <td>N</td>
+      <td>Y</td>
+      <td>N</td>
+      <td>N</td>
+      <td>2.0</td>
+    </tr>
+  </tbody>
+</table>
+</div>
+
+
+
+
+```python
+##################################
+# Applying a binary encoding transformation
+# for the two-level object columns
+# in the training subset
+##################################
+cirrhosis_survival_X_train_object['Sex'].replace({'M':0, 'F':1}, inplace=True) 
+cirrhosis_survival_X_train_object['Ascites'].replace({'N':0, 'Y':1}, inplace=True) 
+cirrhosis_survival_X_train_object['Drug'].replace({'Placebo':0, 'D-penicillamine':1}, inplace=True) 
+cirrhosis_survival_X_train_object['Hepatomegaly'].replace({'N':0, 'Y':1}, inplace=True) 
+cirrhosis_survival_X_train_object['Spiders'].replace({'N':0, 'Y':1}, inplace=True) 
+cirrhosis_survival_X_train_object['Edema'].replace({'N':0, 'Y':1, 'S':1}, inplace=True) 
+cirrhosis_survival_X_train_object_stage_encoded = pd.DataFrame(cirrhosis_survival_X_train_object.loc[:, 'Stage'].to_list(),
+                                                                       columns=['Stage'])
+cirrhosis_survival_X_train_object_stage_encoded = pd.get_dummies(cirrhosis_survival_X_train_object_stage_encoded, columns=['Stage'])
+cirrhosis_survival_X_train_object_preprocessed = pd.concat([cirrhosis_survival_X_train_object.drop(['Stage'], axis=1), 
+                                                            cirrhosis_survival_X_train_object_stage_encoded], 
+                                                           axis=1)
+cirrhosis_survival_X_train_object_preprocessed.head()
+```
+
+
+
+
+<div>
+<style scoped>
+    .dataframe tbody tr th:only-of-type {
+        vertical-align: middle;
+    }
+
+    .dataframe tbody tr th {
+        vertical-align: top;
+    }
+
+    .dataframe thead th {
+        text-align: right;
+    }
+</style>
+<table border="1" class="dataframe">
+  <thead>
+    <tr style="text-align: right;">
+      <th></th>
+      <th>Drug</th>
+      <th>Sex</th>
+      <th>Ascites</th>
+      <th>Hepatomegaly</th>
+      <th>Spiders</th>
+      <th>Edema</th>
+      <th>Stage_1.0</th>
+      <th>Stage_2.0</th>
+      <th>Stage_3.0</th>
+      <th>Stage_4.0</th>
+    </tr>
+  </thead>
+  <tbody>
+    <tr>
+      <th>0</th>
+      <td>1</td>
+      <td>1</td>
+      <td>0</td>
+      <td>0</td>
+      <td>0</td>
+      <td>0</td>
+      <td>0</td>
+      <td>1</td>
+      <td>0</td>
+      <td>0</td>
+    </tr>
+    <tr>
+      <th>1</th>
+      <td>1</td>
+      <td>0</td>
+      <td>0</td>
+      <td>0</td>
+      <td>0</td>
+      <td>0</td>
+      <td>0</td>
+      <td>0</td>
+      <td>1</td>
+      <td>0</td>
+    </tr>
+    <tr>
+      <th>2</th>
+      <td>1</td>
+      <td>1</td>
+      <td>0</td>
+      <td>0</td>
+      <td>0</td>
+      <td>0</td>
+      <td>0</td>
+      <td>1</td>
+      <td>0</td>
+      <td>0</td>
+    </tr>
+    <tr>
+      <th>3</th>
+      <td>0</td>
+      <td>1</td>
+      <td>1</td>
+      <td>1</td>
+      <td>1</td>
+      <td>1</td>
+      <td>0</td>
+      <td>0</td>
+      <td>0</td>
+      <td>1</td>
+    </tr>
+    <tr>
+      <th>4</th>
+      <td>0</td>
+      <td>1</td>
+      <td>0</td>
+      <td>1</td>
+      <td>0</td>
+      <td>0</td>
+      <td>0</td>
+      <td>1</td>
+      <td>0</td>
+      <td>0</td>
+    </tr>
+  </tbody>
+</table>
+</div>
+
+
+
+
+```python
+##################################
+# Consolidating the preprocessed
+# training subset
+##################################
+cirrhosis_survival_X_train_preprocessed = pd.concat([cirrhosis_survival_X_train_numeric_preprocessed, cirrhosis_survival_X_train_object_preprocessed], 
+                                                    axis=1)
+cirrhosis_survival_X_train_preprocessed.head()
+```
+
+
+
+
+<div>
+<style scoped>
+    .dataframe tbody tr th:only-of-type {
+        vertical-align: middle;
+    }
+
+    .dataframe tbody tr th {
+        vertical-align: top;
+    }
+
+    .dataframe thead th {
+        text-align: right;
+    }
+</style>
+<table border="1" class="dataframe">
+  <thead>
+    <tr style="text-align: right;">
+      <th></th>
+      <th>Age</th>
+      <th>Bilirubin</th>
+      <th>Cholesterol</th>
+      <th>Albumin</th>
+      <th>Copper</th>
+      <th>Alk_Phos</th>
+      <th>SGOT</th>
+      <th>Tryglicerides</th>
+      <th>Platelets</th>
+      <th>Prothrombin</th>
+      <th>Drug</th>
+      <th>Sex</th>
+      <th>Ascites</th>
+      <th>Hepatomegaly</th>
+      <th>Spiders</th>
+      <th>Edema</th>
+      <th>Stage_1.0</th>
+      <th>Stage_2.0</th>
+      <th>Stage_3.0</th>
+      <th>Stage_4.0</th>
+    </tr>
+  </thead>
+  <tbody>
+    <tr>
+      <th>0</th>
+      <td>-1.342097</td>
+      <td>0.863802</td>
+      <td>0.886087</td>
+      <td>-0.451884</td>
+      <td>-0.972098</td>
+      <td>0.140990</td>
+      <td>0.104609</td>
+      <td>0.155130</td>
+      <td>0.540960</td>
+      <td>0.747580</td>
+      <td>1</td>
+      <td>1</td>
+      <td>0</td>
+      <td>0</td>
+      <td>0</td>
+      <td>0</td>
+      <td>0</td>
+      <td>1</td>
+      <td>0</td>
+      <td>0</td>
+    </tr>
+    <tr>
+      <th>1</th>
+      <td>-1.470901</td>
+      <td>0.516350</td>
+      <td>1.554523</td>
+      <td>0.827618</td>
+      <td>0.467579</td>
+      <td>-0.705337</td>
+      <td>0.301441</td>
+      <td>1.275222</td>
+      <td>0.474140</td>
+      <td>-0.315794</td>
+      <td>1</td>
+      <td>0</td>
+      <td>0</td>
+      <td>0</td>
+      <td>0</td>
+      <td>0</td>
+      <td>0</td>
+      <td>0</td>
+      <td>1</td>
+      <td>0</td>
+    </tr>
+    <tr>
+      <th>2</th>
+      <td>-0.239814</td>
+      <td>-0.625875</td>
+      <td>0.293280</td>
+      <td>0.646582</td>
+      <td>-0.241205</td>
+      <td>-0.848544</td>
+      <td>0.275723</td>
+      <td>-1.684460</td>
+      <td>0.756741</td>
+      <td>0.087130</td>
+      <td>1</td>
+      <td>1</td>
+      <td>0</td>
+      <td>0</td>
+      <td>0</td>
+      <td>0</td>
+      <td>0</td>
+      <td>1</td>
+      <td>0</td>
+      <td>0</td>
+    </tr>
+    <tr>
+      <th>3</th>
+      <td>-0.052733</td>
+      <td>0.559437</td>
+      <td>-1.534283</td>
+      <td>0.354473</td>
+      <td>-0.284113</td>
+      <td>-0.014525</td>
+      <td>0.162878</td>
+      <td>-0.189139</td>
+      <td>-1.735375</td>
+      <td>0.649171</td>
+      <td>0</td>
+      <td>1</td>
+      <td>1</td>
+      <td>1</td>
+      <td>1</td>
+      <td>1</td>
+      <td>0</td>
+      <td>0</td>
+      <td>0</td>
+      <td>1</td>
+    </tr>
+    <tr>
+      <th>4</th>
+      <td>-0.795010</td>
+      <td>1.142068</td>
+      <td>-0.108933</td>
+      <td>-0.272913</td>
+      <td>0.618030</td>
+      <td>2.071847</td>
+      <td>1.434674</td>
+      <td>-0.212684</td>
+      <td>-0.675951</td>
+      <td>-0.315794</td>
+      <td>0</td>
+      <td>1</td>
+      <td>0</td>
+      <td>1</td>
+      <td>0</td>
+      <td>0</td>
+      <td>0</td>
+      <td>1</td>
+      <td>0</td>
+      <td>0</td>
+    </tr>
+  </tbody>
+</table>
+</div>
+
+
+
+
+```python
+##################################
+# Verifying the dimensions of the
+# preprocessed training subset
+##################################
+cirrhosis_survival_X_train_preprocessed.shape
+```
+
+
+
+
+    (218, 20)
+
+
+
+
+```python
+##################################
+# Fitting and transforming 
+# testing subset numeric predictors
+##################################
+cirrhosis_survival_X_test_numeric_preprocessed = preprocessor.transform(cirrhosis_survival_X_test_cleaned)
+cirrhosis_survival_X_test_numeric_preprocessed = pd.DataFrame(cirrhosis_survival_X_test_numeric_preprocessed,
+                                                                columns=cirrhosis_survival_numeric_predictors)
+cirrhosis_survival_X_test_numeric_preprocessed.head()
+```
+
+
+
+
+<div>
+<style scoped>
+    .dataframe tbody tr th:only-of-type {
+        vertical-align: middle;
+    }
+
+    .dataframe tbody tr th {
+        vertical-align: top;
+    }
+
+    .dataframe thead th {
+        text-align: right;
+    }
+</style>
+<table border="1" class="dataframe">
+  <thead>
+    <tr style="text-align: right;">
+      <th></th>
+      <th>Age</th>
+      <th>Bilirubin</th>
+      <th>Cholesterol</th>
+      <th>Albumin</th>
+      <th>Copper</th>
+      <th>Alk_Phos</th>
+      <th>SGOT</th>
+      <th>Tryglicerides</th>
+      <th>Platelets</th>
+      <th>Prothrombin</th>
+    </tr>
+  </thead>
+  <tbody>
+    <tr>
+      <th>0</th>
+      <td>1.043704</td>
+      <td>0.744396</td>
+      <td>0.922380</td>
+      <td>0.240951</td>
+      <td>0.045748</td>
+      <td>0.317282</td>
+      <td>-0.078335</td>
+      <td>2.671950</td>
+      <td>1.654815</td>
+      <td>-0.948196</td>
+    </tr>
+    <tr>
+      <th>1</th>
+      <td>-1.936476</td>
+      <td>-0.764558</td>
+      <td>0.160096</td>
+      <td>-0.600950</td>
+      <td>-0.179138</td>
+      <td>-0.245613</td>
+      <td>0.472422</td>
+      <td>-0.359800</td>
+      <td>0.348533</td>
+      <td>0.439089</td>
+    </tr>
+    <tr>
+      <th>2</th>
+      <td>-1.749033</td>
+      <td>0.371523</td>
+      <td>0.558115</td>
+      <td>0.646582</td>
+      <td>-0.159024</td>
+      <td>0.339454</td>
+      <td>0.685117</td>
+      <td>-3.109146</td>
+      <td>-0.790172</td>
+      <td>-0.617113</td>
+    </tr>
+    <tr>
+      <th>3</th>
+      <td>-0.485150</td>
+      <td>-0.918484</td>
+      <td>-0.690904</td>
+      <td>1.629765</td>
+      <td>0.028262</td>
+      <td>1.713791</td>
+      <td>-1.387751</td>
+      <td>0.155130</td>
+      <td>0.679704</td>
+      <td>0.087130</td>
+    </tr>
+    <tr>
+      <th>4</th>
+      <td>-0.815655</td>
+      <td>1.286438</td>
+      <td>2.610501</td>
+      <td>-0.722153</td>
+      <td>0.210203</td>
+      <td>0.602860</td>
+      <td>3.494936</td>
+      <td>-0.053214</td>
+      <td>-0.475634</td>
+      <td>-1.714435</td>
+    </tr>
+  </tbody>
+</table>
+</div>
+
+
+
+
+```python
+##################################
+# Performing pre-processing operations
+# for object predictors
+# in the testing subset
+##################################
+cirrhosis_survival_object_predictors = ['Drug', 'Sex','Ascites', 'Hepatomegaly','Spiders', 'Edema','Stage']
+cirrhosis_survival_X_test_object = cirrhosis_survival_X_test_cleaned.copy()
+cirrhosis_survival_X_test_object = cirrhosis_survival_X_test_object[cirrhosis_survival_object_predictors]
+cirrhosis_survival_X_test_object.reset_index(drop=True, inplace=True)
+cirrhosis_survival_X_test_object.head()
+```
+
+
+
+
+<div>
+<style scoped>
+    .dataframe tbody tr th:only-of-type {
+        vertical-align: middle;
+    }
+
+    .dataframe tbody tr th {
+        vertical-align: top;
+    }
+
+    .dataframe thead th {
+        text-align: right;
+    }
+</style>
+<table border="1" class="dataframe">
+  <thead>
+    <tr style="text-align: right;">
+      <th></th>
+      <th>Drug</th>
+      <th>Sex</th>
+      <th>Ascites</th>
+      <th>Hepatomegaly</th>
+      <th>Spiders</th>
+      <th>Edema</th>
+      <th>Stage</th>
+    </tr>
+  </thead>
+  <tbody>
+    <tr>
+      <th>0</th>
+      <td>D-penicillamine</td>
+      <td>F</td>
+      <td>N</td>
+      <td>N</td>
+      <td>Y</td>
+      <td>S</td>
+      <td>3.0</td>
+    </tr>
+    <tr>
+      <th>1</th>
+      <td>Placebo</td>
+      <td>F</td>
+      <td>N</td>
+      <td>N</td>
+      <td>N</td>
+      <td>N</td>
+      <td>4.0</td>
+    </tr>
+    <tr>
+      <th>2</th>
+      <td>D-penicillamine</td>
+      <td>F</td>
+      <td>N</td>
+      <td>Y</td>
+      <td>N</td>
+      <td>N</td>
+      <td>4.0</td>
+    </tr>
+    <tr>
+      <th>3</th>
+      <td>D-penicillamine</td>
+      <td>M</td>
+      <td>N</td>
+      <td>N</td>
+      <td>N</td>
+      <td>N</td>
+      <td>1.0</td>
+    </tr>
+    <tr>
+      <th>4</th>
+      <td>Placebo</td>
+      <td>F</td>
+      <td>N</td>
+      <td>Y</td>
+      <td>N</td>
+      <td>N</td>
+      <td>2.0</td>
+    </tr>
+  </tbody>
+</table>
+</div>
+
+
+
+
+```python
+##################################
+# Applying a binary encoding transformation
+# for the two-level object columns
+# in the testing subset
+##################################
+cirrhosis_survival_X_test_object['Sex'].replace({'M':0, 'F':1}, inplace=True) 
+cirrhosis_survival_X_test_object['Ascites'].replace({'N':0, 'Y':1}, inplace=True) 
+cirrhosis_survival_X_test_object['Drug'].replace({'Placebo':0, 'D-penicillamine':1}, inplace=True) 
+cirrhosis_survival_X_test_object['Hepatomegaly'].replace({'N':0, 'Y':1}, inplace=True) 
+cirrhosis_survival_X_test_object['Spiders'].replace({'N':0, 'Y':1}, inplace=True) 
+cirrhosis_survival_X_test_object['Edema'].replace({'N':0, 'Y':1, 'S':1}, inplace=True) 
+cirrhosis_survival_X_test_object_stage_encoded = pd.DataFrame(cirrhosis_survival_X_test_object.loc[:, 'Stage'].to_list(),
+                                                                       columns=['Stage'])
+cirrhosis_survival_X_test_object_stage_encoded = pd.get_dummies(cirrhosis_survival_X_test_object_stage_encoded, columns=['Stage'])
+cirrhosis_survival_X_test_object_preprocessed = pd.concat([cirrhosis_survival_X_test_object.drop(['Stage'], axis=1), 
+                                                            cirrhosis_survival_X_test_object_stage_encoded], 
+                                                           axis=1)
+cirrhosis_survival_X_test_object_preprocessed.head()
+```
+
+
+
+
+<div>
+<style scoped>
+    .dataframe tbody tr th:only-of-type {
+        vertical-align: middle;
+    }
+
+    .dataframe tbody tr th {
+        vertical-align: top;
+    }
+
+    .dataframe thead th {
+        text-align: right;
+    }
+</style>
+<table border="1" class="dataframe">
+  <thead>
+    <tr style="text-align: right;">
+      <th></th>
+      <th>Drug</th>
+      <th>Sex</th>
+      <th>Ascites</th>
+      <th>Hepatomegaly</th>
+      <th>Spiders</th>
+      <th>Edema</th>
+      <th>Stage_1.0</th>
+      <th>Stage_2.0</th>
+      <th>Stage_3.0</th>
+      <th>Stage_4.0</th>
+    </tr>
+  </thead>
+  <tbody>
+    <tr>
+      <th>0</th>
+      <td>1</td>
+      <td>1</td>
+      <td>0</td>
+      <td>0</td>
+      <td>1</td>
+      <td>1</td>
+      <td>0</td>
+      <td>0</td>
+      <td>1</td>
+      <td>0</td>
+    </tr>
+    <tr>
+      <th>1</th>
+      <td>0</td>
+      <td>1</td>
+      <td>0</td>
+      <td>0</td>
+      <td>0</td>
+      <td>0</td>
+      <td>0</td>
+      <td>0</td>
+      <td>0</td>
+      <td>1</td>
+    </tr>
+    <tr>
+      <th>2</th>
+      <td>1</td>
+      <td>1</td>
+      <td>0</td>
+      <td>1</td>
+      <td>0</td>
+      <td>0</td>
+      <td>0</td>
+      <td>0</td>
+      <td>0</td>
+      <td>1</td>
+    </tr>
+    <tr>
+      <th>3</th>
+      <td>1</td>
+      <td>0</td>
+      <td>0</td>
+      <td>0</td>
+      <td>0</td>
+      <td>0</td>
+      <td>1</td>
+      <td>0</td>
+      <td>0</td>
+      <td>0</td>
+    </tr>
+    <tr>
+      <th>4</th>
+      <td>0</td>
+      <td>1</td>
+      <td>0</td>
+      <td>1</td>
+      <td>0</td>
+      <td>0</td>
+      <td>0</td>
+      <td>1</td>
+      <td>0</td>
+      <td>0</td>
+    </tr>
+  </tbody>
+</table>
+</div>
+
+
+
+
+```python
+##################################
+# Consolidating the preprocessed
+# testing subset
+##################################
+cirrhosis_survival_X_test_preprocessed = pd.concat([cirrhosis_survival_X_test_numeric_preprocessed, cirrhosis_survival_X_test_object_preprocessed], 
+                                                    axis=1)
+cirrhosis_survival_X_test_preprocessed.head()
+```
+
+
+
+
+<div>
+<style scoped>
+    .dataframe tbody tr th:only-of-type {
+        vertical-align: middle;
+    }
+
+    .dataframe tbody tr th {
+        vertical-align: top;
+    }
+
+    .dataframe thead th {
+        text-align: right;
+    }
+</style>
+<table border="1" class="dataframe">
+  <thead>
+    <tr style="text-align: right;">
+      <th></th>
+      <th>Age</th>
+      <th>Bilirubin</th>
+      <th>Cholesterol</th>
+      <th>Albumin</th>
+      <th>Copper</th>
+      <th>Alk_Phos</th>
+      <th>SGOT</th>
+      <th>Tryglicerides</th>
+      <th>Platelets</th>
+      <th>Prothrombin</th>
+      <th>Drug</th>
+      <th>Sex</th>
+      <th>Ascites</th>
+      <th>Hepatomegaly</th>
+      <th>Spiders</th>
+      <th>Edema</th>
+      <th>Stage_1.0</th>
+      <th>Stage_2.0</th>
+      <th>Stage_3.0</th>
+      <th>Stage_4.0</th>
+    </tr>
+  </thead>
+  <tbody>
+    <tr>
+      <th>0</th>
+      <td>1.043704</td>
+      <td>0.744396</td>
+      <td>0.922380</td>
+      <td>0.240951</td>
+      <td>0.045748</td>
+      <td>0.317282</td>
+      <td>-0.078335</td>
+      <td>2.671950</td>
+      <td>1.654815</td>
+      <td>-0.948196</td>
+      <td>1</td>
+      <td>1</td>
+      <td>0</td>
+      <td>0</td>
+      <td>1</td>
+      <td>1</td>
+      <td>0</td>
+      <td>0</td>
+      <td>1</td>
+      <td>0</td>
+    </tr>
+    <tr>
+      <th>1</th>
+      <td>-1.936476</td>
+      <td>-0.764558</td>
+      <td>0.160096</td>
+      <td>-0.600950</td>
+      <td>-0.179138</td>
+      <td>-0.245613</td>
+      <td>0.472422</td>
+      <td>-0.359800</td>
+      <td>0.348533</td>
+      <td>0.439089</td>
+      <td>0</td>
+      <td>1</td>
+      <td>0</td>
+      <td>0</td>
+      <td>0</td>
+      <td>0</td>
+      <td>0</td>
+      <td>0</td>
+      <td>0</td>
+      <td>1</td>
+    </tr>
+    <tr>
+      <th>2</th>
+      <td>-1.749033</td>
+      <td>0.371523</td>
+      <td>0.558115</td>
+      <td>0.646582</td>
+      <td>-0.159024</td>
+      <td>0.339454</td>
+      <td>0.685117</td>
+      <td>-3.109146</td>
+      <td>-0.790172</td>
+      <td>-0.617113</td>
+      <td>1</td>
+      <td>1</td>
+      <td>0</td>
+      <td>1</td>
+      <td>0</td>
+      <td>0</td>
+      <td>0</td>
+      <td>0</td>
+      <td>0</td>
+      <td>1</td>
+    </tr>
+    <tr>
+      <th>3</th>
+      <td>-0.485150</td>
+      <td>-0.918484</td>
+      <td>-0.690904</td>
+      <td>1.629765</td>
+      <td>0.028262</td>
+      <td>1.713791</td>
+      <td>-1.387751</td>
+      <td>0.155130</td>
+      <td>0.679704</td>
+      <td>0.087130</td>
+      <td>1</td>
+      <td>0</td>
+      <td>0</td>
+      <td>0</td>
+      <td>0</td>
+      <td>0</td>
+      <td>1</td>
+      <td>0</td>
+      <td>0</td>
+      <td>0</td>
+    </tr>
+    <tr>
+      <th>4</th>
+      <td>-0.815655</td>
+      <td>1.286438</td>
+      <td>2.610501</td>
+      <td>-0.722153</td>
+      <td>0.210203</td>
+      <td>0.602860</td>
+      <td>3.494936</td>
+      <td>-0.053214</td>
+      <td>-0.475634</td>
+      <td>-1.714435</td>
+      <td>0</td>
+      <td>1</td>
+      <td>0</td>
+      <td>1</td>
+      <td>0</td>
+      <td>0</td>
+      <td>0</td>
+      <td>1</td>
+      <td>0</td>
+      <td>0</td>
+    </tr>
+  </tbody>
+</table>
+</div>
+
+
+
+
+```python
+##################################
+# Verifying the dimensions of the
+# preprocessed testing subset
+##################################
+cirrhosis_survival_X_test_preprocessed.shape
+```
+
+
+
+
+    (94, 20)
 
 
 
