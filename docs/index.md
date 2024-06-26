@@ -130,6 +130,9 @@ from sklearn.preprocessing import PowerTransformer
 from sklearn.preprocessing import StandardScaler
 from sklearn.pipeline import Pipeline
 from sklearn.compose import ColumnTransformer
+from statsmodels.nonparametric.smoothers_lowess import lowess
+from lifelines import KaplanMeierFitter
+from lifelines.statistics import logrank_test
 from scipy import stats
 ```
 
@@ -6199,17 +6202,28 @@ cirrhosis_survival_X_test_preprocessed.shape
 
 ### 1.5.1 Exploratory Data Analysis <a class="anchor" id="1.5.1"></a>
 
-1. Bivariate analysis identified individual predictors with potential association to the event status based on visual inspection.
-2. Higher values for the following numeric predictors are associated with <span style="color: #FF0000">Status=True</span>: 
-    * <span style="color: #FF0000">Age</span>
-    * <span style="color: #FF0000">SGOT</span>    
-    * <span style="color: #FF0000">Prothrombin</span>    
-3. Higher counts for the following object predictors are associated with better differentiation between <span style="color: #FF0000">Status=True</span> and <span style="color: #FF0000">Status=False</span>:  
-    * <span style="color: #FF0000">Drug</span>
-    * <span style="color: #FF0000">Sex</span>
-    * <span style="color: #FF0000">Hepatomegaly</span>
-    * <span style="color: #FF0000">Spiders</span>
-    * <span style="color: #FF0000">Stage_4.0</span>
+1. The estimated baseline survival plot indicated a 50% survival rate at <span style="color: #FF0000">N_Days=3358</span>.
+2. Bivariate analysis identified individual predictors with potential association to the event status based on visual inspection.
+    * Higher values for the following numeric predictors are associated with <span style="color: #FF0000">Status=True</span>: 
+        * <span style="color: #FF0000">Age</span>
+        * <span style="color: #FF0000">SGOT</span>    
+        * <span style="color: #FF0000">Prothrombin</span>    
+    * Higher counts for the following object predictors are associated with better differentiation between <span style="color: #FF0000">Status=True</span> and <span style="color: #FF0000">Status=False</span>:  
+        * <span style="color: #FF0000">Drug</span>
+        * <span style="color: #FF0000">Sex</span>
+        * <span style="color: #FF0000">Hepatomegaly</span>
+        * <span style="color: #FF0000">Spiders</span>
+        * <span style="color: #FF0000">Stage_4.0</span>
+2. Bivariate analysis identified individual predictors with potential association to the survival time based on visual inspection.
+    * Higher values for the following numeric predictors are positively associated with <span style="color: #FF0000">N_Days</span>: 
+        * <span style="color: #FF0000">Cholesterol</span>
+        * <span style="color: #FF0000">Albumin</span>        
+    * Levels for the following object predictors are associated with differences in <span style="color: #FF0000">N_Days</span> between <span style="color: #FF0000">Status=True</span> and <span style="color: #FF0000">Status=False</span>:  
+        * <span style="color: #FF0000">Drug</span>
+        * <span style="color: #FF0000">Ascites</span>
+        * <span style="color: #FF0000">Spiders</span>
+        * <span style="color: #FF0000">Edema</span>
+        * <span style="color: #FF0000">Stage_4.0</span>
 
 
 ```python
@@ -6399,16 +6413,31 @@ cirrhosis_survival_train_EDA.head()
 
 ```python
 ##################################
-# Exploring the relationships between
-# the numeric predictors and event status
+# Plotting the baseline survival curve
+# and computing the survival rates
 ##################################
-cirrhosis_survival_numeric_predictors = ['Age', 'Bilirubin','Cholesterol', 'Albumin','Copper', 'Alk_Phos','SGOT', 'Tryglicerides','Platelets', 'Prothrombin']
-plt.figure(figsize=(18, 12))
-for i in range(1, 11):
-    plt.subplot(2, 5, i)
-    sns.boxplot(x='Status', y=cirrhosis_survival_numeric_predictors[i-1], data=cirrhosis_survival_train_EDA)
-    plt.title(f'{cirrhosis_survival_numeric_predictors[i-1]} vs Event Status')
-plt.tight_layout()
+kmf = KaplanMeierFitter()
+kmf.fit(durations=cirrhosis_survival_train_EDA['N_Days'], event_observed=cirrhosis_survival_train_EDA['Status'])
+plt.figure(figsize=(17, 8))
+kmf.plot_survival_function()
+plt.title('Kaplan-Meier Baseline Survival Plot')
+plt.ylim(0, 1.05)
+plt.xlabel('Time')
+plt.ylabel('Survival Probability')
+
+##################################
+# Determing the at-risk numbers
+##################################
+at_risk_counts = kmf.event_table.at_risk
+survival_probabilities = kmf.survival_function_.values.flatten()
+time_points = kmf.survival_function_.index
+for time, prob, at_risk in zip(time_points, survival_probabilities, at_risk_counts):
+    if time % 50 == 0: 
+        plt.text(time, prob, f'{prob:.2f} : {at_risk}', ha='left', fontsize=10)
+median_survival_time = kmf.median_survival_time_
+plt.axvline(x=median_survival_time, color='r', linestyle='--')
+plt.axhline(y=0.5, color='r', linestyle='--')
+plt.text(3400, 0.52, f'Median: {median_survival_time}', ha='left', va='bottom', color='r', fontsize=10)
 plt.show()
 ```
 
@@ -6421,11 +6450,45 @@ plt.show()
 
 ```python
 ##################################
+# Computing the median survival time
+##################################
+median_survival_time = kmf.median_survival_time_
+print(f'Median Survival Time: {median_survival_time}')
+```
+
+    Median Survival Time: 3358.0
+    
+
+
+```python
+##################################
+# Exploring the relationships between
+# the numeric predictors and event status
+##################################
+cirrhosis_survival_numeric_predictors = ['Age', 'Bilirubin','Cholesterol', 'Albumin','Copper', 'Alk_Phos','SGOT', 'Tryglicerides','Platelets', 'Prothrombin']
+plt.figure(figsize=(17, 12))
+for i in range(1, 11):
+    plt.subplot(2, 5, i)
+    sns.boxplot(x='Status', y=cirrhosis_survival_numeric_predictors[i-1], data=cirrhosis_survival_train_EDA)
+    plt.title(f'{cirrhosis_survival_numeric_predictors[i-1]} vs Event Status')
+plt.tight_layout()
+plt.show()
+```
+
+
+    
+![png](output_142_0.png)
+    
+
+
+
+```python
+##################################
 # Exploring the relationships between
 # the object predictors and event status
 ##################################
 cirrhosis_survival_object_predictors = ['Drug', 'Sex','Ascites', 'Hepatomegaly','Spiders', 'Edema','Stage_1.0','Stage_2.0','Stage_3.0','Stage_4.0']
-plt.figure(figsize=(18, 12))
+plt.figure(figsize=(17, 12))
 for i in range(1, 11):
     plt.subplot(2, 5, i)
     sns.countplot(x=cirrhosis_survival_object_predictors[i-1], hue='Status', data=cirrhosis_survival_train_EDA)
@@ -6437,7 +6500,53 @@ plt.show()
 
 
     
-![png](output_141_0.png)
+![png](output_143_0.png)
+    
+
+
+
+```python
+##################################
+# Exploring the relationships between
+# the numeric predictors and survival time
+##################################
+plt.figure(figsize=(17, 12))
+for i in range(1, 11):
+    plt.subplot(2, 5, i)
+    sns.scatterplot(x='N_Days', y=cirrhosis_survival_numeric_predictors[i-1], data=cirrhosis_survival_train_EDA, hue='Status')
+    loess_smoothed = lowess(cirrhosis_survival_train_EDA['N_Days'], cirrhosis_survival_train_EDA[cirrhosis_survival_numeric_predictors[i-1]], frac=0.3)
+    plt.plot(loess_smoothed[:, 1], loess_smoothed[:, 0], color='red')
+    plt.title(f'{cirrhosis_survival_numeric_predictors[i-1]} vs Survival Time')
+    plt.legend(loc='upper right')
+plt.tight_layout()
+plt.show()
+```
+
+
+    
+![png](output_144_0.png)
+    
+
+
+
+```python
+##################################
+# Exploring the relationships between
+# the object predictors and survival time
+##################################
+plt.figure(figsize=(17, 12))
+for i in range(1, 11):
+    plt.subplot(2, 5, i)
+    sns.boxplot(x=cirrhosis_survival_object_predictors[i-1], y='N_Days', hue='Status', data=cirrhosis_survival_train_EDA)
+    plt.title(f'{cirrhosis_survival_object_predictors[i-1]} vs Survival Time')
+    plt.legend(loc='upper right')
+plt.tight_layout()
+plt.show()
+```
+
+
+    
+![png](output_145_0.png)
     
 
 
