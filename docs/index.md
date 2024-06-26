@@ -4862,9 +4862,10 @@ cirrhosis_survival_X_train_cleaned_encoded_object.head()
 
 
 
-### 1.4.7 Preprocessed Data Description <a class="anchor" id="1.4.7"></a>
+### 1.4.8 Preprocessed Data Description <a class="anchor" id="1.4.8"></a>
 
-1. The preprocessed training subset is comprised of:
+1. A preprocessing pipeline was formulated to standardize the data transformation methods applied to both the training and testing subsets.
+2. The preprocessed training subset is comprised of:
     * **218 rows** (observations)
     * **22 columns** (variables)
         * **2/22 target | duration** (boolean | numeric)
@@ -4892,7 +4893,7 @@ cirrhosis_survival_X_train_cleaned_encoded_object.head()
              * <span style="color: #FF0000">Stage_2.0</span>
              * <span style="color: #FF0000">Stage_3.0</span>
              * <span style="color: #FF0000">Stage_4.0</span>
-2. The preprocessed testing subset is comprised of:
+3. The preprocessed testing subset is comprised of:
     * **92 rows** (observations)
     * **22 columns** (variables)
         * **2/22 target | duration** (boolean | numeric)
@@ -6192,6 +6193,252 @@ cirrhosis_survival_X_test_preprocessed.shape
 
     (94, 20)
 
+
+
+## 1.5. Data Exploration <a class="anchor" id="1.5"></a>
+
+### 1.5.1 Exploratory Data Analysis <a class="anchor" id="1.5.1"></a>
+
+1. Bivariate analysis identified individual predictors with potential association to the event status based on visual inspection.
+2. Higher values for the following numeric predictors are associated with <span style="color: #FF0000">Status=True</span>: 
+    * <span style="color: #FF0000">Age</span>
+    * <span style="color: #FF0000">SGOT</span>    
+    * <span style="color: #FF0000">Prothrombin</span>    
+3. Higher counts for the following object predictors are associated with better differentiation between <span style="color: #FF0000">Status=True</span> and <span style="color: #FF0000">Status=False</span>:  
+    * <span style="color: #FF0000">Drug</span>
+    * <span style="color: #FF0000">Sex</span>
+    * <span style="color: #FF0000">Hepatomegaly</span>
+    * <span style="color: #FF0000">Spiders</span>
+    * <span style="color: #FF0000">Stage_4.0</span>
+
+
+```python
+##################################
+# Formulating a complete dataframe
+# from the training subset for EDA
+##################################
+cirrhosis_survival_y_train_cleaned.reset_index(drop=True, inplace=True)
+cirrhosis_survival_train_EDA = pd.concat([cirrhosis_survival_y_train_cleaned,
+                                          cirrhosis_survival_X_test_preprocessed],
+                                         axis=1)
+cirrhosis_survival_train_EDA.head()
+```
+
+
+
+
+<div>
+<style scoped>
+    .dataframe tbody tr th:only-of-type {
+        vertical-align: middle;
+    }
+
+    .dataframe tbody tr th {
+        vertical-align: top;
+    }
+
+    .dataframe thead th {
+        text-align: right;
+    }
+</style>
+<table border="1" class="dataframe">
+  <thead>
+    <tr style="text-align: right;">
+      <th></th>
+      <th>Status</th>
+      <th>N_Days</th>
+      <th>Age</th>
+      <th>Bilirubin</th>
+      <th>Cholesterol</th>
+      <th>Albumin</th>
+      <th>Copper</th>
+      <th>Alk_Phos</th>
+      <th>SGOT</th>
+      <th>Tryglicerides</th>
+      <th>...</th>
+      <th>Drug</th>
+      <th>Sex</th>
+      <th>Ascites</th>
+      <th>Hepatomegaly</th>
+      <th>Spiders</th>
+      <th>Edema</th>
+      <th>Stage_1.0</th>
+      <th>Stage_2.0</th>
+      <th>Stage_3.0</th>
+      <th>Stage_4.0</th>
+    </tr>
+  </thead>
+  <tbody>
+    <tr>
+      <th>0</th>
+      <td>False</td>
+      <td>2475</td>
+      <td>1.043704</td>
+      <td>0.744396</td>
+      <td>0.922380</td>
+      <td>0.240951</td>
+      <td>0.045748</td>
+      <td>0.317282</td>
+      <td>-0.078335</td>
+      <td>2.671950</td>
+      <td>...</td>
+      <td>1.0</td>
+      <td>1.0</td>
+      <td>0.0</td>
+      <td>0.0</td>
+      <td>1.0</td>
+      <td>1.0</td>
+      <td>0.0</td>
+      <td>0.0</td>
+      <td>1.0</td>
+      <td>0.0</td>
+    </tr>
+    <tr>
+      <th>1</th>
+      <td>False</td>
+      <td>877</td>
+      <td>-1.936476</td>
+      <td>-0.764558</td>
+      <td>0.160096</td>
+      <td>-0.600950</td>
+      <td>-0.179138</td>
+      <td>-0.245613</td>
+      <td>0.472422</td>
+      <td>-0.359800</td>
+      <td>...</td>
+      <td>0.0</td>
+      <td>1.0</td>
+      <td>0.0</td>
+      <td>0.0</td>
+      <td>0.0</td>
+      <td>0.0</td>
+      <td>0.0</td>
+      <td>0.0</td>
+      <td>0.0</td>
+      <td>1.0</td>
+    </tr>
+    <tr>
+      <th>2</th>
+      <td>False</td>
+      <td>3050</td>
+      <td>-1.749033</td>
+      <td>0.371523</td>
+      <td>0.558115</td>
+      <td>0.646582</td>
+      <td>-0.159024</td>
+      <td>0.339454</td>
+      <td>0.685117</td>
+      <td>-3.109146</td>
+      <td>...</td>
+      <td>1.0</td>
+      <td>1.0</td>
+      <td>0.0</td>
+      <td>1.0</td>
+      <td>0.0</td>
+      <td>0.0</td>
+      <td>0.0</td>
+      <td>0.0</td>
+      <td>0.0</td>
+      <td>1.0</td>
+    </tr>
+    <tr>
+      <th>3</th>
+      <td>True</td>
+      <td>110</td>
+      <td>-0.485150</td>
+      <td>-0.918484</td>
+      <td>-0.690904</td>
+      <td>1.629765</td>
+      <td>0.028262</td>
+      <td>1.713791</td>
+      <td>-1.387751</td>
+      <td>0.155130</td>
+      <td>...</td>
+      <td>1.0</td>
+      <td>0.0</td>
+      <td>0.0</td>
+      <td>0.0</td>
+      <td>0.0</td>
+      <td>0.0</td>
+      <td>1.0</td>
+      <td>0.0</td>
+      <td>0.0</td>
+      <td>0.0</td>
+    </tr>
+    <tr>
+      <th>4</th>
+      <td>True</td>
+      <td>3839</td>
+      <td>-0.815655</td>
+      <td>1.286438</td>
+      <td>2.610501</td>
+      <td>-0.722153</td>
+      <td>0.210203</td>
+      <td>0.602860</td>
+      <td>3.494936</td>
+      <td>-0.053214</td>
+      <td>...</td>
+      <td>0.0</td>
+      <td>1.0</td>
+      <td>0.0</td>
+      <td>1.0</td>
+      <td>0.0</td>
+      <td>0.0</td>
+      <td>0.0</td>
+      <td>1.0</td>
+      <td>0.0</td>
+      <td>0.0</td>
+    </tr>
+  </tbody>
+</table>
+<p>5 rows × 22 columns</p>
+</div>
+
+
+
+
+```python
+##################################
+# Exploring the relationships between
+# the numeric predictors and event status
+##################################
+cirrhosis_survival_numeric_predictors = ['Age', 'Bilirubin','Cholesterol', 'Albumin','Copper', 'Alk_Phos','SGOT', 'Tryglicerides','Platelets', 'Prothrombin']
+plt.figure(figsize=(18, 12))
+for i in range(1, 11):
+    plt.subplot(2, 5, i)
+    sns.boxplot(x='Status', y=cirrhosis_survival_numeric_predictors[i-1], data=cirrhosis_survival_train_EDA)
+    plt.title(f'{cirrhosis_survival_numeric_predictors[i-1]} vs Event Status')
+plt.tight_layout()
+plt.show()
+```
+
+
+    
+![png](output_140_0.png)
+    
+
+
+
+```python
+##################################
+# Exploring the relationships between
+# the object predictors and event status
+##################################
+cirrhosis_survival_object_predictors = ['Drug', 'Sex','Ascites', 'Hepatomegaly','Spiders', 'Edema','Stage_1.0','Stage_2.0','Stage_3.0','Stage_4.0']
+plt.figure(figsize=(18, 12))
+for i in range(1, 11):
+    plt.subplot(2, 5, i)
+    sns.countplot(x=cirrhosis_survival_object_predictors[i-1], hue='Status', data=cirrhosis_survival_train_EDA)
+    plt.title(f'{cirrhosis_survival_object_predictors[i-1]} vs Event Status')
+    plt.legend(loc='upper right')
+plt.tight_layout()
+plt.show()
+```
+
+
+    
+![png](output_141_0.png)
+    
 
 
 # 2. Summary <a class="anchor" id="Summary"></a>
