@@ -24309,6 +24309,22 @@ class="
 <li><span style="color: #FF0000">Cholesterol</span>: T.Test.Statistic=-2.256, Correlation.PValue=0.025</li>
 </ul>
 </li>
+<li>The relationship between the object predictors to the <span style="color: #FF0000">Status</span> target variable was statistically evaluated using the following hypotheses:<ul>
+<li><strong>Null</strong>: The object predictor is independent of the target variable </li>
+<li><strong>Alternative</strong>: The object predictor is dependent on the target variable   </li>
+</ul>
+</li>
+<li>There is sufficient evidence to conclude of a statistically significant relationship difference between the categories of the object predictors and the True and False groups of the <span style="color: #FF0000">Status</span> target variable in 8 object predictors given their high chisquare statistic values with reported low p-values less than the significance level of 0.05.<ul>
+<li><span style="color: #FF0000">Ascites</span>: ChiSquare.Test.Statistic=16.854, ChiSquare.Test.PValue=0.000</li>
+<li><span style="color: #FF0000">Hepatomegaly</span>: ChiSquare.Test.Statistic=14.206, ChiSquare.Test.PValue=0.000   </li>
+<li><span style="color: #FF0000">Edema</span>: ChiSquare.Test.Statistic=12.962, ChiSquare.Test.PValue=0.001 </li>
+<li><span style="color: #FF0000">Stage_4.0</span>: ChiSquare.Test.Statistic=11.505, ChiSquare.Test.PValue=0.00</li>
+<li><span style="color: #FF0000">Sex</span>: ChiSquare.Test.Statistic=6.837, ChiSquare.Test.PValue=0.008</li>
+<li><span style="color: #FF0000">Stage_2.0</span>: ChiSquare.Test.Statistic=4.024, ChiSquare.Test.PValue=0.045   </li>
+<li><span style="color: #FF0000">Stage_1.0</span>: ChiSquare.Test.Statistic=3.978, ChiSquare.Test.PValue=0.046 </li>
+<li><span style="color: #FF0000">Spiders</span>: ChiSquare.Test.Statistic=3.953, ChiSquare.Test.PValue=0.047</li>
+</ul>
+</li>
 </ol>
 
 </div>
@@ -24358,7 +24374,7 @@ class="
 <span class="c1">##################################</span>
 <span class="n">cirrhosis_survival_numeric_ttest_summary</span> <span class="o">=</span> <span class="n">cirrhosis_survival_train_EDA</span><span class="o">.</span><span class="n">from_dict</span><span class="p">(</span><span class="n">cirrhosis_survival_numeric_ttest_target</span><span class="p">,</span> <span class="n">orient</span><span class="o">=</span><span class="s1">'index'</span><span class="p">)</span>
 <span class="n">cirrhosis_survival_numeric_ttest_summary</span><span class="o">.</span><span class="n">columns</span> <span class="o">=</span> <span class="p">[</span><span class="s1">'T.Test.Statistic'</span><span class="p">,</span> <span class="s1">'T.Test.PValue'</span><span class="p">]</span>
-<span class="n">display</span><span class="p">(</span><span class="n">cirrhosis_survival_numeric_ttest_summary</span><span class="o">.</span><span class="n">sort_values</span><span class="p">(</span><span class="n">by</span><span class="o">=</span><span class="p">[</span><span class="s1">'T.Test.PValue'</span><span class="p">],</span> <span class="n">ascending</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span><span class="o">.</span><span class="n">head</span><span class="p">(</span><span class="mi">12</span><span class="p">))</span>
+<span class="n">display</span><span class="p">(</span><span class="n">cirrhosis_survival_numeric_ttest_summary</span><span class="o">.</span><span class="n">sort_values</span><span class="p">(</span><span class="n">by</span><span class="o">=</span><span class="p">[</span><span class="s1">'T.Test.PValue'</span><span class="p">],</span> <span class="n">ascending</span><span class="o">=</span><span class="kc">True</span><span class="p">))</span>
 </pre></div>
 
      </div>
@@ -24465,6 +24481,155 @@ class="
 
 </div>
 
+</div><div class="jp-Cell jp-CodeCell jp-Notebook-cell jp-mod-noOutputs  ">
+<div class="jp-Cell-inputWrapper">
+<div class="jp-Collapser jp-InputCollapser jp-Cell-inputCollapser">
+</div>
+<div class="jp-InputArea jp-Cell-inputArea">
+<div class="jp-InputPrompt jp-InputArea-prompt">In&nbsp;[130]:</div>
+<div class="jp-CodeMirrorEditor jp-Editor jp-InputArea-editor" data-type="inline">
+     <div class="CodeMirror cm-s-jupyter">
+<div class=" highlight hl-ipython3"><pre><span></span><span class="c1">##################################</span>
+<span class="c1"># Computing the chisquare</span>
+<span class="c1"># statistic and p-values</span>
+<span class="c1"># between the target variable</span>
+<span class="c1"># and categorical predictor columns</span>
+<span class="c1">##################################</span>
+<span class="n">cirrhosis_survival_object_chisquare_target</span> <span class="o">=</span> <span class="p">{}</span>
+<span class="k">for</span> <span class="n">object_column</span> <span class="ow">in</span> <span class="n">cirrhosis_survival_object_predictors</span><span class="p">:</span>
+    <span class="n">contingency_table</span> <span class="o">=</span> <span class="n">pd</span><span class="o">.</span><span class="n">crosstab</span><span class="p">(</span><span class="n">cirrhosis_survival_train_EDA</span><span class="p">[</span><span class="n">object_column</span><span class="p">],</span> 
+                                    <span class="n">cirrhosis_survival_train_EDA</span><span class="p">[</span><span class="s1">'Status'</span><span class="p">])</span>
+    <span class="n">cirrhosis_survival_object_chisquare_target</span><span class="p">[</span><span class="s1">'Status_'</span> <span class="o">+</span> <span class="n">object_column</span><span class="p">]</span> <span class="o">=</span> <span class="n">stats</span><span class="o">.</span><span class="n">chi2_contingency</span><span class="p">(</span>
+        <span class="n">contingency_table</span><span class="p">)[</span><span class="mi">0</span><span class="p">:</span><span class="mi">2</span><span class="p">]</span>
+</pre></div>
+
+     </div>
+</div>
+</div>
+</div>
+
+</div><div class="jp-Cell jp-CodeCell jp-Notebook-cell   ">
+<div class="jp-Cell-inputWrapper">
+<div class="jp-Collapser jp-InputCollapser jp-Cell-inputCollapser">
+</div>
+<div class="jp-InputArea jp-Cell-inputArea">
+<div class="jp-InputPrompt jp-InputArea-prompt">In&nbsp;[131]:</div>
+<div class="jp-CodeMirrorEditor jp-Editor jp-InputArea-editor" data-type="inline">
+     <div class="CodeMirror cm-s-jupyter">
+<div class=" highlight hl-ipython3"><pre><span></span><span class="c1">##################################</span>
+<span class="c1"># Formulating the pairwise chisquare summary</span>
+<span class="c1"># between the target variable</span>
+<span class="c1"># and categorical predictor columns</span>
+<span class="c1">##################################</span>
+<span class="n">cirrhosis_survival_object_chisquare_target_summary</span> <span class="o">=</span> <span class="n">cirrhosis_survival_train_EDA</span><span class="o">.</span><span class="n">from_dict</span><span class="p">(</span><span class="n">cirrhosis_survival_object_chisquare_target</span><span class="p">,</span> <span class="n">orient</span><span class="o">=</span><span class="s1">'index'</span><span class="p">)</span>
+<span class="n">cirrhosis_survival_object_chisquare_target_summary</span><span class="o">.</span><span class="n">columns</span> <span class="o">=</span> <span class="p">[</span><span class="s1">'ChiSquare.Test.Statistic'</span><span class="p">,</span> <span class="s1">'ChiSquare.Test.PValue'</span><span class="p">]</span>
+<span class="n">display</span><span class="p">(</span><span class="n">cirrhosis_survival_object_chisquare_target_summary</span><span class="o">.</span><span class="n">sort_values</span><span class="p">(</span><span class="n">by</span><span class="o">=</span><span class="p">[</span><span class="s1">'ChiSquare.Test.PValue'</span><span class="p">],</span> <span class="n">ascending</span><span class="o">=</span><span class="kc">True</span><span class="p">))</span>
+</pre></div>
+
+     </div>
+</div>
+</div>
+</div>
+
+<div class="jp-Cell-outputWrapper">
+<div class="jp-Collapser jp-OutputCollapser jp-Cell-outputCollapser">
+</div>
+
+
+<div class="jp-OutputArea jp-Cell-outputArea">
+
+<div class="jp-OutputArea-child">
+
+    
+    <div class="jp-OutputPrompt jp-OutputArea-prompt"></div>
+
+
+
+<div class="jp-RenderedHTMLCommon jp-RenderedHTML jp-OutputArea-output " data-mime-type="text/html">
+<div>
+<style scoped>
+    .dataframe tbody tr th:only-of-type {
+        vertical-align: middle;
+    }
+
+    .dataframe tbody tr th {
+        vertical-align: top;
+    }
+
+    .dataframe thead th {
+        text-align: right;
+    }
+</style>
+<table border="1" class="dataframe">
+  <thead>
+    <tr style="text-align: right;">
+      <th></th>
+      <th>ChiSquare.Test.Statistic</th>
+      <th>ChiSquare.Test.PValue</th>
+    </tr>
+  </thead>
+  <tbody>
+    <tr>
+      <th>Status_Ascites</th>
+      <td>16.854134</td>
+      <td>0.000040</td>
+    </tr>
+    <tr>
+      <th>Status_Hepatomegaly</th>
+      <td>14.206045</td>
+      <td>0.000164</td>
+    </tr>
+    <tr>
+      <th>Status_Edema</th>
+      <td>12.962303</td>
+      <td>0.000318</td>
+    </tr>
+    <tr>
+      <th>Status_Stage_4.0</th>
+      <td>11.505826</td>
+      <td>0.000694</td>
+    </tr>
+    <tr>
+      <th>Status_Sex</th>
+      <td>6.837272</td>
+      <td>0.008928</td>
+    </tr>
+    <tr>
+      <th>Status_Stage_2.0</th>
+      <td>4.024677</td>
+      <td>0.044839</td>
+    </tr>
+    <tr>
+      <th>Status_Stage_1.0</th>
+      <td>3.977918</td>
+      <td>0.046101</td>
+    </tr>
+    <tr>
+      <th>Status_Spiders</th>
+      <td>3.953826</td>
+      <td>0.046765</td>
+    </tr>
+    <tr>
+      <th>Status_Stage_3.0</th>
+      <td>0.082109</td>
+      <td>0.774459</td>
+    </tr>
+    <tr>
+      <th>Status_Drug</th>
+      <td>0.000000</td>
+      <td>1.000000</td>
+    </tr>
+  </tbody>
+</table>
+</div>
+</div>
+
+</div>
+
+</div>
+
+</div>
+
 </div>
 <div class="jp-Cell jp-MarkdownCell jp-Notebook-cell">
 <div class="jp-Cell-inputWrapper">
@@ -24519,7 +24684,7 @@ class="
 <div class="jp-Collapser jp-InputCollapser jp-Cell-inputCollapser">
 </div>
 <div class="jp-InputArea jp-Cell-inputArea">
-<div class="jp-InputPrompt jp-InputArea-prompt">In&nbsp;[130]:</div>
+<div class="jp-InputPrompt jp-InputArea-prompt">In&nbsp;[132]:</div>
 <div class="jp-CodeMirrorEditor jp-Editor jp-InputArea-editor" data-type="inline">
      <div class="CodeMirror cm-s-jupyter">
 <div class=" highlight hl-ipython3"><pre><span></span><span class="kn">from</span> <span class="nn">IPython.display</span> <span class="kn">import</span> <span class="n">display</span><span class="p">,</span> <span class="n">HTML</span>

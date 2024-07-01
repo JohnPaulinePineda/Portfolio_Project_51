@@ -6581,6 +6581,18 @@ plt.show()
     * <span style="color: #FF0000">Age</span>: T.Test.Statistic=-3.264, Correlation.PValue=0.001
     * <span style="color: #FF0000">Platelets</span>: T.Test.Statistic=+3.261, Correlation.PValue=0.001
     * <span style="color: #FF0000">Cholesterol</span>: T.Test.Statistic=-2.256, Correlation.PValue=0.025
+3. The relationship between the object predictors to the <span style="color: #FF0000">Status</span> target variable was statistically evaluated using the following hypotheses:
+    * **Null**: The object predictor is independent of the target variable 
+    * **Alternative**: The object predictor is dependent on the target variable   
+4. There is sufficient evidence to conclude of a statistically significant relationship difference between the categories of the object predictors and the True and False groups of the <span style="color: #FF0000">Status</span> target variable in 8 object predictors given their high chisquare statistic values with reported low p-values less than the significance level of 0.05.
+    * <span style="color: #FF0000">Ascites</span>: ChiSquare.Test.Statistic=16.854, ChiSquare.Test.PValue=0.000
+    * <span style="color: #FF0000">Hepatomegaly</span>: ChiSquare.Test.Statistic=14.206, ChiSquare.Test.PValue=0.000   
+    * <span style="color: #FF0000">Edema</span>: ChiSquare.Test.Statistic=12.962, ChiSquare.Test.PValue=0.001 
+    * <span style="color: #FF0000">Stage_4.0</span>: ChiSquare.Test.Statistic=11.505, ChiSquare.Test.PValue=0.00
+    * <span style="color: #FF0000">Sex</span>: ChiSquare.Test.Statistic=6.837, ChiSquare.Test.PValue=0.008
+    * <span style="color: #FF0000">Stage_2.0</span>: ChiSquare.Test.Statistic=4.024, ChiSquare.Test.PValue=0.045   
+    * <span style="color: #FF0000">Stage_1.0</span>: ChiSquare.Test.Statistic=3.978, ChiSquare.Test.PValue=0.046 
+    * <span style="color: #FF0000">Spiders</span>: ChiSquare.Test.Statistic=3.953, ChiSquare.Test.PValue=0.047
 
 
 ```python
@@ -6609,7 +6621,7 @@ for numeric_column in cirrhosis_survival_numeric_predictors:
 ##################################
 cirrhosis_survival_numeric_ttest_summary = cirrhosis_survival_train_EDA.from_dict(cirrhosis_survival_numeric_ttest_target, orient='index')
 cirrhosis_survival_numeric_ttest_summary.columns = ['T.Test.Statistic', 'T.Test.PValue']
-display(cirrhosis_survival_numeric_ttest_summary.sort_values(by=['T.Test.PValue'], ascending=True).head(12))
+display(cirrhosis_survival_numeric_ttest_summary.sort_values(by=['T.Test.PValue'], ascending=True))
 ```
 
 
@@ -6685,6 +6697,113 @@ display(cirrhosis_survival_numeric_ttest_summary.sort_values(by=['T.Test.PValue'
       <th>Status_Cholesterol</th>
       <td>-2.256073</td>
       <td>2.506758e-02</td>
+    </tr>
+  </tbody>
+</table>
+</div>
+
+
+
+```python
+##################################
+# Computing the chisquare
+# statistic and p-values
+# between the target variable
+# and categorical predictor columns
+##################################
+cirrhosis_survival_object_chisquare_target = {}
+for object_column in cirrhosis_survival_object_predictors:
+    contingency_table = pd.crosstab(cirrhosis_survival_train_EDA[object_column], 
+                                    cirrhosis_survival_train_EDA['Status'])
+    cirrhosis_survival_object_chisquare_target['Status_' + object_column] = stats.chi2_contingency(
+        contingency_table)[0:2]
+```
+
+
+```python
+##################################
+# Formulating the pairwise chisquare summary
+# between the target variable
+# and categorical predictor columns
+##################################
+cirrhosis_survival_object_chisquare_target_summary = cirrhosis_survival_train_EDA.from_dict(cirrhosis_survival_object_chisquare_target, orient='index')
+cirrhosis_survival_object_chisquare_target_summary.columns = ['ChiSquare.Test.Statistic', 'ChiSquare.Test.PValue']
+display(cirrhosis_survival_object_chisquare_target_summary.sort_values(by=['ChiSquare.Test.PValue'], ascending=True))
+```
+
+
+<div>
+<style scoped>
+    .dataframe tbody tr th:only-of-type {
+        vertical-align: middle;
+    }
+
+    .dataframe tbody tr th {
+        vertical-align: top;
+    }
+
+    .dataframe thead th {
+        text-align: right;
+    }
+</style>
+<table border="1" class="dataframe">
+  <thead>
+    <tr style="text-align: right;">
+      <th></th>
+      <th>ChiSquare.Test.Statistic</th>
+      <th>ChiSquare.Test.PValue</th>
+    </tr>
+  </thead>
+  <tbody>
+    <tr>
+      <th>Status_Ascites</th>
+      <td>16.854134</td>
+      <td>0.000040</td>
+    </tr>
+    <tr>
+      <th>Status_Hepatomegaly</th>
+      <td>14.206045</td>
+      <td>0.000164</td>
+    </tr>
+    <tr>
+      <th>Status_Edema</th>
+      <td>12.962303</td>
+      <td>0.000318</td>
+    </tr>
+    <tr>
+      <th>Status_Stage_4.0</th>
+      <td>11.505826</td>
+      <td>0.000694</td>
+    </tr>
+    <tr>
+      <th>Status_Sex</th>
+      <td>6.837272</td>
+      <td>0.008928</td>
+    </tr>
+    <tr>
+      <th>Status_Stage_2.0</th>
+      <td>4.024677</td>
+      <td>0.044839</td>
+    </tr>
+    <tr>
+      <th>Status_Stage_1.0</th>
+      <td>3.977918</td>
+      <td>0.046101</td>
+    </tr>
+    <tr>
+      <th>Status_Spiders</th>
+      <td>3.953826</td>
+      <td>0.046765</td>
+    </tr>
+    <tr>
+      <th>Status_Stage_3.0</th>
+      <td>0.082109</td>
+      <td>0.774459</td>
+    </tr>
+    <tr>
+      <th>Status_Drug</th>
+      <td>0.000000</td>
+      <td>1.000000</td>
     </tr>
   </tbody>
 </table>
