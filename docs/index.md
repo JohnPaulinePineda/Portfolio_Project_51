@@ -134,6 +134,7 @@ from statsmodels.nonparametric.smoothers_lowess import lowess
 from lifelines import KaplanMeierFitter
 from lifelines.statistics import logrank_test
 from scipy import stats
+from scipy.stats import ttest_ind, chi2_contingency
 ```
 
 
@@ -6206,23 +6207,37 @@ cirrhosis_survival_X_test_preprocessed.shape
 2. Bivariate analysis identified individual predictors with potential association to the event status based on visual inspection.
     * Higher values for the following numeric predictors are associated with <span style="color: #FF0000">Status=True</span>: 
         * <span style="color: #FF0000">Age</span>
-        * <span style="color: #FF0000">SGOT</span>    
+        * <span style="color: #FF0000">Bilirubin</span>   
+        * <span style="color: #FF0000">Copper</span>
+        * <span style="color: #FF0000">Alk_Phos</span> 
+        * <span style="color: #FF0000">SGOT</span>   
+        * <span style="color: #FF0000">Tryglicerides</span> 
         * <span style="color: #FF0000">Prothrombin</span>    
     * Higher counts for the following object predictors are associated with better differentiation between <span style="color: #FF0000">Status=True</span> and <span style="color: #FF0000">Status=False</span>:  
         * <span style="color: #FF0000">Drug</span>
         * <span style="color: #FF0000">Sex</span>
+        * <span style="color: #FF0000">Ascites</span>
         * <span style="color: #FF0000">Hepatomegaly</span>
         * <span style="color: #FF0000">Spiders</span>
+        * <span style="color: #FF0000">Edema</span>
+        * <span style="color: #FF0000">Stage_1.0</span>
+        * <span style="color: #FF0000">Stage_2.0</span>
+        * <span style="color: #FF0000">Stage_3.0</span>
         * <span style="color: #FF0000">Stage_4.0</span>
 2. Bivariate analysis identified individual predictors with potential association to the survival time based on visual inspection.
     * Higher values for the following numeric predictors are positively associated with <span style="color: #FF0000">N_Days</span>: 
-        * <span style="color: #FF0000">Cholesterol</span>
         * <span style="color: #FF0000">Albumin</span>        
+        * <span style="color: #FF0000">Platelets</span>
     * Levels for the following object predictors are associated with differences in <span style="color: #FF0000">N_Days</span> between <span style="color: #FF0000">Status=True</span> and <span style="color: #FF0000">Status=False</span>:  
         * <span style="color: #FF0000">Drug</span>
+        * <span style="color: #FF0000">Sex</span>
         * <span style="color: #FF0000">Ascites</span>
+        * <span style="color: #FF0000">Hepatomegaly</span>
         * <span style="color: #FF0000">Spiders</span>
         * <span style="color: #FF0000">Edema</span>
+        * <span style="color: #FF0000">Stage_1.0</span>
+        * <span style="color: #FF0000">Stage_2.0</span>
+        * <span style="color: #FF0000">Stage_3.0</span>
         * <span style="color: #FF0000">Stage_4.0</span>
 
 
@@ -6233,7 +6248,7 @@ cirrhosis_survival_X_test_preprocessed.shape
 ##################################
 cirrhosis_survival_y_train_cleaned.reset_index(drop=True, inplace=True)
 cirrhosis_survival_train_EDA = pd.concat([cirrhosis_survival_y_train_cleaned,
-                                          cirrhosis_survival_X_test_preprocessed],
+                                          cirrhosis_survival_X_train_preprocessed],
                                          axis=1)
 cirrhosis_survival_train_EDA.head()
 ```
@@ -6287,121 +6302,121 @@ cirrhosis_survival_train_EDA.head()
       <th>0</th>
       <td>False</td>
       <td>2475</td>
-      <td>1.043704</td>
-      <td>0.744396</td>
-      <td>0.922380</td>
-      <td>0.240951</td>
-      <td>0.045748</td>
-      <td>0.317282</td>
-      <td>-0.078335</td>
-      <td>2.671950</td>
+      <td>-1.342097</td>
+      <td>0.863802</td>
+      <td>0.886087</td>
+      <td>-0.451884</td>
+      <td>-0.972098</td>
+      <td>0.140990</td>
+      <td>0.104609</td>
+      <td>0.155130</td>
       <td>...</td>
-      <td>1.0</td>
-      <td>1.0</td>
-      <td>0.0</td>
-      <td>0.0</td>
-      <td>1.0</td>
-      <td>1.0</td>
-      <td>0.0</td>
-      <td>0.0</td>
-      <td>1.0</td>
-      <td>0.0</td>
+      <td>1</td>
+      <td>1</td>
+      <td>0</td>
+      <td>0</td>
+      <td>0</td>
+      <td>0</td>
+      <td>0</td>
+      <td>1</td>
+      <td>0</td>
+      <td>0</td>
     </tr>
     <tr>
       <th>1</th>
       <td>False</td>
       <td>877</td>
-      <td>-1.936476</td>
-      <td>-0.764558</td>
-      <td>0.160096</td>
-      <td>-0.600950</td>
-      <td>-0.179138</td>
-      <td>-0.245613</td>
-      <td>0.472422</td>
-      <td>-0.359800</td>
+      <td>-1.470901</td>
+      <td>0.516350</td>
+      <td>1.554523</td>
+      <td>0.827618</td>
+      <td>0.467579</td>
+      <td>-0.705337</td>
+      <td>0.301441</td>
+      <td>1.275222</td>
       <td>...</td>
-      <td>0.0</td>
-      <td>1.0</td>
-      <td>0.0</td>
-      <td>0.0</td>
-      <td>0.0</td>
-      <td>0.0</td>
-      <td>0.0</td>
-      <td>0.0</td>
-      <td>0.0</td>
-      <td>1.0</td>
+      <td>1</td>
+      <td>0</td>
+      <td>0</td>
+      <td>0</td>
+      <td>0</td>
+      <td>0</td>
+      <td>0</td>
+      <td>0</td>
+      <td>1</td>
+      <td>0</td>
     </tr>
     <tr>
       <th>2</th>
       <td>False</td>
       <td>3050</td>
-      <td>-1.749033</td>
-      <td>0.371523</td>
-      <td>0.558115</td>
+      <td>-0.239814</td>
+      <td>-0.625875</td>
+      <td>0.293280</td>
       <td>0.646582</td>
-      <td>-0.159024</td>
-      <td>0.339454</td>
-      <td>0.685117</td>
-      <td>-3.109146</td>
+      <td>-0.241205</td>
+      <td>-0.848544</td>
+      <td>0.275723</td>
+      <td>-1.684460</td>
       <td>...</td>
-      <td>1.0</td>
-      <td>1.0</td>
-      <td>0.0</td>
-      <td>1.0</td>
-      <td>0.0</td>
-      <td>0.0</td>
-      <td>0.0</td>
-      <td>0.0</td>
-      <td>0.0</td>
-      <td>1.0</td>
+      <td>1</td>
+      <td>1</td>
+      <td>0</td>
+      <td>0</td>
+      <td>0</td>
+      <td>0</td>
+      <td>0</td>
+      <td>1</td>
+      <td>0</td>
+      <td>0</td>
     </tr>
     <tr>
       <th>3</th>
       <td>True</td>
       <td>110</td>
-      <td>-0.485150</td>
-      <td>-0.918484</td>
-      <td>-0.690904</td>
-      <td>1.629765</td>
-      <td>0.028262</td>
-      <td>1.713791</td>
-      <td>-1.387751</td>
-      <td>0.155130</td>
+      <td>-0.052733</td>
+      <td>0.559437</td>
+      <td>-1.534283</td>
+      <td>0.354473</td>
+      <td>-0.284113</td>
+      <td>-0.014525</td>
+      <td>0.162878</td>
+      <td>-0.189139</td>
       <td>...</td>
-      <td>1.0</td>
-      <td>0.0</td>
-      <td>0.0</td>
-      <td>0.0</td>
-      <td>0.0</td>
-      <td>0.0</td>
-      <td>1.0</td>
-      <td>0.0</td>
-      <td>0.0</td>
-      <td>0.0</td>
+      <td>0</td>
+      <td>1</td>
+      <td>1</td>
+      <td>1</td>
+      <td>1</td>
+      <td>1</td>
+      <td>0</td>
+      <td>0</td>
+      <td>0</td>
+      <td>1</td>
     </tr>
     <tr>
       <th>4</th>
       <td>True</td>
       <td>3839</td>
-      <td>-0.815655</td>
-      <td>1.286438</td>
-      <td>2.610501</td>
-      <td>-0.722153</td>
-      <td>0.210203</td>
-      <td>0.602860</td>
-      <td>3.494936</td>
-      <td>-0.053214</td>
+      <td>-0.795010</td>
+      <td>1.142068</td>
+      <td>-0.108933</td>
+      <td>-0.272913</td>
+      <td>0.618030</td>
+      <td>2.071847</td>
+      <td>1.434674</td>
+      <td>-0.212684</td>
       <td>...</td>
-      <td>0.0</td>
-      <td>1.0</td>
-      <td>0.0</td>
-      <td>1.0</td>
-      <td>0.0</td>
-      <td>0.0</td>
-      <td>0.0</td>
-      <td>1.0</td>
-      <td>0.0</td>
-      <td>0.0</td>
+      <td>0</td>
+      <td>1</td>
+      <td>0</td>
+      <td>1</td>
+      <td>0</td>
+      <td>0</td>
+      <td>0</td>
+      <td>1</td>
+      <td>0</td>
+      <td>0</td>
     </tr>
   </tbody>
 </table>
@@ -6548,6 +6563,132 @@ plt.show()
     
 ![png](output_145_0.png)
     
+
+
+### 1.5.2 Hypothesis Testing <a class="anchor" id="1.5.2"></a>
+
+1. The relationship between the numeric predictors to the <span style="color: #FF0000">Status</span> target variable was statistically evaluated using the following hypotheses:
+    * **Null**: Difference in the means between groups True and False is equal to zero  
+    * **Alternative**: Difference in the means between groups True and False is not equal to zero   
+2. There is sufficient evidence to conclude of a statistically significant difference between the means of the numeric measurements obtained from True and False groups of the <span style="color: #FF0000">Status</span> target variable in 10 of the 10 numeric predictors given their high t-test statistic values with reported low p-values less than the significance level of 0.05.
+    * <span style="color: #FF0000">Bilirubin</span>: T.Test.Statistic=-8.031, Correlation.PValue=0.000
+    * <span style="color: #FF0000">Prothrombin</span>: T.Test.Statistic=-7.062, Correlation.PValue=0.000 
+    * <span style="color: #FF0000">Copper</span>: T.Test.Statistic=-5.699, Correlation.PValue=0.000  
+    * <span style="color: #FF0000">Alk_Phos</span>: T.Test.Statistic=-4.638, Correlation.PValue=0.000 
+    * <span style="color: #FF0000">SGOT</span>: T.Test.Statistic=-4.207, Correlation.PValue=0.000 
+    * <span style="color: #FF0000">Albumin</span>: T.Test.Statistic=+3.871, Correlation.PValue=0.000  
+    * <span style="color: #FF0000">Tryglicerides</span>: T.Test.Statistic=-3.575, Correlation.PValue=0.000   
+    * <span style="color: #FF0000">Age</span>: T.Test.Statistic=-3.264, Correlation.PValue=0.001
+    * <span style="color: #FF0000">Platelets</span>: T.Test.Statistic=+3.261, Correlation.PValue=0.001
+    * <span style="color: #FF0000">Cholesterol</span>: T.Test.Statistic=-2.256, Correlation.PValue=0.025
+
+
+```python
+##################################
+# Computing the t-test 
+# statistic and p-values
+# between the target variable
+# and numeric predictor columns
+##################################
+cirrhosis_survival_numeric_ttest_target = {}
+for numeric_column in cirrhosis_survival_numeric_predictors:
+    group_0 = cirrhosis_survival_train_EDA[cirrhosis_survival_train_EDA.loc[:,'Status']==False]
+    group_1 = cirrhosis_survival_train_EDA[cirrhosis_survival_train_EDA.loc[:,'Status']==True]
+    cirrhosis_survival_numeric_ttest_target['Status_' + numeric_column] = stats.ttest_ind(
+        group_0[numeric_column], 
+        group_1[numeric_column], 
+        equal_var=True)
+```
+
+
+```python
+##################################
+# Formulating the pairwise ttest summary
+# between the target variable
+# and numeric predictor columns
+##################################
+cirrhosis_survival_numeric_ttest_summary = cirrhosis_survival_train_EDA.from_dict(cirrhosis_survival_numeric_ttest_target, orient='index')
+cirrhosis_survival_numeric_ttest_summary.columns = ['T.Test.Statistic', 'T.Test.PValue']
+display(cirrhosis_survival_numeric_ttest_summary.sort_values(by=['T.Test.PValue'], ascending=True).head(12))
+```
+
+
+<div>
+<style scoped>
+    .dataframe tbody tr th:only-of-type {
+        vertical-align: middle;
+    }
+
+    .dataframe tbody tr th {
+        vertical-align: top;
+    }
+
+    .dataframe thead th {
+        text-align: right;
+    }
+</style>
+<table border="1" class="dataframe">
+  <thead>
+    <tr style="text-align: right;">
+      <th></th>
+      <th>T.Test.Statistic</th>
+      <th>T.Test.PValue</th>
+    </tr>
+  </thead>
+  <tbody>
+    <tr>
+      <th>Status_Bilirubin</th>
+      <td>-8.030789</td>
+      <td>6.198797e-14</td>
+    </tr>
+    <tr>
+      <th>Status_Prothrombin</th>
+      <td>-7.062933</td>
+      <td>2.204961e-11</td>
+    </tr>
+    <tr>
+      <th>Status_Copper</th>
+      <td>-5.699409</td>
+      <td>3.913575e-08</td>
+    </tr>
+    <tr>
+      <th>Status_Alk_Phos</th>
+      <td>-4.638524</td>
+      <td>6.077981e-06</td>
+    </tr>
+    <tr>
+      <th>Status_SGOT</th>
+      <td>-4.207123</td>
+      <td>3.791642e-05</td>
+    </tr>
+    <tr>
+      <th>Status_Albumin</th>
+      <td>3.871216</td>
+      <td>1.434736e-04</td>
+    </tr>
+    <tr>
+      <th>Status_Tryglicerides</th>
+      <td>-3.575779</td>
+      <td>4.308371e-04</td>
+    </tr>
+    <tr>
+      <th>Status_Age</th>
+      <td>-3.264563</td>
+      <td>1.274679e-03</td>
+    </tr>
+    <tr>
+      <th>Status_Platelets</th>
+      <td>3.261042</td>
+      <td>1.289850e-03</td>
+    </tr>
+    <tr>
+      <th>Status_Cholesterol</th>
+      <td>-2.256073</td>
+      <td>2.506758e-02</td>
+    </tr>
+  </tbody>
+</table>
+</div>
 
 
 # 2. Summary <a class="anchor" id="Summary"></a>
