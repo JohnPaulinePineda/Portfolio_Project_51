@@ -6593,7 +6593,7 @@ plt.show()
     * <span style="color: #FF0000">Stage_2.0</span>: ChiSquare.Test.Statistic=4.024, ChiSquare.Test.PValue=0.045   
     * <span style="color: #FF0000">Stage_1.0</span>: ChiSquare.Test.Statistic=3.978, ChiSquare.Test.PValue=0.046 
     * <span style="color: #FF0000">Spiders</span>: ChiSquare.Test.Statistic=3.953, ChiSquare.Test.PValue=0.047
-5. The relationship between the object predictors to the <span style="color: #FF0000">Status</span> target variable was statistically evaluated using the following hypotheses:
+5. The relationship between the object predictors to the <span style="color: #FF0000">Status</span> and <span style="color: #FF0000">N_Days</span> variables was statistically evaluated using the following hypotheses:
     * **Null**: There is no difference in survival probabilities among cases belonging to each category of the object predictor.
     * **Alternative**: There is a difference in survival probabilities among cases belonging to each category of the object predictor.
 6. There is sufficient evidence to conclude of a statistically significant difference in survival probabilities between the individual categories and the <span style="color: #FF0000">Status</span> groups with respect to the survival duration <span style="color: #FF0000">N_Days</span> in 8 object predictors given their high log-rank test statistic values with reported low p-values less than the significance level of 0.05.
@@ -6605,6 +6605,19 @@ plt.show()
     * <span style="color: #FF0000">Stage_2.0</span>: LR.Test.Statistic=6.775, LR.Test.PValue=0.009   
     * <span style="color: #FF0000">Sex</span>: LR.Test.Statistic=5.514, LR.Test.PValue=0.018
     * <span style="color: #FF0000">Stage_1.0</span>: LR.Test.Statistic=5.473, LR.Test.PValue=0.019 
+7. The relationship between the binned numeric predictors to the <span style="color: #FF0000">Status</span> and <span style="color: #FF0000">N_Days</span> variables was statistically evaluated using the following hypotheses:
+    * **Null**: There is no difference in survival probabilities among cases belonging to each category of the binned numeric predictor.
+    * **Alternative**: There is a difference in survival probabilities among cases belonging to each category of the binned numeric predictor.
+8. There is sufficient evidence to conclude of a statistically significant difference in survival probabilities between the individual categories and the <span style="color: #FF0000">Status</span> groups with respect to the survival duration <span style="color: #FF0000">N_Days</span> in 9 binned numeric predictors given their high log-rank test statistic values with reported low p-values less than the significance level of 0.05.
+    * <span style="color: #FF0000">Binned_Bilirubin</span>: LR.Test.Statistic=62.559, LR.Test.PValue=0.000
+    * <span style="color: #FF0000">Binned_Albumin</span>: LR.Test.Statistic=29.444, LR.Test.PValue=0.000 
+    * <span style="color: #FF0000">Binned_Copper</span>: LR.Test.Statistic=27.452, LR.Test.PValue=0.000
+    * <span style="color: #FF0000">Binned_Prothrombin</span>: LR.Test.Statistic=21.695, LR.Test.PValue=0.000   
+    * <span style="color: #FF0000">Binned_SGOT</span>: LR.Test.Statistic=16.178, LR.Test.PValue=0.000
+    * <span style="color: #FF0000">Binned_Tryglicerides</span>: LR.Test.Statistic=11.512, LR.Test.PValue=0.000   
+    * <span style="color: #FF0000">Binned_Age</span>: LR.Test.Statistic=9.012, LR.Test.PValue=0.002
+    * <span style="color: #FF0000">Binned_Platelets</span>: LR.Test.Statistic=6.741, LR.Test.PValue=0.009 
+    * <span style="color: #FF0000">Binned_Alk_Phos</span>: LR.Test.Statistic=5.503, LR.Test.PValue=0.018 
 
 
 
@@ -6953,6 +6966,173 @@ display(cirrhosis_survival_object_lrtest_summary.sort_values(by=['LR.Test.PValue
       <th>Status_NDays_Drug</th>
       <td>0.000016</td>
       <td>9.968084e-01</td>
+    </tr>
+  </tbody>
+</table>
+</div>
+
+
+
+```python
+##################################
+# Creating an alternate copy of the 
+# EDA data which will utilize
+# binning for numeric predictors
+##################################
+cirrhosis_survival_train_EDA_binned = cirrhosis_survival_train_EDA.copy()
+
+##################################
+# Creating a function to bin
+# numeric predictors into two groups
+##################################
+def bin_numeric_predictor(df, predictor):
+    median = df[predictor].median()
+    df[f'Binned_{predictor}'] = np.where(df[predictor] <= median, 0, 1)
+    return df
+
+##################################
+# Binning the numeric predictors
+# in the alternate EDA data into two groups
+##################################
+for numeric_column in cirrhosis_survival_numeric_predictors:
+    cirrhosis_survival_train_EDA_binned = bin_numeric_predictor(cirrhosis_survival_train_EDA_binned, numeric_column)
+    
+##################################
+# Formulating the binned numeric predictors
+##################################    
+cirrhosis_survival_binned_numeric_predictors = ["Binned_" + predictor for predictor in cirrhosis_survival_numeric_predictors]
+```
+
+
+```python
+##################################
+# Exploring the relationships between
+# the binned numeric predictors with
+# survival event and duration
+##################################
+plt.figure(figsize=(17, 25))
+for i in range(0, len(cirrhosis_survival_binned_numeric_predictors)):
+    ax = plt.subplot(5, 2, i+1)
+    for group in [0,1]:
+        kmf.fit(durations=cirrhosis_survival_train_EDA_binned[cirrhosis_survival_train_EDA_binned[cirrhosis_survival_binned_numeric_predictors[i]] == group]['N_Days'],
+                event_observed=cirrhosis_survival_train_EDA_binned[cirrhosis_survival_train_EDA_binned[cirrhosis_survival_binned_numeric_predictors[i]] == group]['Status'], label=group)
+        kmf.plot_survival_function(ax=ax)
+    plt.title(f'Survival Probabilities by {cirrhosis_survival_binned_numeric_predictors[i]} Categories')
+    plt.xlabel('N_Days')
+plt.tight_layout()
+plt.show()
+```
+
+
+    
+![png](output_155_0.png)
+    
+
+
+
+```python
+##################################
+# Computing the log-rank test
+# statistic and p-values
+# between the target and duration variables
+# with the binned numeric predictor columns
+##################################
+cirrhosis_survival_binned_numeric_lrtest_target = {}
+for binned_numeric_column in cirrhosis_survival_binned_numeric_predictors:
+    groups = [0,1]
+    group_0_event = cirrhosis_survival_train_EDA_binned[cirrhosis_survival_train_EDA_binned[binned_numeric_column] == groups[0]]['Status']
+    group_1_event = cirrhosis_survival_train_EDA_binned[cirrhosis_survival_train_EDA_binned[binned_numeric_column] == groups[1]]['Status']
+    group_0_duration = cirrhosis_survival_train_EDA_binned[cirrhosis_survival_train_EDA_binned[binned_numeric_column] == groups[0]]['N_Days']
+    group_1_duration = cirrhosis_survival_train_EDA_binned[cirrhosis_survival_train_EDA_binned[binned_numeric_column] == groups[1]]['N_Days']
+    lr_test = logrank_test(group_0_duration, group_1_duration,event_observed_A=group_0_event, event_observed_B=group_1_event)
+    cirrhosis_survival_binned_numeric_lrtest_target['Status_NDays_' + binned_numeric_column] = (lr_test.test_statistic, lr_test.p_value)
+```
+
+
+```python
+##################################
+# Formulating the log-rank test summary
+# between the target and duration variables
+# with the binned numeric predictor columns
+##################################
+cirrhosis_survival_binned_numeric_lrtest_summary = cirrhosis_survival_train_EDA_binned.from_dict(cirrhosis_survival_binned_numeric_lrtest_target, orient='index')
+cirrhosis_survival_binned_numeric_lrtest_summary.columns = ['LR.Test.Statistic', 'LR.Test.PValue']
+display(cirrhosis_survival_binned_numeric_lrtest_summary.sort_values(by=['LR.Test.PValue'], ascending=True))
+```
+
+
+<div>
+<style scoped>
+    .dataframe tbody tr th:only-of-type {
+        vertical-align: middle;
+    }
+
+    .dataframe tbody tr th {
+        vertical-align: top;
+    }
+
+    .dataframe thead th {
+        text-align: right;
+    }
+</style>
+<table border="1" class="dataframe">
+  <thead>
+    <tr style="text-align: right;">
+      <th></th>
+      <th>LR.Test.Statistic</th>
+      <th>LR.Test.PValue</th>
+    </tr>
+  </thead>
+  <tbody>
+    <tr>
+      <th>Status_NDays_Binned_Bilirubin</th>
+      <td>62.559303</td>
+      <td>2.585412e-15</td>
+    </tr>
+    <tr>
+      <th>Status_NDays_Binned_Albumin</th>
+      <td>29.444808</td>
+      <td>5.753197e-08</td>
+    </tr>
+    <tr>
+      <th>Status_NDays_Binned_Copper</th>
+      <td>27.452421</td>
+      <td>1.610072e-07</td>
+    </tr>
+    <tr>
+      <th>Status_NDays_Binned_Prothrombin</th>
+      <td>21.695995</td>
+      <td>3.194575e-06</td>
+    </tr>
+    <tr>
+      <th>Status_NDays_Binned_SGOT</th>
+      <td>16.178483</td>
+      <td>5.764520e-05</td>
+    </tr>
+    <tr>
+      <th>Status_NDays_Binned_Tryglicerides</th>
+      <td>11.512960</td>
+      <td>6.911262e-04</td>
+    </tr>
+    <tr>
+      <th>Status_NDays_Binned_Age</th>
+      <td>9.011700</td>
+      <td>2.682568e-03</td>
+    </tr>
+    <tr>
+      <th>Status_NDays_Binned_Platelets</th>
+      <td>6.741196</td>
+      <td>9.421142e-03</td>
+    </tr>
+    <tr>
+      <th>Status_NDays_Binned_Alk_Phos</th>
+      <td>5.503850</td>
+      <td>1.897465e-02</td>
+    </tr>
+    <tr>
+      <th>Status_NDays_Binned_Cholesterol</th>
+      <td>3.773953</td>
+      <td>5.205647e-02</td>
     </tr>
   </tbody>
 </table>
