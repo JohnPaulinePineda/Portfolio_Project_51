@@ -6570,7 +6570,7 @@ plt.show()
 1. The relationship between the numeric predictors to the <span style="color: #FF0000">Status</span> target variable was statistically evaluated using the following hypotheses:
     * **Null**: Difference in the means between groups True and False is equal to zero  
     * **Alternative**: Difference in the means between groups True and False is not equal to zero   
-2. There is sufficient evidence to conclude of a statistically significant difference between the means of the numeric measurements obtained from True and False groups of the <span style="color: #FF0000">Status</span> target variable in 10 of the 10 numeric predictors given their high t-test statistic values with reported low p-values less than the significance level of 0.05.
+2. There is sufficient evidence to conclude of a statistically significant difference between the means of the numeric measurements obtained from the <span style="color: #FF0000">Status</span> groups in 10 numeric predictors given their high t-test statistic values with reported low p-values less than the significance level of 0.05.
     * <span style="color: #FF0000">Bilirubin</span>: T.Test.Statistic=-8.031, Correlation.PValue=0.000
     * <span style="color: #FF0000">Prothrombin</span>: T.Test.Statistic=-7.062, Correlation.PValue=0.000 
     * <span style="color: #FF0000">Copper</span>: T.Test.Statistic=-5.699, Correlation.PValue=0.000  
@@ -6584,7 +6584,7 @@ plt.show()
 3. The relationship between the object predictors to the <span style="color: #FF0000">Status</span> target variable was statistically evaluated using the following hypotheses:
     * **Null**: The object predictor is independent of the target variable 
     * **Alternative**: The object predictor is dependent on the target variable   
-4. There is sufficient evidence to conclude of a statistically significant relationship difference between the categories of the object predictors and the True and False groups of the <span style="color: #FF0000">Status</span> target variable in 8 object predictors given their high chisquare statistic values with reported low p-values less than the significance level of 0.05.
+4. There is sufficient evidence to conclude of a statistically significant relationship between the individual categories and the <span style="color: #FF0000">Status</span> groups in 8 object predictors given their high chisquare statistic values with reported low p-values less than the significance level of 0.05.
     * <span style="color: #FF0000">Ascites</span>: ChiSquare.Test.Statistic=16.854, ChiSquare.Test.PValue=0.000
     * <span style="color: #FF0000">Hepatomegaly</span>: ChiSquare.Test.Statistic=14.206, ChiSquare.Test.PValue=0.000   
     * <span style="color: #FF0000">Edema</span>: ChiSquare.Test.Statistic=12.962, ChiSquare.Test.PValue=0.001 
@@ -6593,6 +6593,19 @@ plt.show()
     * <span style="color: #FF0000">Stage_2.0</span>: ChiSquare.Test.Statistic=4.024, ChiSquare.Test.PValue=0.045   
     * <span style="color: #FF0000">Stage_1.0</span>: ChiSquare.Test.Statistic=3.978, ChiSquare.Test.PValue=0.046 
     * <span style="color: #FF0000">Spiders</span>: ChiSquare.Test.Statistic=3.953, ChiSquare.Test.PValue=0.047
+5. The relationship between the object predictors to the <span style="color: #FF0000">Status</span> target variable was statistically evaluated using the following hypotheses:
+    * **Null**: There is no difference in survival probabilities among cases belonging to each category of the object predictor.
+    * **Alternative**: There is a difference in survival probabilities among cases belonging to each category of the object predictor.
+6. There is sufficient evidence to conclude of a statistically significant difference in survival probabilities between the individual categories and the <span style="color: #FF0000">Status</span> groups with respect to the survival duration <span style="color: #FF0000">N_Days</span> in 8 object predictors given their high log-rank test statistic values with reported low p-values less than the significance level of 0.05.
+    * <span style="color: #FF0000">Ascites</span>: LR.Test.Statistic=37.792, LR.Test.PValue=0.000
+    * <span style="color: #FF0000">Edema</span>: LR.Test.Statistic=31.619, LR.Test.PValue=0.000 
+    * <span style="color: #FF0000">Stage_4.0</span>: LR.Test.Statistic=26.482, LR.Test.PValue=0.000
+    * <span style="color: #FF0000">Hepatomegaly</span>: LR.Test.Statistic=20.350, LR.Test.PValue=0.000   
+    * <span style="color: #FF0000">Spiders</span>: LR.Test.Statistic=10.762, LR.Test.PValue=0.001
+    * <span style="color: #FF0000">Stage_2.0</span>: LR.Test.Statistic=6.775, LR.Test.PValue=0.009   
+    * <span style="color: #FF0000">Sex</span>: LR.Test.Statistic=5.514, LR.Test.PValue=0.018
+    * <span style="color: #FF0000">Stage_1.0</span>: LR.Test.Statistic=5.473, LR.Test.PValue=0.019 
+
 
 
 ```python
@@ -6804,6 +6817,142 @@ display(cirrhosis_survival_object_chisquare_target_summary.sort_values(by=['ChiS
       <th>Status_Drug</th>
       <td>0.000000</td>
       <td>1.000000</td>
+    </tr>
+  </tbody>
+</table>
+</div>
+
+
+
+```python
+##################################
+# Exploring the relationships between
+# the object predictors with
+# survival event and duration
+##################################
+plt.figure(figsize=(17, 25))
+for i in range(0, len(cirrhosis_survival_object_predictors)):
+    ax = plt.subplot(5, 2, i+1)
+    for group in [0,1]:
+        kmf.fit(durations=cirrhosis_survival_train_EDA[cirrhosis_survival_train_EDA[cirrhosis_survival_object_predictors[i]] == group]['N_Days'],
+                event_observed=cirrhosis_survival_train_EDA[cirrhosis_survival_train_EDA[cirrhosis_survival_object_predictors[i]] == group]['Status'], label=group)
+        kmf.plot_survival_function(ax=ax)
+    plt.title(f'Survival Probabilities by {cirrhosis_survival_object_predictors[i]} Categories')
+    plt.xlabel('N_Days')
+plt.tight_layout()
+plt.show()
+```
+
+
+    
+![png](output_151_0.png)
+    
+
+
+
+```python
+##################################
+# Computing the log-rank test
+# statistic and p-values
+# between the target and duration variables
+# with the object predictor columns
+##################################
+cirrhosis_survival_object_lrtest_target = {}
+for object_column in cirrhosis_survival_object_predictors:
+    groups = [0,1]
+    group_0_event = cirrhosis_survival_train_EDA[cirrhosis_survival_train_EDA[object_column] == groups[0]]['Status']
+    group_1_event = cirrhosis_survival_train_EDA[cirrhosis_survival_train_EDA[object_column] == groups[1]]['Status']
+    group_0_duration = cirrhosis_survival_train_EDA[cirrhosis_survival_train_EDA[object_column] == groups[0]]['N_Days']
+    group_1_duration = cirrhosis_survival_train_EDA[cirrhosis_survival_train_EDA[object_column] == groups[1]]['N_Days']
+    lr_test = logrank_test(group_0_duration, group_1_duration,event_observed_A=group_0_event, event_observed_B=group_1_event)
+    cirrhosis_survival_object_lrtest_target['Status_NDays_' + object_column] = (lr_test.test_statistic, lr_test.p_value)
+```
+
+
+```python
+##################################
+# Formulating the log-rank test summary
+# between the target and duration variables
+# with the object predictor columns
+##################################
+cirrhosis_survival_object_lrtest_summary = cirrhosis_survival_train_EDA.from_dict(cirrhosis_survival_object_lrtest_target, orient='index')
+cirrhosis_survival_object_lrtest_summary.columns = ['LR.Test.Statistic', 'LR.Test.PValue']
+display(cirrhosis_survival_object_lrtest_summary.sort_values(by=['LR.Test.PValue'], ascending=True))
+```
+
+
+<div>
+<style scoped>
+    .dataframe tbody tr th:only-of-type {
+        vertical-align: middle;
+    }
+
+    .dataframe tbody tr th {
+        vertical-align: top;
+    }
+
+    .dataframe thead th {
+        text-align: right;
+    }
+</style>
+<table border="1" class="dataframe">
+  <thead>
+    <tr style="text-align: right;">
+      <th></th>
+      <th>LR.Test.Statistic</th>
+      <th>LR.Test.PValue</th>
+    </tr>
+  </thead>
+  <tbody>
+    <tr>
+      <th>Status_NDays_Ascites</th>
+      <td>37.792220</td>
+      <td>7.869499e-10</td>
+    </tr>
+    <tr>
+      <th>Status_NDays_Edema</th>
+      <td>31.619652</td>
+      <td>1.875223e-08</td>
+    </tr>
+    <tr>
+      <th>Status_NDays_Stage_4.0</th>
+      <td>26.482676</td>
+      <td>2.659121e-07</td>
+    </tr>
+    <tr>
+      <th>Status_NDays_Hepatomegaly</th>
+      <td>20.360210</td>
+      <td>6.414988e-06</td>
+    </tr>
+    <tr>
+      <th>Status_NDays_Spiders</th>
+      <td>10.762275</td>
+      <td>1.035900e-03</td>
+    </tr>
+    <tr>
+      <th>Status_NDays_Stage_2.0</th>
+      <td>6.775033</td>
+      <td>9.244176e-03</td>
+    </tr>
+    <tr>
+      <th>Status_NDays_Sex</th>
+      <td>5.514094</td>
+      <td>1.886385e-02</td>
+    </tr>
+    <tr>
+      <th>Status_NDays_Stage_1.0</th>
+      <td>5.473270</td>
+      <td>1.930946e-02</td>
+    </tr>
+    <tr>
+      <th>Status_NDays_Stage_3.0</th>
+      <td>0.478031</td>
+      <td>4.893156e-01</td>
+    </tr>
+    <tr>
+      <th>Status_NDays_Drug</th>
+      <td>0.000016</td>
+      <td>9.968084e-01</td>
     </tr>
   </tbody>
 </table>
