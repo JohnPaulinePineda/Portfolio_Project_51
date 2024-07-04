@@ -24,12 +24,9 @@
     * [1.6 Predictive Model Development](#1.6)
         * [1.6.1 Premodelling Data Description](#1.6.1)
         * [1.6.2 Cox Proportional Hazards Regression](#1.6.2)
-        * [1.6.3 Penalized Cox Regression](#1.6.3)
-        * [1.6.4 Survival Support Vector Machine](#1.6.4)
-        * [1.6.5 Survival Tree](#1.6.5)
-        * [1.6.6 Random Survival Forest](#1.6.6)
-        * [1.6.7 Extra Survival Forest](#1.6.7)
-        * [1.6.8 Gradient Boosted Survival](#1.6.8)
+        * [1.6.3 Survival Support Vector Machine](#1.6.3)
+        * [1.6.4 Random Survival Forest](#1.6.4)
+        * [1.6.5 Gradient Boosted Survival](#1.6.5)
     * [1.7 Consolidated Findings](#1.7)
 * [**2. Summary**](#Summary)   
 * [**3. References**](#References)
@@ -55,7 +52,7 @@ An open [Liver Cirrhosis Dataset](https://www.kaggle.com/code/arjunbhaybhang/liv
 
 This study hypothesized that the evaluated drug, liver profile test biomarkers and various clinicopathological characteristics influence liver cirrhosis survival between patients.
 
-The target status and survival duration variables for the study are:
+The event status and survival duration variables for the study are:
 * <span style="color: #FF0000">Status</span> - Status of the patient (C, censored | CL, censored due to liver transplant | D, death)
 * <span style="color: #FF0000">N_Days</span> - Number of days between registration and the earlier of death, transplantation, or study analysis time (1986)
 
@@ -86,7 +83,7 @@ The predictor variables for the study are:
     * **20 columns** (variables)
         * **1/20 metadata** (object)
             * <span style="color: #FF0000">ID</span>
-        * **2/20 target | duration** (object | numeric)
+        * **2/20 event | duration** (object | numeric)
              * <span style="color: #FF0000">Status</span>
              * <span style="color: #FF0000">N_Days</span>
         * **10/20 predictor** (numeric)
@@ -130,11 +127,16 @@ from sklearn.preprocessing import PowerTransformer
 from sklearn.preprocessing import StandardScaler
 from sklearn.pipeline import Pipeline
 from sklearn.compose import ColumnTransformer
+from sklearn.model_selection import KFold
 from statsmodels.nonparametric.smoothers_lowess import lowess
+from sksurv.linear_model import CoxPHSurvivalAnalysis
+from sksurv.metrics import concordance_index_censored
 from lifelines import KaplanMeierFitter
 from lifelines.statistics import logrank_test
 from scipy import stats
 from scipy.stats import ttest_ind, chi2_contingency
+import warnings
+warnings.filterwarnings('ignore')
 ```
 
 
@@ -2698,10 +2700,10 @@ cirrhosis_survival_y_test_cleaned = cirrhosis_survival_test[['Status', 'N_Days']
 ##################################
 # Gathering the training data information
 ##################################
-print(f'Training Dataset Dimensions: Predictors: {cirrhosis_survival_X_train_cleaned.shape}, Target|Duration: {cirrhosis_survival_y_train_cleaned.shape}')
+print(f'Training Dataset Dimensions: Predictors: {cirrhosis_survival_X_train_cleaned.shape}, Event|Duration: {cirrhosis_survival_y_train_cleaned.shape}')
 ```
 
-    Training Dataset Dimensions: Predictors: (218, 17), Target|Duration: (218, 2)
+    Training Dataset Dimensions: Predictors: (218, 17), Event|Duration: (218, 2)
     
 
 
@@ -2709,10 +2711,10 @@ print(f'Training Dataset Dimensions: Predictors: {cirrhosis_survival_X_train_cle
 ##################################
 # Gathering the testing data information
 ##################################
-print(f'Testing Dataset Dimensions: Predictors: {cirrhosis_survival_X_test_cleaned.shape}, Target|Duration: {cirrhosis_survival_y_test_cleaned.shape}')
+print(f'Testing Dataset Dimensions: Predictors: {cirrhosis_survival_X_test_cleaned.shape}, Event|Duration: {cirrhosis_survival_y_test_cleaned.shape}')
 ```
 
-    Testing Dataset Dimensions: Predictors: (94, 17), Target|Duration: (94, 2)
+    Testing Dataset Dimensions: Predictors: (94, 17), Event|Duration: (94, 2)
     
 
 
@@ -4872,7 +4874,7 @@ cirrhosis_survival_X_train_cleaned_encoded_object.head()
 2. The preprocessed training subset is comprised of:
     * **218 rows** (observations)
     * **22 columns** (variables)
-        * **2/22 target | duration** (boolean | numeric)
+        * **2/22 event | duration** (boolean | numeric)
              * <span style="color: #FF0000">Status</span>
              * <span style="color: #FF0000">N_Days</span>
         * **10/22 predictor** (numeric)
@@ -4900,7 +4902,7 @@ cirrhosis_survival_X_train_cleaned_encoded_object.head()
 3. The preprocessed testing subset is comprised of:
     * **92 rows** (observations)
     * **22 columns** (variables)
-        * **2/22 target | duration** (boolean | numeric)
+        * **2/22 event | duration** (boolean | numeric)
              * <span style="color: #FF0000">Status</span>
              * <span style="color: #FF0000">N_Days</span>
         * **10/22 predictor** (numeric)
@@ -6567,7 +6569,7 @@ plt.show()
 
 ### 1.5.2 Hypothesis Testing <a class="anchor" id="1.5.2"></a>
 
-1. The relationship between the numeric predictors to the <span style="color: #FF0000">Status</span> target variable was statistically evaluated using the following hypotheses:
+1. The relationship between the numeric predictors to the <span style="color: #FF0000">Status</span> event variable was statistically evaluated using the following hypotheses:
     * **Null**: Difference in the means between groups True and False is equal to zero  
     * **Alternative**: Difference in the means between groups True and False is not equal to zero   
 2. There is sufficient evidence to conclude of a statistically significant difference between the means of the numeric measurements obtained from the <span style="color: #FF0000">Status</span> groups in 10 numeric predictors given their high t-test statistic values with reported low p-values less than the significance level of 0.05.
@@ -6581,9 +6583,9 @@ plt.show()
     * <span style="color: #FF0000">Age</span>: T.Test.Statistic=-3.264, Correlation.PValue=0.001
     * <span style="color: #FF0000">Platelets</span>: T.Test.Statistic=+3.261, Correlation.PValue=0.001
     * <span style="color: #FF0000">Cholesterol</span>: T.Test.Statistic=-2.256, Correlation.PValue=0.025
-3. The relationship between the object predictors to the <span style="color: #FF0000">Status</span> target variable was statistically evaluated using the following hypotheses:
-    * **Null**: The object predictor is independent of the target variable 
-    * **Alternative**: The object predictor is dependent on the target variable   
+3. The relationship between the object predictors to the <span style="color: #FF0000">Status</span> event variable was statistically evaluated using the following hypotheses:
+    * **Null**: The object predictor is independent of the event variable 
+    * **Alternative**: The object predictor is dependent on the event variable   
 4. There is sufficient evidence to conclude of a statistically significant relationship between the individual categories and the <span style="color: #FF0000">Status</span> groups in 8 object predictors given their high chisquare statistic values with reported low p-values less than the significance level of 0.05.
     * <span style="color: #FF0000">Ascites</span>: ChiSquare.Test.Statistic=16.854, ChiSquare.Test.PValue=0.000
     * <span style="color: #FF0000">Hepatomegaly</span>: ChiSquare.Test.Statistic=14.206, ChiSquare.Test.PValue=0.000   
@@ -6625,14 +6627,14 @@ plt.show()
 ##################################
 # Computing the t-test 
 # statistic and p-values
-# between the target variable
+# between the event variable
 # and numeric predictor columns
 ##################################
-cirrhosis_survival_numeric_ttest_target = {}
+cirrhosis_survival_numeric_ttest_event = {}
 for numeric_column in cirrhosis_survival_numeric_predictors:
     group_0 = cirrhosis_survival_train_EDA[cirrhosis_survival_train_EDA.loc[:,'Status']==False]
     group_1 = cirrhosis_survival_train_EDA[cirrhosis_survival_train_EDA.loc[:,'Status']==True]
-    cirrhosis_survival_numeric_ttest_target['Status_' + numeric_column] = stats.ttest_ind(
+    cirrhosis_survival_numeric_ttest_event['Status_' + numeric_column] = stats.ttest_ind(
         group_0[numeric_column], 
         group_1[numeric_column], 
         equal_var=True)
@@ -6642,10 +6644,10 @@ for numeric_column in cirrhosis_survival_numeric_predictors:
 ```python
 ##################################
 # Formulating the pairwise ttest summary
-# between the target variable
+# between the event variable
 # and numeric predictor columns
 ##################################
-cirrhosis_survival_numeric_ttest_summary = cirrhosis_survival_train_EDA.from_dict(cirrhosis_survival_numeric_ttest_target, orient='index')
+cirrhosis_survival_numeric_ttest_summary = cirrhosis_survival_train_EDA.from_dict(cirrhosis_survival_numeric_ttest_event, orient='index')
 cirrhosis_survival_numeric_ttest_summary.columns = ['T.Test.Statistic', 'T.Test.PValue']
 display(cirrhosis_survival_numeric_ttest_summary.sort_values(by=['T.Test.PValue'], ascending=True))
 ```
@@ -6734,14 +6736,14 @@ display(cirrhosis_survival_numeric_ttest_summary.sort_values(by=['T.Test.PValue'
 ##################################
 # Computing the chisquare
 # statistic and p-values
-# between the target variable
+# between the event variable
 # and categorical predictor columns
 ##################################
-cirrhosis_survival_object_chisquare_target = {}
+cirrhosis_survival_object_chisquare_event = {}
 for object_column in cirrhosis_survival_object_predictors:
     contingency_table = pd.crosstab(cirrhosis_survival_train_EDA[object_column], 
                                     cirrhosis_survival_train_EDA['Status'])
-    cirrhosis_survival_object_chisquare_target['Status_' + object_column] = stats.chi2_contingency(
+    cirrhosis_survival_object_chisquare_event['Status_' + object_column] = stats.chi2_contingency(
         contingency_table)[0:2]
 ```
 
@@ -6749,12 +6751,12 @@ for object_column in cirrhosis_survival_object_predictors:
 ```python
 ##################################
 # Formulating the pairwise chisquare summary
-# between the target variable
+# between the event variable
 # and categorical predictor columns
 ##################################
-cirrhosis_survival_object_chisquare_target_summary = cirrhosis_survival_train_EDA.from_dict(cirrhosis_survival_object_chisquare_target, orient='index')
-cirrhosis_survival_object_chisquare_target_summary.columns = ['ChiSquare.Test.Statistic', 'ChiSquare.Test.PValue']
-display(cirrhosis_survival_object_chisquare_target_summary.sort_values(by=['ChiSquare.Test.PValue'], ascending=True))
+cirrhosis_survival_object_chisquare_event_summary = cirrhosis_survival_train_EDA.from_dict(cirrhosis_survival_object_chisquare_event, orient='index')
+cirrhosis_survival_object_chisquare_event_summary.columns = ['ChiSquare.Test.Statistic', 'ChiSquare.Test.PValue']
+display(cirrhosis_survival_object_chisquare_event_summary.sort_values(by=['ChiSquare.Test.PValue'], ascending=True))
 ```
 
 
@@ -6867,10 +6869,10 @@ plt.show()
 ##################################
 # Computing the log-rank test
 # statistic and p-values
-# between the target and duration variables
+# between the event and duration variables
 # with the object predictor columns
 ##################################
-cirrhosis_survival_object_lrtest_target = {}
+cirrhosis_survival_object_lrtest_event = {}
 for object_column in cirrhosis_survival_object_predictors:
     groups = [0,1]
     group_0_event = cirrhosis_survival_train_EDA[cirrhosis_survival_train_EDA[object_column] == groups[0]]['Status']
@@ -6878,17 +6880,17 @@ for object_column in cirrhosis_survival_object_predictors:
     group_0_duration = cirrhosis_survival_train_EDA[cirrhosis_survival_train_EDA[object_column] == groups[0]]['N_Days']
     group_1_duration = cirrhosis_survival_train_EDA[cirrhosis_survival_train_EDA[object_column] == groups[1]]['N_Days']
     lr_test = logrank_test(group_0_duration, group_1_duration,event_observed_A=group_0_event, event_observed_B=group_1_event)
-    cirrhosis_survival_object_lrtest_target['Status_NDays_' + object_column] = (lr_test.test_statistic, lr_test.p_value)
+    cirrhosis_survival_object_lrtest_event['Status_NDays_' + object_column] = (lr_test.test_statistic, lr_test.p_value)
 ```
 
 
 ```python
 ##################################
 # Formulating the log-rank test summary
-# between the target and duration variables
+# between the event and duration variables
 # with the object predictor columns
 ##################################
-cirrhosis_survival_object_lrtest_summary = cirrhosis_survival_train_EDA.from_dict(cirrhosis_survival_object_lrtest_target, orient='index')
+cirrhosis_survival_object_lrtest_summary = cirrhosis_survival_train_EDA.from_dict(cirrhosis_survival_object_lrtest_event, orient='index')
 cirrhosis_survival_object_lrtest_summary.columns = ['LR.Test.Statistic', 'LR.Test.PValue']
 display(cirrhosis_survival_object_lrtest_summary.sort_values(by=['LR.Test.PValue'], ascending=True))
 ```
@@ -7034,10 +7036,10 @@ plt.show()
 ##################################
 # Computing the log-rank test
 # statistic and p-values
-# between the target and duration variables
+# between the event and duration variables
 # with the binned numeric predictor columns
 ##################################
-cirrhosis_survival_binned_numeric_lrtest_target = {}
+cirrhosis_survival_binned_numeric_lrtest_event = {}
 for binned_numeric_column in cirrhosis_survival_binned_numeric_predictors:
     groups = [0,1]
     group_0_event = cirrhosis_survival_train_EDA_binned[cirrhosis_survival_train_EDA_binned[binned_numeric_column] == groups[0]]['Status']
@@ -7045,17 +7047,17 @@ for binned_numeric_column in cirrhosis_survival_binned_numeric_predictors:
     group_0_duration = cirrhosis_survival_train_EDA_binned[cirrhosis_survival_train_EDA_binned[binned_numeric_column] == groups[0]]['N_Days']
     group_1_duration = cirrhosis_survival_train_EDA_binned[cirrhosis_survival_train_EDA_binned[binned_numeric_column] == groups[1]]['N_Days']
     lr_test = logrank_test(group_0_duration, group_1_duration,event_observed_A=group_0_event, event_observed_B=group_1_event)
-    cirrhosis_survival_binned_numeric_lrtest_target['Status_NDays_' + binned_numeric_column] = (lr_test.test_statistic, lr_test.p_value)
+    cirrhosis_survival_binned_numeric_lrtest_event['Status_NDays_' + binned_numeric_column] = (lr_test.test_statistic, lr_test.p_value)
 ```
 
 
 ```python
 ##################################
 # Formulating the log-rank test summary
-# between the target and duration variables
+# between the event and duration variables
 # with the binned numeric predictor columns
 ##################################
-cirrhosis_survival_binned_numeric_lrtest_summary = cirrhosis_survival_train_EDA_binned.from_dict(cirrhosis_survival_binned_numeric_lrtest_target, orient='index')
+cirrhosis_survival_binned_numeric_lrtest_summary = cirrhosis_survival_train_EDA_binned.from_dict(cirrhosis_survival_binned_numeric_lrtest_event, orient='index')
 cirrhosis_survival_binned_numeric_lrtest_summary.columns = ['LR.Test.Statistic', 'LR.Test.PValue']
 display(cirrhosis_survival_binned_numeric_lrtest_summary.sort_values(by=['LR.Test.PValue'], ascending=True))
 ```
@@ -7138,6 +7140,896 @@ display(cirrhosis_survival_binned_numeric_lrtest_summary.sort_values(by=['LR.Tes
 </table>
 </div>
 
+
+### 1.6.1 Premodelling Data Description <a class="anchor" id="1.6.1"></a>
+
+
+```python
+##################################
+# Converting the event and duration variables
+# for the training set
+# to array as preparation for modeling
+##################################
+cirrhosis_survival_y_train_array = np.array([(row.Status, row.N_Days) for index, row in cirrhosis_survival_y_train_cleaned.iterrows()], dtype=[('Status', 'bool'), ('N_Days', 'int')])
+print(cirrhosis_survival_y_train_array)
+```
+
+    [(False, 2475) (False,  877) (False, 3050) ( True,  110) ( True, 3839)
+     (False, 2241) (False, 2332) (False, 1666) ( True, 2847) (False, 4500)
+     (False, 4256) ( True, 1427) ( True,  943) (False, 2456) (False, 1301)
+     (False, 3297) ( True, 1434) ( True, 1297) (False,  839) (False, 2995)
+     ( True, 1235) (False,  901) ( True,  264) (False, 1614) ( True, 1360)
+     (False, 2835) (False, 3445) ( True,  597) (False, 1250) ( True, 4079)
+     ( True, 2055) ( True,  850) ( True, 2105) ( True, 3358) (False, 3707)
+     (False, 4032) (False, 2657) (False, 1592) ( True,  400) ( True, 1077)
+     (False, 3099) (False, 1951) (False, 2294) (False, 4453) (False, 1978)
+     ( True, 2297) ( True,  890) (False, 1979) (False, 1149) (False, 1765)
+     ( True, 2689) ( True,  326) (False, 3823) ( True,  191) (False, 4523)
+     ( True,  930) (False, 1656) (False, 3149) (False, 1230) ( True, 1012)
+     (False, 1831) ( True, 1487) (False, 2563) (False, 1067) ( True, 1741)
+     ( True, 2796) ( True, 2386) ( True, 2256) ( True,   77) (False, 3255)
+     (False, 3933) (False, 2178) ( True, 1657) (False, 2221) (False, 1677)
+     ( True, 1444) ( True, 1786) (False, 1434) (False, 4184) ( True,  321)
+     ( True,   71) ( True, 1191) ( True,  786) (False, 1568) ( True, 1037)
+     (False, 1769) (False, 2170) (False, 3992) ( True, 1170) (False, 2443)
+     (False, 2573) (False, 1615) (False, 1810) ( True, 1000) ( True,  611)
+     (False, 1320) ( True, 1217) (False, 2171) ( True, 1152) (False, 1363)
+     ( True, 1536) ( True,  797) (False, 1401) (False,  732) (False, 1433)
+     (False, 1216) ( True, 2583) (False, 1569) ( True, 3428) ( True, 2466)
+     ( True, 3090) (False, 2644) (False, 4365) ( True,  304) (False, 2870)
+     (False, 3913) ( True,  552) (False, 1874) (False, 1271) (False,  533)
+     (False, 3239) ( True, 1847) (False, 1412) (False, 2195) ( True, 3086)
+     (False, 2357) (False, 2713) ( True, 2598) ( True,  694) (False, 1084)
+     (False, 2106) (False, 3611) (False, 2555) (False, 3069) ( True,  799)
+     ( True,  186) ( True,  769) (False, 3581) ( True, 2503) ( True,  859)
+     (False, 1525) (False, 1295) ( True,  999) ( True, 1212) (False, 2350)
+     ( True,  980) (False, 2468) (False, 1153) (False, 4196) ( True, 1191)
+     (False, 4427) ( True,  348) (False, 2624) (False, 4039) ( True, 2288)
+     ( True,  207) ( True,  549) (False, 2504) (False, 3820) ( True, 1356)
+     ( True, 3853) (False, 4509) (False, 2216) (False, 1558) ( True, 1576)
+     ( True, 2224) (False, 4190) (False, 3059) (False, 2797) (False, 2168)
+     (False, 2609) (False, 3150) (False, 2976) (False, 1216) (False, 3672)
+     (False, 2157) (False, 1293) ( True,  790) (False, 2891) (False, 1234)
+     (False, 2318) (False, 1542) (False, 1790) (False,  939) (False, 2301)
+     ( True, 2081) ( True, 2090) (False, 4050) (False, 4127) (False, 2692)
+     (False, 1302) ( True, 1080) (False, 1908) ( True, 3222) (False, 1770)
+     (False, 2272) (False, 1832) (False, 4025) ( True,   41) ( True,  515)
+     ( True,  708) ( True, 1690) (False, 1967) (False, 1945) (False, 1504)
+     ( True, 1413) (False, 1702) (False, 3422) (False, 2666) (False, 3092)
+     ( True, 4191) (False, 1363) (False, 1932) ( True, 3170) (False, 4232)
+     ( True,  460) (False, 1614) ( True,  853)]
+    
+
+
+```python
+##################################
+# Verifying the predictor variables
+# for the training set
+# as preparation for modeling
+##################################
+display(cirrhosis_survival_X_train_preprocessed)
+```
+
+
+<div>
+<style scoped>
+    .dataframe tbody tr th:only-of-type {
+        vertical-align: middle;
+    }
+
+    .dataframe tbody tr th {
+        vertical-align: top;
+    }
+
+    .dataframe thead th {
+        text-align: right;
+    }
+</style>
+<table border="1" class="dataframe">
+  <thead>
+    <tr style="text-align: right;">
+      <th></th>
+      <th>Age</th>
+      <th>Bilirubin</th>
+      <th>Cholesterol</th>
+      <th>Albumin</th>
+      <th>Copper</th>
+      <th>Alk_Phos</th>
+      <th>SGOT</th>
+      <th>Tryglicerides</th>
+      <th>Platelets</th>
+      <th>Prothrombin</th>
+      <th>Drug</th>
+      <th>Sex</th>
+      <th>Ascites</th>
+      <th>Hepatomegaly</th>
+      <th>Spiders</th>
+      <th>Edema</th>
+      <th>Stage_1.0</th>
+      <th>Stage_2.0</th>
+      <th>Stage_3.0</th>
+      <th>Stage_4.0</th>
+    </tr>
+  </thead>
+  <tbody>
+    <tr>
+      <th>0</th>
+      <td>-1.342097</td>
+      <td>0.863802</td>
+      <td>0.886087</td>
+      <td>-0.451884</td>
+      <td>-0.972098</td>
+      <td>0.140990</td>
+      <td>0.104609</td>
+      <td>0.155130</td>
+      <td>0.540960</td>
+      <td>0.747580</td>
+      <td>1</td>
+      <td>1</td>
+      <td>0</td>
+      <td>0</td>
+      <td>0</td>
+      <td>0</td>
+      <td>0</td>
+      <td>1</td>
+      <td>0</td>
+      <td>0</td>
+    </tr>
+    <tr>
+      <th>1</th>
+      <td>-1.470901</td>
+      <td>0.516350</td>
+      <td>1.554523</td>
+      <td>0.827618</td>
+      <td>0.467579</td>
+      <td>-0.705337</td>
+      <td>0.301441</td>
+      <td>1.275222</td>
+      <td>0.474140</td>
+      <td>-0.315794</td>
+      <td>1</td>
+      <td>0</td>
+      <td>0</td>
+      <td>0</td>
+      <td>0</td>
+      <td>0</td>
+      <td>0</td>
+      <td>0</td>
+      <td>1</td>
+      <td>0</td>
+    </tr>
+    <tr>
+      <th>2</th>
+      <td>-0.239814</td>
+      <td>-0.625875</td>
+      <td>0.293280</td>
+      <td>0.646582</td>
+      <td>-0.241205</td>
+      <td>-0.848544</td>
+      <td>0.275723</td>
+      <td>-1.684460</td>
+      <td>0.756741</td>
+      <td>0.087130</td>
+      <td>1</td>
+      <td>1</td>
+      <td>0</td>
+      <td>0</td>
+      <td>0</td>
+      <td>0</td>
+      <td>0</td>
+      <td>1</td>
+      <td>0</td>
+      <td>0</td>
+    </tr>
+    <tr>
+      <th>3</th>
+      <td>-0.052733</td>
+      <td>0.559437</td>
+      <td>-1.534283</td>
+      <td>0.354473</td>
+      <td>-0.284113</td>
+      <td>-0.014525</td>
+      <td>0.162878</td>
+      <td>-0.189139</td>
+      <td>-1.735375</td>
+      <td>0.649171</td>
+      <td>0</td>
+      <td>1</td>
+      <td>1</td>
+      <td>1</td>
+      <td>1</td>
+      <td>1</td>
+      <td>0</td>
+      <td>0</td>
+      <td>0</td>
+      <td>1</td>
+    </tr>
+    <tr>
+      <th>4</th>
+      <td>-0.795010</td>
+      <td>1.142068</td>
+      <td>-0.108933</td>
+      <td>-0.272913</td>
+      <td>0.618030</td>
+      <td>2.071847</td>
+      <td>1.434674</td>
+      <td>-0.212684</td>
+      <td>-0.675951</td>
+      <td>-0.315794</td>
+      <td>0</td>
+      <td>1</td>
+      <td>0</td>
+      <td>1</td>
+      <td>0</td>
+      <td>0</td>
+      <td>0</td>
+      <td>1</td>
+      <td>0</td>
+      <td>0</td>
+    </tr>
+    <tr>
+      <th>...</th>
+      <td>...</td>
+      <td>...</td>
+      <td>...</td>
+      <td>...</td>
+      <td>...</td>
+      <td>...</td>
+      <td>...</td>
+      <td>...</td>
+      <td>...</td>
+      <td>...</td>
+      <td>...</td>
+      <td>...</td>
+      <td>...</td>
+      <td>...</td>
+      <td>...</td>
+      <td>...</td>
+      <td>...</td>
+      <td>...</td>
+      <td>...</td>
+      <td>...</td>
+    </tr>
+    <tr>
+      <th>213</th>
+      <td>0.167351</td>
+      <td>-0.764558</td>
+      <td>-1.147913</td>
+      <td>-0.887287</td>
+      <td>0.178721</td>
+      <td>0.320864</td>
+      <td>1.574157</td>
+      <td>0.053603</td>
+      <td>-0.848130</td>
+      <td>1.402075</td>
+      <td>0</td>
+      <td>1</td>
+      <td>0</td>
+      <td>0</td>
+      <td>0</td>
+      <td>0</td>
+      <td>0</td>
+      <td>0</td>
+      <td>1</td>
+      <td>0</td>
+    </tr>
+    <tr>
+      <th>214</th>
+      <td>0.004420</td>
+      <td>-0.918484</td>
+      <td>-0.782126</td>
+      <td>0.046794</td>
+      <td>-0.742780</td>
+      <td>0.549222</td>
+      <td>-0.379344</td>
+      <td>0.251836</td>
+      <td>-0.519594</td>
+      <td>0.546417</td>
+      <td>1</td>
+      <td>1</td>
+      <td>0</td>
+      <td>1</td>
+      <td>0</td>
+      <td>1</td>
+      <td>0</td>
+      <td>0</td>
+      <td>1</td>
+      <td>0</td>
+    </tr>
+    <tr>
+      <th>215</th>
+      <td>-0.381113</td>
+      <td>1.190111</td>
+      <td>0.136728</td>
+      <td>-0.194525</td>
+      <td>0.569475</td>
+      <td>0.881231</td>
+      <td>1.871385</td>
+      <td>-1.684460</td>
+      <td>1.587388</td>
+      <td>1.331561</td>
+      <td>0</td>
+      <td>1</td>
+      <td>0</td>
+      <td>1</td>
+      <td>1</td>
+      <td>1</td>
+      <td>0</td>
+      <td>0</td>
+      <td>0</td>
+      <td>1</td>
+    </tr>
+    <tr>
+      <th>216</th>
+      <td>0.800410</td>
+      <td>-1.283677</td>
+      <td>-0.262095</td>
+      <td>2.149157</td>
+      <td>-0.836372</td>
+      <td>-2.600746</td>
+      <td>-1.414105</td>
+      <td>0.645045</td>
+      <td>-0.324107</td>
+      <td>0.087130</td>
+      <td>1</td>
+      <td>1</td>
+      <td>0</td>
+      <td>0</td>
+      <td>0</td>
+      <td>0</td>
+      <td>0</td>
+      <td>1</td>
+      <td>0</td>
+      <td>0</td>
+    </tr>
+    <tr>
+      <th>217</th>
+      <td>0.900345</td>
+      <td>1.951372</td>
+      <td>0.375927</td>
+      <td>-0.061605</td>
+      <td>1.546419</td>
+      <td>0.884998</td>
+      <td>1.376469</td>
+      <td>1.394391</td>
+      <td>-1.196794</td>
+      <td>1.018851</td>
+      <td>0</td>
+      <td>1</td>
+      <td>0</td>
+      <td>1</td>
+      <td>0</td>
+      <td>0</td>
+      <td>0</td>
+      <td>1</td>
+      <td>0</td>
+      <td>0</td>
+    </tr>
+  </tbody>
+</table>
+<p>218 rows × 20 columns</p>
+</div>
+
+
+
+```python
+##################################
+# Converting the event and duration variables
+# for the test set
+# to array as preparation for modeling
+##################################
+cirrhosis_survival_y_test_array = np.array([(row.Status, row.N_Days) for index, row in cirrhosis_survival_y_test_cleaned.iterrows()], dtype=[('Status', 'bool'), ('N_Days', 'int')])
+print(cirrhosis_survival_y_test_array)
+```
+
+    [(False, 3336) (False, 1321) (False, 1435) (False, 4459) (False, 2721)
+     (False, 2022) (False, 2527) ( True, 2400) (False, 3388) (False, 2944)
+     ( True, 1827) (False, 3098) (False, 1418) ( True,  216) (False, 2176)
+     ( True, 1690) ( True, 3445) (False, 3850) (False, 2449) (False,  788)
+     (False, 1447) ( True,   51) ( True, 3574) ( True,  388) ( True, 1350)
+     ( True,  762) (False, 2365) (False,  994) ( True,  131) (False, 3458)
+     (False, 2574) ( True,  750) (False, 2224) ( True, 3395) (False, 1349)
+     (False, 1882) ( True,  974) ( True, 1165) ( True,  971) (False, 4556)
+     ( True, 3762) (False, 2863) (False, 1481) (False, 2615) (False, 2772)
+     (False, 1300) ( True, 2769) (False, 1776) (False, 2255) ( True, 3282)
+     (False,  837) (False, 1783) (False, 1030) (False, 2990) (False, 2580)
+     ( True,  334) ( True,  198) ( True, 1492) ( True, 1925) ( True,  673)
+     (False, 2556) (False, 1785) (False, 2050) ( True, 1682) (False, 2033)
+     (False, 3577) (False, 1408) ( True, 3584) ( True,  264) ( True,  824)
+     (False, 1455) ( True,  223) ( True, 2540) (False, 1882) ( True, 1083)
+     (False, 1329) ( True,  904) (False, 1457) (False, 1701) ( True,  179)
+     ( True,  140) (False, 2452) (False, 1420) ( True,  130) ( True,  733)
+     (False, 1735) (False, 2330) ( True, 2419) (False, 4467) (False, 2363)
+     (False, 2576) (False,  737) (False, 2504) ( True, 3244)]
+    
+
+
+```python
+##################################
+# Verifying the predictor variables
+# for the test set
+# as preparation for modeling
+##################################
+display(cirrhosis_survival_X_test_preprocessed)
+```
+
+
+<div>
+<style scoped>
+    .dataframe tbody tr th:only-of-type {
+        vertical-align: middle;
+    }
+
+    .dataframe tbody tr th {
+        vertical-align: top;
+    }
+
+    .dataframe thead th {
+        text-align: right;
+    }
+</style>
+<table border="1" class="dataframe">
+  <thead>
+    <tr style="text-align: right;">
+      <th></th>
+      <th>Age</th>
+      <th>Bilirubin</th>
+      <th>Cholesterol</th>
+      <th>Albumin</th>
+      <th>Copper</th>
+      <th>Alk_Phos</th>
+      <th>SGOT</th>
+      <th>Tryglicerides</th>
+      <th>Platelets</th>
+      <th>Prothrombin</th>
+      <th>Drug</th>
+      <th>Sex</th>
+      <th>Ascites</th>
+      <th>Hepatomegaly</th>
+      <th>Spiders</th>
+      <th>Edema</th>
+      <th>Stage_1.0</th>
+      <th>Stage_2.0</th>
+      <th>Stage_3.0</th>
+      <th>Stage_4.0</th>
+    </tr>
+  </thead>
+  <tbody>
+    <tr>
+      <th>0</th>
+      <td>1.043704</td>
+      <td>0.744396</td>
+      <td>0.922380</td>
+      <td>0.240951</td>
+      <td>0.045748</td>
+      <td>0.317282</td>
+      <td>-0.078335</td>
+      <td>2.671950</td>
+      <td>1.654815</td>
+      <td>-0.948196</td>
+      <td>1</td>
+      <td>1</td>
+      <td>0</td>
+      <td>0</td>
+      <td>1</td>
+      <td>1</td>
+      <td>0</td>
+      <td>0</td>
+      <td>1</td>
+      <td>0</td>
+    </tr>
+    <tr>
+      <th>1</th>
+      <td>-1.936476</td>
+      <td>-0.764558</td>
+      <td>0.160096</td>
+      <td>-0.600950</td>
+      <td>-0.179138</td>
+      <td>-0.245613</td>
+      <td>0.472422</td>
+      <td>-0.359800</td>
+      <td>0.348533</td>
+      <td>0.439089</td>
+      <td>0</td>
+      <td>1</td>
+      <td>0</td>
+      <td>0</td>
+      <td>0</td>
+      <td>0</td>
+      <td>0</td>
+      <td>0</td>
+      <td>0</td>
+      <td>1</td>
+    </tr>
+    <tr>
+      <th>2</th>
+      <td>-1.749033</td>
+      <td>0.371523</td>
+      <td>0.558115</td>
+      <td>0.646582</td>
+      <td>-0.159024</td>
+      <td>0.339454</td>
+      <td>0.685117</td>
+      <td>-3.109146</td>
+      <td>-0.790172</td>
+      <td>-0.617113</td>
+      <td>1</td>
+      <td>1</td>
+      <td>0</td>
+      <td>1</td>
+      <td>0</td>
+      <td>0</td>
+      <td>0</td>
+      <td>0</td>
+      <td>0</td>
+      <td>1</td>
+    </tr>
+    <tr>
+      <th>3</th>
+      <td>-0.485150</td>
+      <td>-0.918484</td>
+      <td>-0.690904</td>
+      <td>1.629765</td>
+      <td>0.028262</td>
+      <td>1.713791</td>
+      <td>-1.387751</td>
+      <td>0.155130</td>
+      <td>0.679704</td>
+      <td>0.087130</td>
+      <td>1</td>
+      <td>0</td>
+      <td>0</td>
+      <td>0</td>
+      <td>0</td>
+      <td>0</td>
+      <td>1</td>
+      <td>0</td>
+      <td>0</td>
+      <td>0</td>
+    </tr>
+    <tr>
+      <th>4</th>
+      <td>-0.815655</td>
+      <td>1.286438</td>
+      <td>2.610501</td>
+      <td>-0.722153</td>
+      <td>0.210203</td>
+      <td>0.602860</td>
+      <td>3.494936</td>
+      <td>-0.053214</td>
+      <td>-0.475634</td>
+      <td>-1.714435</td>
+      <td>0</td>
+      <td>1</td>
+      <td>0</td>
+      <td>1</td>
+      <td>0</td>
+      <td>0</td>
+      <td>0</td>
+      <td>1</td>
+      <td>0</td>
+      <td>0</td>
+    </tr>
+    <tr>
+      <th>...</th>
+      <td>...</td>
+      <td>...</td>
+      <td>...</td>
+      <td>...</td>
+      <td>...</td>
+      <td>...</td>
+      <td>...</td>
+      <td>...</td>
+      <td>...</td>
+      <td>...</td>
+      <td>...</td>
+      <td>...</td>
+      <td>...</td>
+      <td>...</td>
+      <td>...</td>
+      <td>...</td>
+      <td>...</td>
+      <td>...</td>
+      <td>...</td>
+      <td>...</td>
+    </tr>
+    <tr>
+      <th>89</th>
+      <td>0.692406</td>
+      <td>-0.096645</td>
+      <td>-0.906164</td>
+      <td>-0.477005</td>
+      <td>-1.930422</td>
+      <td>-0.809457</td>
+      <td>-0.888634</td>
+      <td>-1.421640</td>
+      <td>-1.638792</td>
+      <td>1.101933</td>
+      <td>1</td>
+      <td>1</td>
+      <td>0</td>
+      <td>1</td>
+      <td>1</td>
+      <td>0</td>
+      <td>0</td>
+      <td>0</td>
+      <td>0</td>
+      <td>1</td>
+    </tr>
+    <tr>
+      <th>90</th>
+      <td>-0.201495</td>
+      <td>-1.283677</td>
+      <td>0.064451</td>
+      <td>0.297476</td>
+      <td>-0.062405</td>
+      <td>0.425745</td>
+      <td>1.204015</td>
+      <td>-1.077370</td>
+      <td>0.939991</td>
+      <td>-1.125995</td>
+      <td>0</td>
+      <td>1</td>
+      <td>0</td>
+      <td>0</td>
+      <td>0</td>
+      <td>0</td>
+      <td>0</td>
+      <td>0</td>
+      <td>1</td>
+      <td>0</td>
+    </tr>
+    <tr>
+      <th>91</th>
+      <td>-0.974200</td>
+      <td>0.776293</td>
+      <td>-0.891985</td>
+      <td>0.587203</td>
+      <td>0.699548</td>
+      <td>-0.199230</td>
+      <td>-0.016923</td>
+      <td>-0.463921</td>
+      <td>0.060683</td>
+      <td>-0.778722</td>
+      <td>1</td>
+      <td>1</td>
+      <td>0</td>
+      <td>1</td>
+      <td>1</td>
+      <td>0</td>
+      <td>0</td>
+      <td>0</td>
+      <td>1</td>
+      <td>0</td>
+    </tr>
+    <tr>
+      <th>92</th>
+      <td>0.466763</td>
+      <td>0.470819</td>
+      <td>0.536326</td>
+      <td>1.139126</td>
+      <td>-1.293580</td>
+      <td>0.511347</td>
+      <td>0.410413</td>
+      <td>0.059267</td>
+      <td>0.672973</td>
+      <td>-0.462938</td>
+      <td>1</td>
+      <td>1</td>
+      <td>0</td>
+      <td>0</td>
+      <td>1</td>
+      <td>0</td>
+      <td>0</td>
+      <td>1</td>
+      <td>0</td>
+      <td>0</td>
+    </tr>
+    <tr>
+      <th>93</th>
+      <td>-1.327100</td>
+      <td>0.835905</td>
+      <td>0.534335</td>
+      <td>-0.034678</td>
+      <td>0.467579</td>
+      <td>-0.064029</td>
+      <td>0.488117</td>
+      <td>-0.573417</td>
+      <td>-0.249636</td>
+      <td>0.546417</td>
+      <td>0</td>
+      <td>1</td>
+      <td>0</td>
+      <td>1</td>
+      <td>1</td>
+      <td>0</td>
+      <td>0</td>
+      <td>0</td>
+      <td>0</td>
+      <td>1</td>
+    </tr>
+  </tbody>
+</table>
+<p>94 rows × 20 columns</p>
+</div>
+
+
+### 1.6.2 Penalized Cox Regression <a class="anchor" id="1.6.2"></a>
+
+
+```python
+##################################
+# Defining a function to perform 
+# 5-fold cross-validation and hyperparameter tuning
+# using the Cox-Proportional Hazards Model
+##################################
+def cross_validate_coxph_model(X, y, hyperparameters):
+    kf = KFold(n_splits=5, shuffle=True, random_state=88888888)
+    results = []
+
+    for params in hyperparameters:
+        coxph_model = CoxPHSurvivalAnalysis(**params)
+        fold_results = []
+        
+        for train_index, validation_index in kf.split(X):
+            X_train, X_validation = X.iloc[train_index], X.iloc[validation_index]
+            y_train, y_validation = y[train_index], y[validation_index]
+            
+            coxph_model.fit(X_train, y_train)
+            pred_survival = coxph_model.predict(X_validation)
+            ci = concordance_index_censored(y_validation['Status'], y_validation['N_Days'], pred_survival)[0]
+            fold_results.append(ci)
+        
+        results.append({
+            'Hyperparameters': params,
+            'Concordance_Index_Mean': np.mean(fold_results),
+            'Concordance_Index_Std': np.std(fold_results)
+        })
+    return pd.DataFrame(results)
+```
+
+
+```python
+##################################
+# Defining hyperparameters for tuning
+# using the Cox-Proportional Hazards Model
+##################################
+hyperparameters = [{'alpha': 0.00},
+                   {'alpha': 0.01},
+                   {'alpha': 0.10},
+                   {'alpha': 1.00},
+                   {'alpha': 10.00}]
+```
+
+
+```python
+##################################
+# Performing hyperparameter tuning
+# through K-fold cross-validation
+# using the Cox-Proportional Hazards Model
+##################################
+cirrhosis_survival_coxph_ht = cross_validate_coxph_model(cirrhosis_survival_X_train_preprocessed,
+                                                         cirrhosis_survival_y_train_array, 
+                                                         hyperparameters)
+display(cirrhosis_survival_coxph_ht)
+```
+
+
+<div>
+<style scoped>
+    .dataframe tbody tr th:only-of-type {
+        vertical-align: middle;
+    }
+
+    .dataframe tbody tr th {
+        vertical-align: top;
+    }
+
+    .dataframe thead th {
+        text-align: right;
+    }
+</style>
+<table border="1" class="dataframe">
+  <thead>
+    <tr style="text-align: right;">
+      <th></th>
+      <th>Hyperparameters</th>
+      <th>Concordance_Index_Mean</th>
+      <th>Concordance_Index_Std</th>
+    </tr>
+  </thead>
+  <tbody>
+    <tr>
+      <th>0</th>
+      <td>{'alpha': 0.0}</td>
+      <td>0.803093</td>
+      <td>0.035150</td>
+    </tr>
+    <tr>
+      <th>1</th>
+      <td>{'alpha': 0.01}</td>
+      <td>0.803639</td>
+      <td>0.034267</td>
+    </tr>
+    <tr>
+      <th>2</th>
+      <td>{'alpha': 0.1}</td>
+      <td>0.804195</td>
+      <td>0.033020</td>
+    </tr>
+    <tr>
+      <th>3</th>
+      <td>{'alpha': 1.0}</td>
+      <td>0.805496</td>
+      <td>0.033063</td>
+    </tr>
+    <tr>
+      <th>4</th>
+      <td>{'alpha': 10.0}</td>
+      <td>0.813656</td>
+      <td>0.036258</td>
+    </tr>
+  </tbody>
+</table>
+</div>
+
+
+
+```python
+##################################
+# Formulating a Cox-Proportional Hazards Model
+# with optimal hyperparameters
+##################################
+optimal_coxph_model = CoxPHSurvivalAnalysis(alpha=10.0)
+optimal_coxph_model.fit(cirrhosis_survival_X_train_preprocessed, cirrhosis_survival_y_train_array)
+```
+
+
+
+
+<style>#sk-container-id-1 {color: black;}#sk-container-id-1 pre{padding: 0;}#sk-container-id-1 div.sk-toggleable {background-color: white;}#sk-container-id-1 label.sk-toggleable__label {cursor: pointer;display: block;width: 100%;margin-bottom: 0;padding: 0.3em;box-sizing: border-box;text-align: center;}#sk-container-id-1 label.sk-toggleable__label-arrow:before {content: "▸";float: left;margin-right: 0.25em;color: #696969;}#sk-container-id-1 label.sk-toggleable__label-arrow:hover:before {color: black;}#sk-container-id-1 div.sk-estimator:hover label.sk-toggleable__label-arrow:before {color: black;}#sk-container-id-1 div.sk-toggleable__content {max-height: 0;max-width: 0;overflow: hidden;text-align: left;background-color: #f0f8ff;}#sk-container-id-1 div.sk-toggleable__content pre {margin: 0.2em;color: black;border-radius: 0.25em;background-color: #f0f8ff;}#sk-container-id-1 input.sk-toggleable__control:checked~div.sk-toggleable__content {max-height: 200px;max-width: 100%;overflow: auto;}#sk-container-id-1 input.sk-toggleable__control:checked~label.sk-toggleable__label-arrow:before {content: "▾";}#sk-container-id-1 div.sk-estimator input.sk-toggleable__control:checked~label.sk-toggleable__label {background-color: #d4ebff;}#sk-container-id-1 div.sk-label input.sk-toggleable__control:checked~label.sk-toggleable__label {background-color: #d4ebff;}#sk-container-id-1 input.sk-hidden--visually {border: 0;clip: rect(1px 1px 1px 1px);clip: rect(1px, 1px, 1px, 1px);height: 1px;margin: -1px;overflow: hidden;padding: 0;position: absolute;width: 1px;}#sk-container-id-1 div.sk-estimator {font-family: monospace;background-color: #f0f8ff;border: 1px dotted black;border-radius: 0.25em;box-sizing: border-box;margin-bottom: 0.5em;}#sk-container-id-1 div.sk-estimator:hover {background-color: #d4ebff;}#sk-container-id-1 div.sk-parallel-item::after {content: "";width: 100%;border-bottom: 1px solid gray;flex-grow: 1;}#sk-container-id-1 div.sk-label:hover label.sk-toggleable__label {background-color: #d4ebff;}#sk-container-id-1 div.sk-serial::before {content: "";position: absolute;border-left: 1px solid gray;box-sizing: border-box;top: 0;bottom: 0;left: 50%;z-index: 0;}#sk-container-id-1 div.sk-serial {display: flex;flex-direction: column;align-items: center;background-color: white;padding-right: 0.2em;padding-left: 0.2em;position: relative;}#sk-container-id-1 div.sk-item {position: relative;z-index: 1;}#sk-container-id-1 div.sk-parallel {display: flex;align-items: stretch;justify-content: center;background-color: white;position: relative;}#sk-container-id-1 div.sk-item::before, #sk-container-id-1 div.sk-parallel-item::before {content: "";position: absolute;border-left: 1px solid gray;box-sizing: border-box;top: 0;bottom: 0;left: 50%;z-index: -1;}#sk-container-id-1 div.sk-parallel-item {display: flex;flex-direction: column;z-index: 1;position: relative;background-color: white;}#sk-container-id-1 div.sk-parallel-item:first-child::after {align-self: flex-end;width: 50%;}#sk-container-id-1 div.sk-parallel-item:last-child::after {align-self: flex-start;width: 50%;}#sk-container-id-1 div.sk-parallel-item:only-child::after {width: 0;}#sk-container-id-1 div.sk-dashed-wrapped {border: 1px dashed gray;margin: 0 0.4em 0.5em 0.4em;box-sizing: border-box;padding-bottom: 0.4em;background-color: white;}#sk-container-id-1 div.sk-label label {font-family: monospace;font-weight: bold;display: inline-block;line-height: 1.2em;}#sk-container-id-1 div.sk-label-container {text-align: center;}#sk-container-id-1 div.sk-container {/* jupyter's `normalize.less` sets `[hidden] { display: none; }` but bootstrap.min.css set `[hidden] { display: none !important; }` so we also need the `!important` here to be able to override the default hidden behavior on the sphinx rendered scikit-learn.org. See: https://github.com/scikit-learn/scikit-learn/issues/21755 */display: inline-block !important;position: relative;}#sk-container-id-1 div.sk-text-repr-fallback {display: none;}</style><div id="sk-container-id-1" class="sk-top-container"><div class="sk-text-repr-fallback"><pre>CoxPHSurvivalAnalysis(alpha=10.0)</pre><b>In a Jupyter environment, please rerun this cell to show the HTML representation or trust the notebook. <br />On GitHub, the HTML representation is unable to render, please try loading this page with nbviewer.org.</b></div><div class="sk-container" hidden><div class="sk-item"><div class="sk-estimator sk-toggleable"><input class="sk-toggleable__control sk-hidden--visually" id="sk-estimator-id-1" type="checkbox" checked><label for="sk-estimator-id-1" class="sk-toggleable__label sk-toggleable__label-arrow">CoxPHSurvivalAnalysis</label><div class="sk-toggleable__content"><pre>CoxPHSurvivalAnalysis(alpha=10.0)</pre></div></div></div></div></div>
+
+
+
+
+```python
+##################################
+# Measuring model performance of the 
+# optimal Cox-Proportional Hazards Model
+# on the train set
+##################################
+optimal_coxph_cirrhosis_survival_y_train_pred = optimal_coxph_model.predict(cirrhosis_survival_X_train_preprocessed)
+optimal_coxph_cirrhosis_survival_y_train_ci = concordance_index_censored(cirrhosis_survival_y_train_array['Status'], 
+                                                                        cirrhosis_survival_y_train_array['N_Days'], 
+                                                                        optimal_coxph_cirrhosis_survival_y_train_pred)[0]
+print(f"Apparent Concordance Index: {optimal_coxph_cirrhosis_survival_y_train_ci}")
+```
+
+    Apparent Concordance Index: 0.8485858257477243
+    
+
+
+```python
+##################################
+# Measuring model performance of the 
+# optimal Cox-Proportional Hazards Model
+# on the test set
+##################################
+optimal_coxph_cirrhosis_survival_y_test_pred = optimal_coxph_model.predict(cirrhosis_survival_X_test_preprocessed)
+optimal_coxph_cirrhosis_survival_y_test_ci = concordance_index_censored(cirrhosis_survival_y_test_array['Status'], 
+                                                                        cirrhosis_survival_y_test_array['N_Days'], 
+                                                                        optimal_coxph_cirrhosis_survival_y_test_pred)[0]
+print(f"Test Concordance Index: {optimal_coxph_cirrhosis_survival_y_test_ci}")
+```
+
+    Test Concordance Index: 0.8743764172335601
+    
+
+### 1.6.3 Survival Support Vector Machine <a class="anchor" id="1.6.3"></a>
+
+### 1.6.4 Random Survival Forest <a class="anchor" id="1.6.4"></a>
+
+### 1.6.5 Gradient Boosted Survival <a class="anchor" id="1.6.5"></a>
 
 # 2. Summary <a class="anchor" id="Summary"></a>
 
