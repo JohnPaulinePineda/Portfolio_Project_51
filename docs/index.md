@@ -2,7 +2,7 @@
 # Supervised Learning : Modelling Right-Censored Survival Time and Status Responses for Prediction
 
 ***
-### John Pauline Pineda <br> <br> *July 6, 2024*
+### John Pauline Pineda <br> <br> *July 13, 2024*
 ***
 
 * [**1. Table of Contents**](#TOC)
@@ -6439,8 +6439,8 @@ plt.figure(figsize=(17, 8))
 kmf.plot_survival_function()
 plt.title('Kaplan-Meier Baseline Survival Plot')
 plt.ylim(0, 1.05)
-plt.xlabel('Time')
-plt.ylabel('Survival Probability')
+plt.xlabel('N_Days')
+plt.ylabel('Event Survival Probability')
 
 ##################################
 # Determing the at-risk numbers
@@ -6854,15 +6854,10 @@ for i in range(0, len(cirrhosis_survival_object_predictors)):
         kmf.plot_survival_function(ax=ax)
     plt.title(f'Survival Probabilities by {cirrhosis_survival_object_predictors[i]} Categories')
     plt.xlabel('N_Days')
+    plt.ylabel('Event Survival Probability')
 plt.tight_layout()
 plt.show()
 ```
-
-
-    
-![png](output_151_0.png)
-    
-
 
 
 ```python
@@ -6894,85 +6889,6 @@ cirrhosis_survival_object_lrtest_summary = cirrhosis_survival_train_EDA.from_dic
 cirrhosis_survival_object_lrtest_summary.columns = ['LR.Test.Statistic', 'LR.Test.PValue']
 display(cirrhosis_survival_object_lrtest_summary.sort_values(by=['LR.Test.PValue'], ascending=True))
 ```
-
-
-<div>
-<style scoped>
-    .dataframe tbody tr th:only-of-type {
-        vertical-align: middle;
-    }
-
-    .dataframe tbody tr th {
-        vertical-align: top;
-    }
-
-    .dataframe thead th {
-        text-align: right;
-    }
-</style>
-<table border="1" class="dataframe">
-  <thead>
-    <tr style="text-align: right;">
-      <th></th>
-      <th>LR.Test.Statistic</th>
-      <th>LR.Test.PValue</th>
-    </tr>
-  </thead>
-  <tbody>
-    <tr>
-      <th>Status_NDays_Ascites</th>
-      <td>37.792220</td>
-      <td>7.869499e-10</td>
-    </tr>
-    <tr>
-      <th>Status_NDays_Edema</th>
-      <td>31.619652</td>
-      <td>1.875223e-08</td>
-    </tr>
-    <tr>
-      <th>Status_NDays_Stage_4.0</th>
-      <td>26.482676</td>
-      <td>2.659121e-07</td>
-    </tr>
-    <tr>
-      <th>Status_NDays_Hepatomegaly</th>
-      <td>20.360210</td>
-      <td>6.414988e-06</td>
-    </tr>
-    <tr>
-      <th>Status_NDays_Spiders</th>
-      <td>10.762275</td>
-      <td>1.035900e-03</td>
-    </tr>
-    <tr>
-      <th>Status_NDays_Stage_2.0</th>
-      <td>6.775033</td>
-      <td>9.244176e-03</td>
-    </tr>
-    <tr>
-      <th>Status_NDays_Sex</th>
-      <td>5.514094</td>
-      <td>1.886385e-02</td>
-    </tr>
-    <tr>
-      <th>Status_NDays_Stage_1.0</th>
-      <td>5.473270</td>
-      <td>1.930946e-02</td>
-    </tr>
-    <tr>
-      <th>Status_NDays_Stage_3.0</th>
-      <td>0.478031</td>
-      <td>4.893156e-01</td>
-    </tr>
-    <tr>
-      <th>Status_NDays_Drug</th>
-      <td>0.000016</td>
-      <td>9.968084e-01</td>
-    </tr>
-  </tbody>
-</table>
-</div>
-
 
 
 ```python
@@ -7021,15 +6937,10 @@ for i in range(0, len(cirrhosis_survival_binned_numeric_predictors)):
         kmf.plot_survival_function(ax=ax)
     plt.title(f'Survival Probabilities by {cirrhosis_survival_binned_numeric_predictors[i]} Categories')
     plt.xlabel('N_Days')
+    plt.ylabel('Event Survival Probability')
 plt.tight_layout()
 plt.show()
 ```
-
-
-    
-![png](output_155_0.png)
-    
-
 
 
 ```python
@@ -7062,85 +6973,6 @@ cirrhosis_survival_binned_numeric_lrtest_summary.columns = ['LR.Test.Statistic',
 display(cirrhosis_survival_binned_numeric_lrtest_summary.sort_values(by=['LR.Test.PValue'], ascending=True))
 ```
 
-
-<div>
-<style scoped>
-    .dataframe tbody tr th:only-of-type {
-        vertical-align: middle;
-    }
-
-    .dataframe tbody tr th {
-        vertical-align: top;
-    }
-
-    .dataframe thead th {
-        text-align: right;
-    }
-</style>
-<table border="1" class="dataframe">
-  <thead>
-    <tr style="text-align: right;">
-      <th></th>
-      <th>LR.Test.Statistic</th>
-      <th>LR.Test.PValue</th>
-    </tr>
-  </thead>
-  <tbody>
-    <tr>
-      <th>Status_NDays_Binned_Bilirubin</th>
-      <td>62.559303</td>
-      <td>2.585412e-15</td>
-    </tr>
-    <tr>
-      <th>Status_NDays_Binned_Albumin</th>
-      <td>29.444808</td>
-      <td>5.753197e-08</td>
-    </tr>
-    <tr>
-      <th>Status_NDays_Binned_Copper</th>
-      <td>27.452421</td>
-      <td>1.610072e-07</td>
-    </tr>
-    <tr>
-      <th>Status_NDays_Binned_Prothrombin</th>
-      <td>21.695995</td>
-      <td>3.194575e-06</td>
-    </tr>
-    <tr>
-      <th>Status_NDays_Binned_SGOT</th>
-      <td>16.178483</td>
-      <td>5.764520e-05</td>
-    </tr>
-    <tr>
-      <th>Status_NDays_Binned_Tryglicerides</th>
-      <td>11.512960</td>
-      <td>6.911262e-04</td>
-    </tr>
-    <tr>
-      <th>Status_NDays_Binned_Age</th>
-      <td>9.011700</td>
-      <td>2.682568e-03</td>
-    </tr>
-    <tr>
-      <th>Status_NDays_Binned_Platelets</th>
-      <td>6.741196</td>
-      <td>9.421142e-03</td>
-    </tr>
-    <tr>
-      <th>Status_NDays_Binned_Alk_Phos</th>
-      <td>5.503850</td>
-      <td>1.897465e-02</td>
-    </tr>
-    <tr>
-      <th>Status_NDays_Binned_Cholesterol</th>
-      <td>3.773953</td>
-      <td>5.205647e-02</td>
-    </tr>
-  </tbody>
-</table>
-</div>
-
-
 ### 1.6.1 Premodelling Data Description <a class="anchor" id="1.6.1"></a>
 
 
@@ -7154,52 +6986,6 @@ cirrhosis_survival_y_train_array = np.array([(row.Status, row.N_Days) for index,
 print(cirrhosis_survival_y_train_array)
 ```
 
-    [(False, 2475) (False,  877) (False, 3050) ( True,  110) ( True, 3839)
-     (False, 2241) (False, 2332) (False, 1666) ( True, 2847) (False, 4500)
-     (False, 4256) ( True, 1427) ( True,  943) (False, 2456) (False, 1301)
-     (False, 3297) ( True, 1434) ( True, 1297) (False,  839) (False, 2995)
-     ( True, 1235) (False,  901) ( True,  264) (False, 1614) ( True, 1360)
-     (False, 2835) (False, 3445) ( True,  597) (False, 1250) ( True, 4079)
-     ( True, 2055) ( True,  850) ( True, 2105) ( True, 3358) (False, 3707)
-     (False, 4032) (False, 2657) (False, 1592) ( True,  400) ( True, 1077)
-     (False, 3099) (False, 1951) (False, 2294) (False, 4453) (False, 1978)
-     ( True, 2297) ( True,  890) (False, 1979) (False, 1149) (False, 1765)
-     ( True, 2689) ( True,  326) (False, 3823) ( True,  191) (False, 4523)
-     ( True,  930) (False, 1656) (False, 3149) (False, 1230) ( True, 1012)
-     (False, 1831) ( True, 1487) (False, 2563) (False, 1067) ( True, 1741)
-     ( True, 2796) ( True, 2386) ( True, 2256) ( True,   77) (False, 3255)
-     (False, 3933) (False, 2178) ( True, 1657) (False, 2221) (False, 1677)
-     ( True, 1444) ( True, 1786) (False, 1434) (False, 4184) ( True,  321)
-     ( True,   71) ( True, 1191) ( True,  786) (False, 1568) ( True, 1037)
-     (False, 1769) (False, 2170) (False, 3992) ( True, 1170) (False, 2443)
-     (False, 2573) (False, 1615) (False, 1810) ( True, 1000) ( True,  611)
-     (False, 1320) ( True, 1217) (False, 2171) ( True, 1152) (False, 1363)
-     ( True, 1536) ( True,  797) (False, 1401) (False,  732) (False, 1433)
-     (False, 1216) ( True, 2583) (False, 1569) ( True, 3428) ( True, 2466)
-     ( True, 3090) (False, 2644) (False, 4365) ( True,  304) (False, 2870)
-     (False, 3913) ( True,  552) (False, 1874) (False, 1271) (False,  533)
-     (False, 3239) ( True, 1847) (False, 1412) (False, 2195) ( True, 3086)
-     (False, 2357) (False, 2713) ( True, 2598) ( True,  694) (False, 1084)
-     (False, 2106) (False, 3611) (False, 2555) (False, 3069) ( True,  799)
-     ( True,  186) ( True,  769) (False, 3581) ( True, 2503) ( True,  859)
-     (False, 1525) (False, 1295) ( True,  999) ( True, 1212) (False, 2350)
-     ( True,  980) (False, 2468) (False, 1153) (False, 4196) ( True, 1191)
-     (False, 4427) ( True,  348) (False, 2624) (False, 4039) ( True, 2288)
-     ( True,  207) ( True,  549) (False, 2504) (False, 3820) ( True, 1356)
-     ( True, 3853) (False, 4509) (False, 2216) (False, 1558) ( True, 1576)
-     ( True, 2224) (False, 4190) (False, 3059) (False, 2797) (False, 2168)
-     (False, 2609) (False, 3150) (False, 2976) (False, 1216) (False, 3672)
-     (False, 2157) (False, 1293) ( True,  790) (False, 2891) (False, 1234)
-     (False, 2318) (False, 1542) (False, 1790) (False,  939) (False, 2301)
-     ( True, 2081) ( True, 2090) (False, 4050) (False, 4127) (False, 2692)
-     (False, 1302) ( True, 1080) (False, 1908) ( True, 3222) (False, 1770)
-     (False, 2272) (False, 1832) (False, 4025) ( True,   41) ( True,  515)
-     ( True,  708) ( True, 1690) (False, 1967) (False, 1945) (False, 1504)
-     ( True, 1413) (False, 1702) (False, 3422) (False, 2666) (False, 3092)
-     ( True, 4191) (False, 1363) (False, 1932) ( True, 3170) (False, 4232)
-     ( True,  460) (False, 1614) ( True,  853)]
-    
-
 
 ```python
 ##################################
@@ -7209,307 +6995,6 @@ print(cirrhosis_survival_y_train_array)
 ##################################
 display(cirrhosis_survival_X_train_preprocessed)
 ```
-
-
-<div>
-<style scoped>
-    .dataframe tbody tr th:only-of-type {
-        vertical-align: middle;
-    }
-
-    .dataframe tbody tr th {
-        vertical-align: top;
-    }
-
-    .dataframe thead th {
-        text-align: right;
-    }
-</style>
-<table border="1" class="dataframe">
-  <thead>
-    <tr style="text-align: right;">
-      <th></th>
-      <th>Age</th>
-      <th>Bilirubin</th>
-      <th>Cholesterol</th>
-      <th>Albumin</th>
-      <th>Copper</th>
-      <th>Alk_Phos</th>
-      <th>SGOT</th>
-      <th>Tryglicerides</th>
-      <th>Platelets</th>
-      <th>Prothrombin</th>
-      <th>Drug</th>
-      <th>Sex</th>
-      <th>Ascites</th>
-      <th>Hepatomegaly</th>
-      <th>Spiders</th>
-      <th>Edema</th>
-      <th>Stage_1.0</th>
-      <th>Stage_2.0</th>
-      <th>Stage_3.0</th>
-      <th>Stage_4.0</th>
-    </tr>
-  </thead>
-  <tbody>
-    <tr>
-      <th>0</th>
-      <td>-1.342097</td>
-      <td>0.863802</td>
-      <td>0.886087</td>
-      <td>-0.451884</td>
-      <td>-0.972098</td>
-      <td>0.140990</td>
-      <td>0.104609</td>
-      <td>0.155130</td>
-      <td>0.540960</td>
-      <td>0.747580</td>
-      <td>1</td>
-      <td>1</td>
-      <td>0</td>
-      <td>0</td>
-      <td>0</td>
-      <td>0</td>
-      <td>0</td>
-      <td>1</td>
-      <td>0</td>
-      <td>0</td>
-    </tr>
-    <tr>
-      <th>1</th>
-      <td>-1.470901</td>
-      <td>0.516350</td>
-      <td>1.554523</td>
-      <td>0.827618</td>
-      <td>0.467579</td>
-      <td>-0.705337</td>
-      <td>0.301441</td>
-      <td>1.275222</td>
-      <td>0.474140</td>
-      <td>-0.315794</td>
-      <td>1</td>
-      <td>0</td>
-      <td>0</td>
-      <td>0</td>
-      <td>0</td>
-      <td>0</td>
-      <td>0</td>
-      <td>0</td>
-      <td>1</td>
-      <td>0</td>
-    </tr>
-    <tr>
-      <th>2</th>
-      <td>-0.239814</td>
-      <td>-0.625875</td>
-      <td>0.293280</td>
-      <td>0.646582</td>
-      <td>-0.241205</td>
-      <td>-0.848544</td>
-      <td>0.275723</td>
-      <td>-1.684460</td>
-      <td>0.756741</td>
-      <td>0.087130</td>
-      <td>1</td>
-      <td>1</td>
-      <td>0</td>
-      <td>0</td>
-      <td>0</td>
-      <td>0</td>
-      <td>0</td>
-      <td>1</td>
-      <td>0</td>
-      <td>0</td>
-    </tr>
-    <tr>
-      <th>3</th>
-      <td>-0.052733</td>
-      <td>0.559437</td>
-      <td>-1.534283</td>
-      <td>0.354473</td>
-      <td>-0.284113</td>
-      <td>-0.014525</td>
-      <td>0.162878</td>
-      <td>-0.189139</td>
-      <td>-1.735375</td>
-      <td>0.649171</td>
-      <td>0</td>
-      <td>1</td>
-      <td>1</td>
-      <td>1</td>
-      <td>1</td>
-      <td>1</td>
-      <td>0</td>
-      <td>0</td>
-      <td>0</td>
-      <td>1</td>
-    </tr>
-    <tr>
-      <th>4</th>
-      <td>-0.795010</td>
-      <td>1.142068</td>
-      <td>-0.108933</td>
-      <td>-0.272913</td>
-      <td>0.618030</td>
-      <td>2.071847</td>
-      <td>1.434674</td>
-      <td>-0.212684</td>
-      <td>-0.675951</td>
-      <td>-0.315794</td>
-      <td>0</td>
-      <td>1</td>
-      <td>0</td>
-      <td>1</td>
-      <td>0</td>
-      <td>0</td>
-      <td>0</td>
-      <td>1</td>
-      <td>0</td>
-      <td>0</td>
-    </tr>
-    <tr>
-      <th>...</th>
-      <td>...</td>
-      <td>...</td>
-      <td>...</td>
-      <td>...</td>
-      <td>...</td>
-      <td>...</td>
-      <td>...</td>
-      <td>...</td>
-      <td>...</td>
-      <td>...</td>
-      <td>...</td>
-      <td>...</td>
-      <td>...</td>
-      <td>...</td>
-      <td>...</td>
-      <td>...</td>
-      <td>...</td>
-      <td>...</td>
-      <td>...</td>
-      <td>...</td>
-    </tr>
-    <tr>
-      <th>213</th>
-      <td>0.167351</td>
-      <td>-0.764558</td>
-      <td>-1.147913</td>
-      <td>-0.887287</td>
-      <td>0.178721</td>
-      <td>0.320864</td>
-      <td>1.574157</td>
-      <td>0.053603</td>
-      <td>-0.848130</td>
-      <td>1.402075</td>
-      <td>0</td>
-      <td>1</td>
-      <td>0</td>
-      <td>0</td>
-      <td>0</td>
-      <td>0</td>
-      <td>0</td>
-      <td>0</td>
-      <td>1</td>
-      <td>0</td>
-    </tr>
-    <tr>
-      <th>214</th>
-      <td>0.004420</td>
-      <td>-0.918484</td>
-      <td>-0.782126</td>
-      <td>0.046794</td>
-      <td>-0.742780</td>
-      <td>0.549222</td>
-      <td>-0.379344</td>
-      <td>0.251836</td>
-      <td>-0.519594</td>
-      <td>0.546417</td>
-      <td>1</td>
-      <td>1</td>
-      <td>0</td>
-      <td>1</td>
-      <td>0</td>
-      <td>1</td>
-      <td>0</td>
-      <td>0</td>
-      <td>1</td>
-      <td>0</td>
-    </tr>
-    <tr>
-      <th>215</th>
-      <td>-0.381113</td>
-      <td>1.190111</td>
-      <td>0.136728</td>
-      <td>-0.194525</td>
-      <td>0.569475</td>
-      <td>0.881231</td>
-      <td>1.871385</td>
-      <td>-1.684460</td>
-      <td>1.587388</td>
-      <td>1.331561</td>
-      <td>0</td>
-      <td>1</td>
-      <td>0</td>
-      <td>1</td>
-      <td>1</td>
-      <td>1</td>
-      <td>0</td>
-      <td>0</td>
-      <td>0</td>
-      <td>1</td>
-    </tr>
-    <tr>
-      <th>216</th>
-      <td>0.800410</td>
-      <td>-1.283677</td>
-      <td>-0.262095</td>
-      <td>2.149157</td>
-      <td>-0.836372</td>
-      <td>-2.600746</td>
-      <td>-1.414105</td>
-      <td>0.645045</td>
-      <td>-0.324107</td>
-      <td>0.087130</td>
-      <td>1</td>
-      <td>1</td>
-      <td>0</td>
-      <td>0</td>
-      <td>0</td>
-      <td>0</td>
-      <td>0</td>
-      <td>1</td>
-      <td>0</td>
-      <td>0</td>
-    </tr>
-    <tr>
-      <th>217</th>
-      <td>0.900345</td>
-      <td>1.951372</td>
-      <td>0.375927</td>
-      <td>-0.061605</td>
-      <td>1.546419</td>
-      <td>0.884998</td>
-      <td>1.376469</td>
-      <td>1.394391</td>
-      <td>-1.196794</td>
-      <td>1.018851</td>
-      <td>0</td>
-      <td>1</td>
-      <td>0</td>
-      <td>1</td>
-      <td>0</td>
-      <td>0</td>
-      <td>0</td>
-      <td>1</td>
-      <td>0</td>
-      <td>0</td>
-    </tr>
-  </tbody>
-</table>
-<p>218 rows × 20 columns</p>
-</div>
-
 
 
 ```python
@@ -7522,27 +7007,6 @@ cirrhosis_survival_y_test_array = np.array([(row.Status, row.N_Days) for index, 
 print(cirrhosis_survival_y_test_array)
 ```
 
-    [(False, 3336) (False, 1321) (False, 1435) (False, 4459) (False, 2721)
-     (False, 2022) (False, 2527) ( True, 2400) (False, 3388) (False, 2944)
-     ( True, 1827) (False, 3098) (False, 1418) ( True,  216) (False, 2176)
-     ( True, 1690) ( True, 3445) (False, 3850) (False, 2449) (False,  788)
-     (False, 1447) ( True,   51) ( True, 3574) ( True,  388) ( True, 1350)
-     ( True,  762) (False, 2365) (False,  994) ( True,  131) (False, 3458)
-     (False, 2574) ( True,  750) (False, 2224) ( True, 3395) (False, 1349)
-     (False, 1882) ( True,  974) ( True, 1165) ( True,  971) (False, 4556)
-     ( True, 3762) (False, 2863) (False, 1481) (False, 2615) (False, 2772)
-     (False, 1300) ( True, 2769) (False, 1776) (False, 2255) ( True, 3282)
-     (False,  837) (False, 1783) (False, 1030) (False, 2990) (False, 2580)
-     ( True,  334) ( True,  198) ( True, 1492) ( True, 1925) ( True,  673)
-     (False, 2556) (False, 1785) (False, 2050) ( True, 1682) (False, 2033)
-     (False, 3577) (False, 1408) ( True, 3584) ( True,  264) ( True,  824)
-     (False, 1455) ( True,  223) ( True, 2540) (False, 1882) ( True, 1083)
-     (False, 1329) ( True,  904) (False, 1457) (False, 1701) ( True,  179)
-     ( True,  140) (False, 2452) (False, 1420) ( True,  130) ( True,  733)
-     (False, 1735) (False, 2330) ( True, 2419) (False, 4467) (False, 2363)
-     (False, 2576) (False,  737) (False, 2504) ( True, 3244)]
-    
-
 
 ```python
 ##################################
@@ -7553,308 +7017,7 @@ print(cirrhosis_survival_y_test_array)
 display(cirrhosis_survival_X_test_preprocessed)
 ```
 
-
-<div>
-<style scoped>
-    .dataframe tbody tr th:only-of-type {
-        vertical-align: middle;
-    }
-
-    .dataframe tbody tr th {
-        vertical-align: top;
-    }
-
-    .dataframe thead th {
-        text-align: right;
-    }
-</style>
-<table border="1" class="dataframe">
-  <thead>
-    <tr style="text-align: right;">
-      <th></th>
-      <th>Age</th>
-      <th>Bilirubin</th>
-      <th>Cholesterol</th>
-      <th>Albumin</th>
-      <th>Copper</th>
-      <th>Alk_Phos</th>
-      <th>SGOT</th>
-      <th>Tryglicerides</th>
-      <th>Platelets</th>
-      <th>Prothrombin</th>
-      <th>Drug</th>
-      <th>Sex</th>
-      <th>Ascites</th>
-      <th>Hepatomegaly</th>
-      <th>Spiders</th>
-      <th>Edema</th>
-      <th>Stage_1.0</th>
-      <th>Stage_2.0</th>
-      <th>Stage_3.0</th>
-      <th>Stage_4.0</th>
-    </tr>
-  </thead>
-  <tbody>
-    <tr>
-      <th>0</th>
-      <td>1.043704</td>
-      <td>0.744396</td>
-      <td>0.922380</td>
-      <td>0.240951</td>
-      <td>0.045748</td>
-      <td>0.317282</td>
-      <td>-0.078335</td>
-      <td>2.671950</td>
-      <td>1.654815</td>
-      <td>-0.948196</td>
-      <td>1</td>
-      <td>1</td>
-      <td>0</td>
-      <td>0</td>
-      <td>1</td>
-      <td>1</td>
-      <td>0</td>
-      <td>0</td>
-      <td>1</td>
-      <td>0</td>
-    </tr>
-    <tr>
-      <th>1</th>
-      <td>-1.936476</td>
-      <td>-0.764558</td>
-      <td>0.160096</td>
-      <td>-0.600950</td>
-      <td>-0.179138</td>
-      <td>-0.245613</td>
-      <td>0.472422</td>
-      <td>-0.359800</td>
-      <td>0.348533</td>
-      <td>0.439089</td>
-      <td>0</td>
-      <td>1</td>
-      <td>0</td>
-      <td>0</td>
-      <td>0</td>
-      <td>0</td>
-      <td>0</td>
-      <td>0</td>
-      <td>0</td>
-      <td>1</td>
-    </tr>
-    <tr>
-      <th>2</th>
-      <td>-1.749033</td>
-      <td>0.371523</td>
-      <td>0.558115</td>
-      <td>0.646582</td>
-      <td>-0.159024</td>
-      <td>0.339454</td>
-      <td>0.685117</td>
-      <td>-3.109146</td>
-      <td>-0.790172</td>
-      <td>-0.617113</td>
-      <td>1</td>
-      <td>1</td>
-      <td>0</td>
-      <td>1</td>
-      <td>0</td>
-      <td>0</td>
-      <td>0</td>
-      <td>0</td>
-      <td>0</td>
-      <td>1</td>
-    </tr>
-    <tr>
-      <th>3</th>
-      <td>-0.485150</td>
-      <td>-0.918484</td>
-      <td>-0.690904</td>
-      <td>1.629765</td>
-      <td>0.028262</td>
-      <td>1.713791</td>
-      <td>-1.387751</td>
-      <td>0.155130</td>
-      <td>0.679704</td>
-      <td>0.087130</td>
-      <td>1</td>
-      <td>0</td>
-      <td>0</td>
-      <td>0</td>
-      <td>0</td>
-      <td>0</td>
-      <td>1</td>
-      <td>0</td>
-      <td>0</td>
-      <td>0</td>
-    </tr>
-    <tr>
-      <th>4</th>
-      <td>-0.815655</td>
-      <td>1.286438</td>
-      <td>2.610501</td>
-      <td>-0.722153</td>
-      <td>0.210203</td>
-      <td>0.602860</td>
-      <td>3.494936</td>
-      <td>-0.053214</td>
-      <td>-0.475634</td>
-      <td>-1.714435</td>
-      <td>0</td>
-      <td>1</td>
-      <td>0</td>
-      <td>1</td>
-      <td>0</td>
-      <td>0</td>
-      <td>0</td>
-      <td>1</td>
-      <td>0</td>
-      <td>0</td>
-    </tr>
-    <tr>
-      <th>...</th>
-      <td>...</td>
-      <td>...</td>
-      <td>...</td>
-      <td>...</td>
-      <td>...</td>
-      <td>...</td>
-      <td>...</td>
-      <td>...</td>
-      <td>...</td>
-      <td>...</td>
-      <td>...</td>
-      <td>...</td>
-      <td>...</td>
-      <td>...</td>
-      <td>...</td>
-      <td>...</td>
-      <td>...</td>
-      <td>...</td>
-      <td>...</td>
-      <td>...</td>
-    </tr>
-    <tr>
-      <th>89</th>
-      <td>0.692406</td>
-      <td>-0.096645</td>
-      <td>-0.906164</td>
-      <td>-0.477005</td>
-      <td>-1.930422</td>
-      <td>-0.809457</td>
-      <td>-0.888634</td>
-      <td>-1.421640</td>
-      <td>-1.638792</td>
-      <td>1.101933</td>
-      <td>1</td>
-      <td>1</td>
-      <td>0</td>
-      <td>1</td>
-      <td>1</td>
-      <td>0</td>
-      <td>0</td>
-      <td>0</td>
-      <td>0</td>
-      <td>1</td>
-    </tr>
-    <tr>
-      <th>90</th>
-      <td>-0.201495</td>
-      <td>-1.283677</td>
-      <td>0.064451</td>
-      <td>0.297476</td>
-      <td>-0.062405</td>
-      <td>0.425745</td>
-      <td>1.204015</td>
-      <td>-1.077370</td>
-      <td>0.939991</td>
-      <td>-1.125995</td>
-      <td>0</td>
-      <td>1</td>
-      <td>0</td>
-      <td>0</td>
-      <td>0</td>
-      <td>0</td>
-      <td>0</td>
-      <td>0</td>
-      <td>1</td>
-      <td>0</td>
-    </tr>
-    <tr>
-      <th>91</th>
-      <td>-0.974200</td>
-      <td>0.776293</td>
-      <td>-0.891985</td>
-      <td>0.587203</td>
-      <td>0.699548</td>
-      <td>-0.199230</td>
-      <td>-0.016923</td>
-      <td>-0.463921</td>
-      <td>0.060683</td>
-      <td>-0.778722</td>
-      <td>1</td>
-      <td>1</td>
-      <td>0</td>
-      <td>1</td>
-      <td>1</td>
-      <td>0</td>
-      <td>0</td>
-      <td>0</td>
-      <td>1</td>
-      <td>0</td>
-    </tr>
-    <tr>
-      <th>92</th>
-      <td>0.466763</td>
-      <td>0.470819</td>
-      <td>0.536326</td>
-      <td>1.139126</td>
-      <td>-1.293580</td>
-      <td>0.511347</td>
-      <td>0.410413</td>
-      <td>0.059267</td>
-      <td>0.672973</td>
-      <td>-0.462938</td>
-      <td>1</td>
-      <td>1</td>
-      <td>0</td>
-      <td>0</td>
-      <td>1</td>
-      <td>0</td>
-      <td>0</td>
-      <td>1</td>
-      <td>0</td>
-      <td>0</td>
-    </tr>
-    <tr>
-      <th>93</th>
-      <td>-1.327100</td>
-      <td>0.835905</td>
-      <td>0.534335</td>
-      <td>-0.034678</td>
-      <td>0.467579</td>
-      <td>-0.064029</td>
-      <td>0.488117</td>
-      <td>-0.573417</td>
-      <td>-0.249636</td>
-      <td>0.546417</td>
-      <td>0</td>
-      <td>1</td>
-      <td>0</td>
-      <td>1</td>
-      <td>1</td>
-      <td>0</td>
-      <td>0</td>
-      <td>0</td>
-      <td>0</td>
-      <td>1</td>
-    </tr>
-  </tbody>
-</table>
-<p>94 rows × 20 columns</p>
-</div>
-
-
-### 1.6.2 Penalized Cox Regression <a class="anchor" id="1.6.2"></a>
+### 1.6.2 Cox Proportional Hazards Regression <a class="anchor" id="1.6.2"></a>
 
 
 ```python
@@ -7915,66 +7078,6 @@ display(cirrhosis_survival_coxph_ht)
 ```
 
 
-<div>
-<style scoped>
-    .dataframe tbody tr th:only-of-type {
-        vertical-align: middle;
-    }
-
-    .dataframe tbody tr th {
-        vertical-align: top;
-    }
-
-    .dataframe thead th {
-        text-align: right;
-    }
-</style>
-<table border="1" class="dataframe">
-  <thead>
-    <tr style="text-align: right;">
-      <th></th>
-      <th>Hyperparameters</th>
-      <th>Concordance_Index_Mean</th>
-      <th>Concordance_Index_Std</th>
-    </tr>
-  </thead>
-  <tbody>
-    <tr>
-      <th>0</th>
-      <td>{'alpha': 0.0}</td>
-      <td>0.803093</td>
-      <td>0.035150</td>
-    </tr>
-    <tr>
-      <th>1</th>
-      <td>{'alpha': 0.01}</td>
-      <td>0.803639</td>
-      <td>0.034267</td>
-    </tr>
-    <tr>
-      <th>2</th>
-      <td>{'alpha': 0.1}</td>
-      <td>0.804195</td>
-      <td>0.033020</td>
-    </tr>
-    <tr>
-      <th>3</th>
-      <td>{'alpha': 1.0}</td>
-      <td>0.805496</td>
-      <td>0.033063</td>
-    </tr>
-    <tr>
-      <th>4</th>
-      <td>{'alpha': 10.0}</td>
-      <td>0.813656</td>
-      <td>0.036258</td>
-    </tr>
-  </tbody>
-</table>
-</div>
-
-
-
 ```python
 ##################################
 # Formulating a Cox-Proportional Hazards Model
@@ -7983,13 +7086,6 @@ display(cirrhosis_survival_coxph_ht)
 optimal_coxph_model = CoxPHSurvivalAnalysis(alpha=10.0)
 optimal_coxph_model.fit(cirrhosis_survival_X_train_preprocessed, cirrhosis_survival_y_train_array)
 ```
-
-
-
-
-<style>#sk-container-id-1 {color: black;}#sk-container-id-1 pre{padding: 0;}#sk-container-id-1 div.sk-toggleable {background-color: white;}#sk-container-id-1 label.sk-toggleable__label {cursor: pointer;display: block;width: 100%;margin-bottom: 0;padding: 0.3em;box-sizing: border-box;text-align: center;}#sk-container-id-1 label.sk-toggleable__label-arrow:before {content: "▸";float: left;margin-right: 0.25em;color: #696969;}#sk-container-id-1 label.sk-toggleable__label-arrow:hover:before {color: black;}#sk-container-id-1 div.sk-estimator:hover label.sk-toggleable__label-arrow:before {color: black;}#sk-container-id-1 div.sk-toggleable__content {max-height: 0;max-width: 0;overflow: hidden;text-align: left;background-color: #f0f8ff;}#sk-container-id-1 div.sk-toggleable__content pre {margin: 0.2em;color: black;border-radius: 0.25em;background-color: #f0f8ff;}#sk-container-id-1 input.sk-toggleable__control:checked~div.sk-toggleable__content {max-height: 200px;max-width: 100%;overflow: auto;}#sk-container-id-1 input.sk-toggleable__control:checked~label.sk-toggleable__label-arrow:before {content: "▾";}#sk-container-id-1 div.sk-estimator input.sk-toggleable__control:checked~label.sk-toggleable__label {background-color: #d4ebff;}#sk-container-id-1 div.sk-label input.sk-toggleable__control:checked~label.sk-toggleable__label {background-color: #d4ebff;}#sk-container-id-1 input.sk-hidden--visually {border: 0;clip: rect(1px 1px 1px 1px);clip: rect(1px, 1px, 1px, 1px);height: 1px;margin: -1px;overflow: hidden;padding: 0;position: absolute;width: 1px;}#sk-container-id-1 div.sk-estimator {font-family: monospace;background-color: #f0f8ff;border: 1px dotted black;border-radius: 0.25em;box-sizing: border-box;margin-bottom: 0.5em;}#sk-container-id-1 div.sk-estimator:hover {background-color: #d4ebff;}#sk-container-id-1 div.sk-parallel-item::after {content: "";width: 100%;border-bottom: 1px solid gray;flex-grow: 1;}#sk-container-id-1 div.sk-label:hover label.sk-toggleable__label {background-color: #d4ebff;}#sk-container-id-1 div.sk-serial::before {content: "";position: absolute;border-left: 1px solid gray;box-sizing: border-box;top: 0;bottom: 0;left: 50%;z-index: 0;}#sk-container-id-1 div.sk-serial {display: flex;flex-direction: column;align-items: center;background-color: white;padding-right: 0.2em;padding-left: 0.2em;position: relative;}#sk-container-id-1 div.sk-item {position: relative;z-index: 1;}#sk-container-id-1 div.sk-parallel {display: flex;align-items: stretch;justify-content: center;background-color: white;position: relative;}#sk-container-id-1 div.sk-item::before, #sk-container-id-1 div.sk-parallel-item::before {content: "";position: absolute;border-left: 1px solid gray;box-sizing: border-box;top: 0;bottom: 0;left: 50%;z-index: -1;}#sk-container-id-1 div.sk-parallel-item {display: flex;flex-direction: column;z-index: 1;position: relative;background-color: white;}#sk-container-id-1 div.sk-parallel-item:first-child::after {align-self: flex-end;width: 50%;}#sk-container-id-1 div.sk-parallel-item:last-child::after {align-self: flex-start;width: 50%;}#sk-container-id-1 div.sk-parallel-item:only-child::after {width: 0;}#sk-container-id-1 div.sk-dashed-wrapped {border: 1px dashed gray;margin: 0 0.4em 0.5em 0.4em;box-sizing: border-box;padding-bottom: 0.4em;background-color: white;}#sk-container-id-1 div.sk-label label {font-family: monospace;font-weight: bold;display: inline-block;line-height: 1.2em;}#sk-container-id-1 div.sk-label-container {text-align: center;}#sk-container-id-1 div.sk-container {/* jupyter's `normalize.less` sets `[hidden] { display: none; }` but bootstrap.min.css set `[hidden] { display: none !important; }` so we also need the `!important` here to be able to override the default hidden behavior on the sphinx rendered scikit-learn.org. See: https://github.com/scikit-learn/scikit-learn/issues/21755 */display: inline-block !important;position: relative;}#sk-container-id-1 div.sk-text-repr-fallback {display: none;}</style><div id="sk-container-id-1" class="sk-top-container"><div class="sk-text-repr-fallback"><pre>CoxPHSurvivalAnalysis(alpha=10.0)</pre><b>In a Jupyter environment, please rerun this cell to show the HTML representation or trust the notebook. <br />On GitHub, the HTML representation is unable to render, please try loading this page with nbviewer.org.</b></div><div class="sk-container" hidden><div class="sk-item"><div class="sk-estimator sk-toggleable"><input class="sk-toggleable__control sk-hidden--visually" id="sk-estimator-id-1" type="checkbox" checked><label for="sk-estimator-id-1" class="sk-toggleable__label sk-toggleable__label-arrow">CoxPHSurvivalAnalysis</label><div class="sk-toggleable__content"><pre>CoxPHSurvivalAnalysis(alpha=10.0)</pre></div></div></div></div></div>
-
-
 
 
 ```python
@@ -8005,9 +7101,6 @@ optimal_coxph_cirrhosis_survival_y_train_ci = concordance_index_censored(cirrhos
 print(f"Apparent Concordance Index: {optimal_coxph_cirrhosis_survival_y_train_ci}")
 ```
 
-    Apparent Concordance Index: 0.8485858257477243
-    
-
 
 ```python
 ##################################
@@ -8022,8 +7115,29 @@ optimal_coxph_cirrhosis_survival_y_test_ci = concordance_index_censored(cirrhosi
 print(f"Test Concordance Index: {optimal_coxph_cirrhosis_survival_y_test_ci}")
 ```
 
-    Test Concordance Index: 0.8743764172335601
-    
+
+```python
+##################################
+# Binning the predicted risks
+# into dichotomous groups and
+# exploring the relationships with
+# survival event and duration
+##################################
+kmf = KaplanMeierFitter()
+cirrhosis_survival_test['Predicted_Risks_CoxPH'] = optimal_coxph_cirrhosis_survival_y_test_pred
+risk_groups = pd.qcut(cirrhosis_survival_test['Predicted_Risks_CoxPH'], 2, labels=['Low-Risk', 'High-Risk'])
+
+plt.figure(figsize=(17, 8))
+for group in risk_groups.unique():
+    group_data = cirrhosis_survival_test[risk_groups == group]
+    kmf.fit(group_data['N_Days'], event_observed=group_data['Status'], label=group)
+    kmf.plot_survival_function()
+
+plt.title('Kaplan-Meier Curves by Predicted Risk Groups')
+plt.xlabel('N_Days')
+plt.ylabel('Event Survival Probability')
+plt.show()
+```
 
 ### 1.6.3 Survival Support Vector Machine <a class="anchor" id="1.6.3"></a>
 
@@ -8066,7 +7180,3 @@ print(f"Test Concordance Index: {optimal_coxph_cirrhosis_survival_y_test_ci}")
 from IPython.display import display, HTML
 display(HTML("<style>.rendered_html { font-size: 15px; font-family: 'Trebuchet MS'; }</style>"))
 ```
-
-
-<style>.rendered_html { font-size: 15px; font-family: 'Trebuchet MS'; }</style>
-
