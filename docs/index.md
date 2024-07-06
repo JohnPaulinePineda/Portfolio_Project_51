@@ -24,9 +24,10 @@
     * [1.6 Predictive Model Development](#1.6)
         * [1.6.1 Premodelling Data Description](#1.6.1)
         * [1.6.2 Cox Proportional Hazards Regression](#1.6.2)
-        * [1.6.3 Survival Support Vector Machine](#1.6.3)
-        * [1.6.4 Random Survival Forest](#1.6.4)
-        * [1.6.5 Gradient Boosted Survival](#1.6.5)
+        * [1.6.3 Cox Net Survival](#1.6.3)
+        * [1.6.4 Survival Trees](#1.6.4)
+        * [1.6.5 Random Survival Forest](#1.6.5)
+        * [1.6.6 Gradient Boosted Survival](#1.6.6)
     * [1.7 Consolidated Findings](#1.7)
 * [**2. Summary**](#Summary)   
 * [**3. References**](#References)
@@ -128,13 +129,18 @@ from sklearn.preprocessing import StandardScaler
 from sklearn.pipeline import Pipeline
 from sklearn.compose import ColumnTransformer
 from sklearn.model_selection import KFold
+
 from statsmodels.nonparametric.smoothers_lowess import lowess
-from sksurv.linear_model import CoxPHSurvivalAnalysis
+from scipy import stats
+from scipy.stats import ttest_ind, chi2_contingency
+
+from sksurv.linear_model import CoxPHSurvivalAnalysis, CoxnetSurvivalAnalysis
+from sksurv.ensemble import RandomSurvivalForest, GradientBoostingSurvivalAnalysis
+from sksurv.tree import SurvivalTree
 from sksurv.metrics import concordance_index_censored
 from lifelines import KaplanMeierFitter
 from lifelines.statistics import logrank_test
-from scipy import stats
-from scipy.stats import ttest_ind, chi2_contingency
+
 import warnings
 warnings.filterwarnings('ignore')
 ```
@@ -8035,9 +8041,10 @@ print(f"Test Concordance Index: {optimal_coxph_cirrhosis_survival_y_test_ci}")
 # exploring the relationships with
 # survival event and duration
 ##################################
+cirrhosis_survival_test.reset_index(drop=True, inplace=True)
 kmf = KaplanMeierFitter()
 cirrhosis_survival_test['Predicted_Risks_CoxPH'] = optimal_coxph_cirrhosis_survival_y_test_pred
-risk_groups = pd.qcut(cirrhosis_survival_test['Predicted_Risks_CoxPH'], 2, labels=['Low-Risk', 'High-Risk'])
+cirrhosis_survival_test['Predicted_RiskGroups_CoxPH'] = risk_groups = pd.qcut(cirrhosis_survival_test['Predicted_Risks_CoxPH'], 2, labels=['Low-Risk', 'High-Risk'])
 
 plt.figure(figsize=(17, 8))
 for group in risk_groups.unique():
@@ -8045,7 +8052,7 @@ for group in risk_groups.unique():
     kmf.fit(group_data['N_Days'], event_observed=group_data['Status'], label=group)
     kmf.plot_survival_function()
 
-plt.title('Survival Probabilities by Predicted Risk Groups')
+plt.title('COXPH Survival Probabilities by Predicted Risk Groups')
 plt.xlabel('N_Days')
 plt.ylabel('Event Survival Probability')
 plt.show()
@@ -8244,6 +8251,23 @@ print(cirrhosis_survival_y_test_array[[10, 20, 30, 40, 50]])
 
 ```python
 ##################################
+# Gathering the risk-groups
+# for 5 test case samples
+##################################
+print(cirrhosis_survival_test.loc[[10, 20, 30, 40, 50]][['Predicted_RiskGroups_CoxPH']])
+```
+
+       Predicted_RiskGroups_CoxPH
+    10                  High-Risk
+    20                   Low-Risk
+    30                   Low-Risk
+    40                  High-Risk
+    50                  High-Risk
+    
+
+
+```python
+##################################
 # Estimating the cumulative hazard
 # and survival functions
 # for 5 test cases
@@ -8257,11 +8281,11 @@ fig, ax = plt.subplots(1,2,figsize=(17, 8))
 for hazard_prediction, survival_prediction in zip(test_case_cumulative_hazard_function, test_case_survival_function):
     ax[0].step(hazard_prediction.x,hazard_prediction(hazard_prediction.x),where='post')
     ax[1].step(survival_prediction.x,survival_prediction(survival_prediction.x),where='post')
-ax[0].set_title('Cumulative Hazard for 5 Test Cases')
+ax[0].set_title('COXPH Cumulative Hazard for 5 Test Cases')
 ax[0].set_xlabel('N_Days')
 ax[0].set_ylabel('Cumulative Hazard')
 ax[0].legend(test_case_labels, loc="upper left")
-ax[1].set_title('Survival Function for 5 Test Cases')
+ax[1].set_title('COXPH Survival Function for 5 Test Cases')
 ax[1].set_xlabel('N_Days')
 ax[1].set_ylabel('Event Survival Probability')
 ax[1].legend(test_case_labels, loc="lower left")
@@ -8270,15 +8294,1327 @@ plt.show()
 
 
     
-![png](output_173_0.png)
+![png](output_174_0.png)
     
 
 
-### 1.6.3 Survival Support Vector Machine <a class="anchor" id="1.6.3"></a>
+### 1.6.3 Cox Net Survival <a class="anchor" id="1.6.3"></a>
 
-### 1.6.4 Random Survival Forest <a class="anchor" id="1.6.4"></a>
+### 1.6.4 Survival Tree <a class="anchor" id="1.6.4"></a>
 
-### 1.6.5 Gradient Boosted Survival <a class="anchor" id="1.6.5"></a>
+
+```python
+##################################
+# Defining a function to perform 
+# 5-fold cross-validation and hyperparameter tuning
+# using the SurvivalTree Model
+##################################
+def cross_validate_stree_model(X, y, hyperparameters):
+    kf = KFold(n_splits=5, shuffle=True, random_state=88888888)
+    results = []
+
+    for params in hyperparameters:
+        stree_model = SurvivalTree(**params, random_state=88888888)
+        fold_results = []
+        
+        for train_index, validation_index in kf.split(X):
+            X_train, X_validation = X.iloc[train_index], X.iloc[validation_index]
+            y_train, y_validation = y[train_index], y[validation_index]
+            
+            stree_model.fit(X_train, y_train)
+            pred_survival = stree_model.predict(X_validation)
+            ci = concordance_index_censored(y_validation['Status'], y_validation['N_Days'], pred_survival)[0]
+            fold_results.append(ci)
+        
+        results.append({
+            'Hyperparameters': params,
+            'Concordance_Index_Mean': np.mean(fold_results),
+            'Concordance_Index_Std': np.std(fold_results)
+        })
+    return pd.DataFrame(results)
+```
+
+
+```python
+##################################
+# Defining hyperparameters for tuning
+# using the Survival Tree Model
+##################################
+hyperparameters = [{'min_samples_split': 30, 'min_samples_leaf': 10},
+                   {'min_samples_split': 30, 'min_samples_leaf': 5},
+                   {'min_samples_split': 20, 'min_samples_leaf': 10},
+                   {'min_samples_split': 20, 'min_samples_leaf': 5}]
+```
+
+
+```python
+##################################
+# Performing hyperparameter tuning
+# through K-fold cross-validation
+# using the SurvivalTree
+##################################
+cirrhosis_survival_stree_ht = cross_validate_stree_model(cirrhosis_survival_X_train_preprocessed,
+                                                         cirrhosis_survival_y_train_array, 
+                                                         hyperparameters)
+display(cirrhosis_survival_stree_ht)
+```
+
+
+<div>
+<style scoped>
+    .dataframe tbody tr th:only-of-type {
+        vertical-align: middle;
+    }
+
+    .dataframe tbody tr th {
+        vertical-align: top;
+    }
+
+    .dataframe thead th {
+        text-align: right;
+    }
+</style>
+<table border="1" class="dataframe">
+  <thead>
+    <tr style="text-align: right;">
+      <th></th>
+      <th>Hyperparameters</th>
+      <th>Concordance_Index_Mean</th>
+      <th>Concordance_Index_Std</th>
+    </tr>
+  </thead>
+  <tbody>
+    <tr>
+      <th>0</th>
+      <td>{'min_samples_split': 30, 'min_samples_leaf': 10}</td>
+      <td>0.772549</td>
+      <td>0.034646</td>
+    </tr>
+    <tr>
+      <th>1</th>
+      <td>{'min_samples_split': 30, 'min_samples_leaf': 5}</td>
+      <td>0.793183</td>
+      <td>0.007672</td>
+    </tr>
+    <tr>
+      <th>2</th>
+      <td>{'min_samples_split': 20, 'min_samples_leaf': 10}</td>
+      <td>0.786565</td>
+      <td>0.032803</td>
+    </tr>
+    <tr>
+      <th>3</th>
+      <td>{'min_samples_split': 20, 'min_samples_leaf': 5}</td>
+      <td>0.791438</td>
+      <td>0.024420</td>
+    </tr>
+  </tbody>
+</table>
+</div>
+
+
+
+```python
+##################################
+# Formulating a SurvivalTree
+# with optimal hyperparameters
+##################################
+optimal_stree_model = SurvivalTree(min_samples_split=30, min_samples_leaf=5, random_state=88888888)
+optimal_stree_model.fit(cirrhosis_survival_X_train_preprocessed, cirrhosis_survival_y_train_array)
+```
+
+
+
+
+<style>#sk-container-id-2 {color: black;}#sk-container-id-2 pre{padding: 0;}#sk-container-id-2 div.sk-toggleable {background-color: white;}#sk-container-id-2 label.sk-toggleable__label {cursor: pointer;display: block;width: 100%;margin-bottom: 0;padding: 0.3em;box-sizing: border-box;text-align: center;}#sk-container-id-2 label.sk-toggleable__label-arrow:before {content: "▸";float: left;margin-right: 0.25em;color: #696969;}#sk-container-id-2 label.sk-toggleable__label-arrow:hover:before {color: black;}#sk-container-id-2 div.sk-estimator:hover label.sk-toggleable__label-arrow:before {color: black;}#sk-container-id-2 div.sk-toggleable__content {max-height: 0;max-width: 0;overflow: hidden;text-align: left;background-color: #f0f8ff;}#sk-container-id-2 div.sk-toggleable__content pre {margin: 0.2em;color: black;border-radius: 0.25em;background-color: #f0f8ff;}#sk-container-id-2 input.sk-toggleable__control:checked~div.sk-toggleable__content {max-height: 200px;max-width: 100%;overflow: auto;}#sk-container-id-2 input.sk-toggleable__control:checked~label.sk-toggleable__label-arrow:before {content: "▾";}#sk-container-id-2 div.sk-estimator input.sk-toggleable__control:checked~label.sk-toggleable__label {background-color: #d4ebff;}#sk-container-id-2 div.sk-label input.sk-toggleable__control:checked~label.sk-toggleable__label {background-color: #d4ebff;}#sk-container-id-2 input.sk-hidden--visually {border: 0;clip: rect(1px 1px 1px 1px);clip: rect(1px, 1px, 1px, 1px);height: 1px;margin: -1px;overflow: hidden;padding: 0;position: absolute;width: 1px;}#sk-container-id-2 div.sk-estimator {font-family: monospace;background-color: #f0f8ff;border: 1px dotted black;border-radius: 0.25em;box-sizing: border-box;margin-bottom: 0.5em;}#sk-container-id-2 div.sk-estimator:hover {background-color: #d4ebff;}#sk-container-id-2 div.sk-parallel-item::after {content: "";width: 100%;border-bottom: 1px solid gray;flex-grow: 1;}#sk-container-id-2 div.sk-label:hover label.sk-toggleable__label {background-color: #d4ebff;}#sk-container-id-2 div.sk-serial::before {content: "";position: absolute;border-left: 1px solid gray;box-sizing: border-box;top: 0;bottom: 0;left: 50%;z-index: 0;}#sk-container-id-2 div.sk-serial {display: flex;flex-direction: column;align-items: center;background-color: white;padding-right: 0.2em;padding-left: 0.2em;position: relative;}#sk-container-id-2 div.sk-item {position: relative;z-index: 1;}#sk-container-id-2 div.sk-parallel {display: flex;align-items: stretch;justify-content: center;background-color: white;position: relative;}#sk-container-id-2 div.sk-item::before, #sk-container-id-2 div.sk-parallel-item::before {content: "";position: absolute;border-left: 1px solid gray;box-sizing: border-box;top: 0;bottom: 0;left: 50%;z-index: -1;}#sk-container-id-2 div.sk-parallel-item {display: flex;flex-direction: column;z-index: 1;position: relative;background-color: white;}#sk-container-id-2 div.sk-parallel-item:first-child::after {align-self: flex-end;width: 50%;}#sk-container-id-2 div.sk-parallel-item:last-child::after {align-self: flex-start;width: 50%;}#sk-container-id-2 div.sk-parallel-item:only-child::after {width: 0;}#sk-container-id-2 div.sk-dashed-wrapped {border: 1px dashed gray;margin: 0 0.4em 0.5em 0.4em;box-sizing: border-box;padding-bottom: 0.4em;background-color: white;}#sk-container-id-2 div.sk-label label {font-family: monospace;font-weight: bold;display: inline-block;line-height: 1.2em;}#sk-container-id-2 div.sk-label-container {text-align: center;}#sk-container-id-2 div.sk-container {/* jupyter's `normalize.less` sets `[hidden] { display: none; }` but bootstrap.min.css set `[hidden] { display: none !important; }` so we also need the `!important` here to be able to override the default hidden behavior on the sphinx rendered scikit-learn.org. See: https://github.com/scikit-learn/scikit-learn/issues/21755 */display: inline-block !important;position: relative;}#sk-container-id-2 div.sk-text-repr-fallback {display: none;}</style><div id="sk-container-id-2" class="sk-top-container"><div class="sk-text-repr-fallback"><pre>SurvivalTree(min_samples_leaf=5, min_samples_split=30, random_state=88888888)</pre><b>In a Jupyter environment, please rerun this cell to show the HTML representation or trust the notebook. <br />On GitHub, the HTML representation is unable to render, please try loading this page with nbviewer.org.</b></div><div class="sk-container" hidden><div class="sk-item"><div class="sk-estimator sk-toggleable"><input class="sk-toggleable__control sk-hidden--visually" id="sk-estimator-id-2" type="checkbox" checked><label for="sk-estimator-id-2" class="sk-toggleable__label sk-toggleable__label-arrow">SurvivalTree</label><div class="sk-toggleable__content"><pre>SurvivalTree(min_samples_leaf=5, min_samples_split=30, random_state=88888888)</pre></div></div></div></div></div>
+
+
+
+
+```python
+##################################
+# Measuring model performance of the 
+# optimal SurvivalTree
+# on the train set
+##################################
+optimal_stree_cirrhosis_survival_y_train_pred = optimal_stree_model.predict(cirrhosis_survival_X_train_preprocessed)
+optimal_stree_cirrhosis_survival_y_train_ci = concordance_index_censored(cirrhosis_survival_y_train_array['Status'], 
+                                                                        cirrhosis_survival_y_train_array['N_Days'], 
+                                                                        optimal_stree_cirrhosis_survival_y_train_pred)[0]
+print(f"Apparent Concordance Index: {optimal_stree_cirrhosis_survival_y_train_ci}")
+```
+
+    Apparent Concordance Index: 0.8646781534460338
+    
+
+
+```python
+##################################
+# Measuring model performance of the 
+# optimal SurvivalTree
+# on the test set
+##################################
+optimal_stree_cirrhosis_survival_y_test_pred = optimal_stree_model.predict(cirrhosis_survival_X_test_preprocessed)
+optimal_stree_cirrhosis_survival_y_test_ci = concordance_index_censored(cirrhosis_survival_y_test_array['Status'],
+                                                                       cirrhosis_survival_y_test_array['N_Days'], 
+                                                                       optimal_stree_cirrhosis_survival_y_test_pred)[0]
+print(f"Test Concordance Index: {optimal_stree_cirrhosis_survival_y_test_ci}")
+```
+
+    Test Concordance Index: 0.8174603174603174
+    
+
+
+```python
+##################################
+# Binning the predicted risks
+# into dichotomous groups and
+# exploring the relationships with
+# survival event and duration
+##################################
+cirrhosis_survival_test.reset_index(drop=True, inplace=True)
+kmf = KaplanMeierFitter()
+cirrhosis_survival_test['Predicted_Risks_STree'] = optimal_stree_cirrhosis_survival_y_test_pred
+cirrhosis_survival_test['Predicted_RiskGroups_STree'] = risk_groups = pd.qcut(cirrhosis_survival_test['Predicted_Risks_STree'], 2, labels=['Low-Risk', 'High-Risk'])
+
+plt.figure(figsize=(17, 8))
+for group in risk_groups.unique():
+    group_data = cirrhosis_survival_test[risk_groups == group]
+    kmf.fit(group_data['N_Days'], event_observed=group_data['Status'], label=group)
+    kmf.plot_survival_function()
+
+plt.title('STREE Survival Probabilities by Predicted Risk Groups')
+plt.xlabel('N_Days')
+plt.ylabel('Event Survival Probability')
+plt.show()
+```
+
+
+    
+![png](output_183_0.png)
+    
+
+
+
+```python
+##################################
+# Gathering the predictor information
+# for 5 test case samples
+##################################
+test_case_10 = cirrhosis_survival_X_test_preprocessed.iloc[[10, 20, 30, 40, 50]]
+display(test_case_10)
+```
+
+
+<div>
+<style scoped>
+    .dataframe tbody tr th:only-of-type {
+        vertical-align: middle;
+    }
+
+    .dataframe tbody tr th {
+        vertical-align: top;
+    }
+
+    .dataframe thead th {
+        text-align: right;
+    }
+</style>
+<table border="1" class="dataframe">
+  <thead>
+    <tr style="text-align: right;">
+      <th></th>
+      <th>Age</th>
+      <th>Bilirubin</th>
+      <th>Cholesterol</th>
+      <th>Albumin</th>
+      <th>Copper</th>
+      <th>Alk_Phos</th>
+      <th>SGOT</th>
+      <th>Tryglicerides</th>
+      <th>Platelets</th>
+      <th>Prothrombin</th>
+      <th>Drug</th>
+      <th>Sex</th>
+      <th>Ascites</th>
+      <th>Hepatomegaly</th>
+      <th>Spiders</th>
+      <th>Edema</th>
+      <th>Stage_1.0</th>
+      <th>Stage_2.0</th>
+      <th>Stage_3.0</th>
+      <th>Stage_4.0</th>
+    </tr>
+  </thead>
+  <tbody>
+    <tr>
+      <th>10</th>
+      <td>0.226982</td>
+      <td>1.530100</td>
+      <td>1.302295</td>
+      <td>1.331981</td>
+      <td>1.916467</td>
+      <td>-0.477846</td>
+      <td>-0.451305</td>
+      <td>2.250260</td>
+      <td>0.201024</td>
+      <td>0.546417</td>
+      <td>1</td>
+      <td>1</td>
+      <td>0</td>
+      <td>1</td>
+      <td>1</td>
+      <td>0</td>
+      <td>0</td>
+      <td>0</td>
+      <td>0</td>
+      <td>1</td>
+    </tr>
+    <tr>
+      <th>20</th>
+      <td>-0.147646</td>
+      <td>0.061189</td>
+      <td>0.793618</td>
+      <td>-1.158235</td>
+      <td>0.861264</td>
+      <td>0.625621</td>
+      <td>0.319035</td>
+      <td>0.446026</td>
+      <td>1.083875</td>
+      <td>-1.508571</td>
+      <td>1</td>
+      <td>1</td>
+      <td>0</td>
+      <td>0</td>
+      <td>0</td>
+      <td>0</td>
+      <td>0</td>
+      <td>0</td>
+      <td>0</td>
+      <td>1</td>
+    </tr>
+    <tr>
+      <th>30</th>
+      <td>0.296370</td>
+      <td>-1.283677</td>
+      <td>0.169685</td>
+      <td>3.237777</td>
+      <td>-1.008276</td>
+      <td>-0.873566</td>
+      <td>-0.845549</td>
+      <td>-0.351236</td>
+      <td>0.985206</td>
+      <td>-0.617113</td>
+      <td>1</td>
+      <td>1</td>
+      <td>0</td>
+      <td>0</td>
+      <td>0</td>
+      <td>0</td>
+      <td>0</td>
+      <td>0</td>
+      <td>1</td>
+      <td>0</td>
+    </tr>
+    <tr>
+      <th>40</th>
+      <td>0.392609</td>
+      <td>-0.096645</td>
+      <td>-0.486337</td>
+      <td>1.903146</td>
+      <td>-0.546292</td>
+      <td>-0.247141</td>
+      <td>-0.720619</td>
+      <td>-0.810790</td>
+      <td>-0.000298</td>
+      <td>1.402075</td>
+      <td>0</td>
+      <td>1</td>
+      <td>0</td>
+      <td>1</td>
+      <td>1</td>
+      <td>0</td>
+      <td>0</td>
+      <td>0</td>
+      <td>0</td>
+      <td>1</td>
+    </tr>
+    <tr>
+      <th>50</th>
+      <td>-0.813646</td>
+      <td>1.089037</td>
+      <td>0.064451</td>
+      <td>0.212865</td>
+      <td>2.063138</td>
+      <td>-0.224432</td>
+      <td>0.074987</td>
+      <td>2.333282</td>
+      <td>0.240640</td>
+      <td>-1.125995</td>
+      <td>0</td>
+      <td>1</td>
+      <td>0</td>
+      <td>1</td>
+      <td>1</td>
+      <td>0</td>
+      <td>0</td>
+      <td>0</td>
+      <td>0</td>
+      <td>1</td>
+    </tr>
+  </tbody>
+</table>
+</div>
+
+
+
+```python
+##################################
+# Gathering the event and duration information
+# for 5 test case samples
+##################################
+print(cirrhosis_survival_y_test_array[[10, 20, 30, 40, 50]])
+```
+
+    [( True, 1827) (False, 1447) (False, 2574) ( True, 3762) (False,  837)]
+    
+
+
+```python
+##################################
+# Gathering the risk-groups
+# for 5 test case samples
+##################################
+print(cirrhosis_survival_test.loc[[10, 20, 30, 40, 50]][['Predicted_RiskGroups_STree']])
+```
+
+       Predicted_RiskGroups_STree
+    10                  High-Risk
+    20                   Low-Risk
+    30                   Low-Risk
+    40                   Low-Risk
+    50                  High-Risk
+    
+
+
+```python
+##################################
+# Estimating the cumulative hazard
+# and survival functions
+# for 5 test cases
+##################################
+test_case = cirrhosis_survival_X_test_preprocessed.iloc[[10, 20, 30, 40, 50]]
+test_case_labels = ['Patient_10','Patient_20','Patient_30','Patient_40','Patient_50',]
+test_case_cumulative_hazard_function = optimal_stree_model.predict_cumulative_hazard_function(test_case)
+test_case_survival_function = optimal_stree_model.predict_survival_function(test_case)
+
+fig, ax = plt.subplots(1,2,figsize=(17, 8))
+for hazard_prediction, survival_prediction in zip(test_case_cumulative_hazard_function, test_case_survival_function):
+    ax[0].step(hazard_prediction.x,hazard_prediction(hazard_prediction.x),where='post')
+    ax[1].step(survival_prediction.x,survival_prediction(survival_prediction.x),where='post')
+ax[0].set_title('STREE Cumulative Hazard for 5 Test Cases')
+ax[0].set_xlabel('N_Days')
+ax[0].set_ylabel('Cumulative Hazard')
+ax[0].legend(test_case_labels, loc="upper left")
+ax[1].set_title('STREE Survival Function for 5 Test Cases')
+ax[1].set_xlabel('N_Days')
+ax[1].set_ylabel('Event Survival Probability')
+ax[1].legend(test_case_labels, loc="lower left")
+plt.show()
+```
+
+
+    
+![png](output_187_0.png)
+    
+
+
+### 1.6.5 Random Survival Forest <a class="anchor" id="1.6.5"></a>
+
+
+```python
+##################################
+# Defining a function to perform 
+# 5-fold cross-validation and hyperparameter tuning
+# using the Random Survival Forest Model
+##################################
+def cross_validate_rsf_model(X, y, hyperparameters):
+    kf = KFold(n_splits=5, shuffle=True, random_state=88888888)
+    results = []
+
+    for params in hyperparameters:
+        rsf_model = RandomSurvivalForest(**params)
+        fold_results = []
+        
+        for train_index, validation_index in kf.split(X):
+            X_train, X_validation = X.iloc[train_index], X.iloc[validation_index]
+            y_train, y_validation = y[train_index], y[validation_index]
+            
+            rsf_model.fit(X_train, y_train)
+            pred_survival = rsf_model.predict(X_validation)
+            ci = concordance_index_censored(y_validation['Status'], y_validation['N_Days'], pred_survival)[0]
+            fold_results.append(ci)
+        
+        results.append({
+            'Hyperparameters': params,
+            'Concordance_Index_Mean': np.mean(fold_results),
+            'Concordance_Index_Std': np.std(fold_results)
+        })
+    return pd.DataFrame(results)
+
+```
+
+
+```python
+##################################
+# Defining hyperparameters for tuning
+# using the Random Survival Forest Model
+##################################
+hyperparameters = [{'n_estimators': 100, 'min_samples_split': 20},
+                   {'n_estimators': 100, 'min_samples_split': 10},
+                   {'n_estimators': 200, 'min_samples_split': 20},
+                   {'n_estimators': 200, 'min_samples_split': 10},
+                   {'n_estimators': 300, 'min_samples_split': 20},
+                   {'n_estimators': 300, 'min_samples_split': 10}]
+```
+
+
+```python
+##################################
+# Performing hyperparameter tuning
+# through K-fold cross-validation
+# using the Random Survival Forest Model
+##################################
+cirrhosis_survival_rsf_ht = cross_validate_rsf_model(cirrhosis_survival_X_train_preprocessed,
+                                                     cirrhosis_survival_y_train_array, 
+                                                     hyperparameters)
+display(cirrhosis_survival_rsf_ht)
+```
+
+
+<div>
+<style scoped>
+    .dataframe tbody tr th:only-of-type {
+        vertical-align: middle;
+    }
+
+    .dataframe tbody tr th {
+        vertical-align: top;
+    }
+
+    .dataframe thead th {
+        text-align: right;
+    }
+</style>
+<table border="1" class="dataframe">
+  <thead>
+    <tr style="text-align: right;">
+      <th></th>
+      <th>Hyperparameters</th>
+      <th>Concordance_Index_Mean</th>
+      <th>Concordance_Index_Std</th>
+    </tr>
+  </thead>
+  <tbody>
+    <tr>
+      <th>0</th>
+      <td>{'n_estimators': 100, 'min_samples_split': 20}</td>
+      <td>0.814171</td>
+      <td>0.054307</td>
+    </tr>
+    <tr>
+      <th>1</th>
+      <td>{'n_estimators': 100, 'min_samples_split': 10}</td>
+      <td>0.818858</td>
+      <td>0.047410</td>
+    </tr>
+    <tr>
+      <th>2</th>
+      <td>{'n_estimators': 200, 'min_samples_split': 20}</td>
+      <td>0.810228</td>
+      <td>0.044954</td>
+    </tr>
+    <tr>
+      <th>3</th>
+      <td>{'n_estimators': 200, 'min_samples_split': 10}</td>
+      <td>0.812812</td>
+      <td>0.046281</td>
+    </tr>
+    <tr>
+      <th>4</th>
+      <td>{'n_estimators': 300, 'min_samples_split': 20}</td>
+      <td>0.814560</td>
+      <td>0.051644</td>
+    </tr>
+    <tr>
+      <th>5</th>
+      <td>{'n_estimators': 300, 'min_samples_split': 10}</td>
+      <td>0.815173</td>
+      <td>0.049112</td>
+    </tr>
+  </tbody>
+</table>
+</div>
+
+
+
+```python
+##################################
+# Formulating a Random Survival Forest Model
+# with optimal hyperparameters
+##################################
+optimal_rsf_model = RandomSurvivalForest(n_estimators=100, min_samples_split=20, random_state=88888888)
+optimal_rsf_model.fit(cirrhosis_survival_X_train_preprocessed, cirrhosis_survival_y_train_array)
+```
+
+
+
+
+<style>#sk-container-id-3 {color: black;}#sk-container-id-3 pre{padding: 0;}#sk-container-id-3 div.sk-toggleable {background-color: white;}#sk-container-id-3 label.sk-toggleable__label {cursor: pointer;display: block;width: 100%;margin-bottom: 0;padding: 0.3em;box-sizing: border-box;text-align: center;}#sk-container-id-3 label.sk-toggleable__label-arrow:before {content: "▸";float: left;margin-right: 0.25em;color: #696969;}#sk-container-id-3 label.sk-toggleable__label-arrow:hover:before {color: black;}#sk-container-id-3 div.sk-estimator:hover label.sk-toggleable__label-arrow:before {color: black;}#sk-container-id-3 div.sk-toggleable__content {max-height: 0;max-width: 0;overflow: hidden;text-align: left;background-color: #f0f8ff;}#sk-container-id-3 div.sk-toggleable__content pre {margin: 0.2em;color: black;border-radius: 0.25em;background-color: #f0f8ff;}#sk-container-id-3 input.sk-toggleable__control:checked~div.sk-toggleable__content {max-height: 200px;max-width: 100%;overflow: auto;}#sk-container-id-3 input.sk-toggleable__control:checked~label.sk-toggleable__label-arrow:before {content: "▾";}#sk-container-id-3 div.sk-estimator input.sk-toggleable__control:checked~label.sk-toggleable__label {background-color: #d4ebff;}#sk-container-id-3 div.sk-label input.sk-toggleable__control:checked~label.sk-toggleable__label {background-color: #d4ebff;}#sk-container-id-3 input.sk-hidden--visually {border: 0;clip: rect(1px 1px 1px 1px);clip: rect(1px, 1px, 1px, 1px);height: 1px;margin: -1px;overflow: hidden;padding: 0;position: absolute;width: 1px;}#sk-container-id-3 div.sk-estimator {font-family: monospace;background-color: #f0f8ff;border: 1px dotted black;border-radius: 0.25em;box-sizing: border-box;margin-bottom: 0.5em;}#sk-container-id-3 div.sk-estimator:hover {background-color: #d4ebff;}#sk-container-id-3 div.sk-parallel-item::after {content: "";width: 100%;border-bottom: 1px solid gray;flex-grow: 1;}#sk-container-id-3 div.sk-label:hover label.sk-toggleable__label {background-color: #d4ebff;}#sk-container-id-3 div.sk-serial::before {content: "";position: absolute;border-left: 1px solid gray;box-sizing: border-box;top: 0;bottom: 0;left: 50%;z-index: 0;}#sk-container-id-3 div.sk-serial {display: flex;flex-direction: column;align-items: center;background-color: white;padding-right: 0.2em;padding-left: 0.2em;position: relative;}#sk-container-id-3 div.sk-item {position: relative;z-index: 1;}#sk-container-id-3 div.sk-parallel {display: flex;align-items: stretch;justify-content: center;background-color: white;position: relative;}#sk-container-id-3 div.sk-item::before, #sk-container-id-3 div.sk-parallel-item::before {content: "";position: absolute;border-left: 1px solid gray;box-sizing: border-box;top: 0;bottom: 0;left: 50%;z-index: -1;}#sk-container-id-3 div.sk-parallel-item {display: flex;flex-direction: column;z-index: 1;position: relative;background-color: white;}#sk-container-id-3 div.sk-parallel-item:first-child::after {align-self: flex-end;width: 50%;}#sk-container-id-3 div.sk-parallel-item:last-child::after {align-self: flex-start;width: 50%;}#sk-container-id-3 div.sk-parallel-item:only-child::after {width: 0;}#sk-container-id-3 div.sk-dashed-wrapped {border: 1px dashed gray;margin: 0 0.4em 0.5em 0.4em;box-sizing: border-box;padding-bottom: 0.4em;background-color: white;}#sk-container-id-3 div.sk-label label {font-family: monospace;font-weight: bold;display: inline-block;line-height: 1.2em;}#sk-container-id-3 div.sk-label-container {text-align: center;}#sk-container-id-3 div.sk-container {/* jupyter's `normalize.less` sets `[hidden] { display: none; }` but bootstrap.min.css set `[hidden] { display: none !important; }` so we also need the `!important` here to be able to override the default hidden behavior on the sphinx rendered scikit-learn.org. See: https://github.com/scikit-learn/scikit-learn/issues/21755 */display: inline-block !important;position: relative;}#sk-container-id-3 div.sk-text-repr-fallback {display: none;}</style><div id="sk-container-id-3" class="sk-top-container"><div class="sk-text-repr-fallback"><pre>RandomSurvivalForest(min_samples_split=20, random_state=88888888)</pre><b>In a Jupyter environment, please rerun this cell to show the HTML representation or trust the notebook. <br />On GitHub, the HTML representation is unable to render, please try loading this page with nbviewer.org.</b></div><div class="sk-container" hidden><div class="sk-item"><div class="sk-estimator sk-toggleable"><input class="sk-toggleable__control sk-hidden--visually" id="sk-estimator-id-3" type="checkbox" checked><label for="sk-estimator-id-3" class="sk-toggleable__label sk-toggleable__label-arrow">RandomSurvivalForest</label><div class="sk-toggleable__content"><pre>RandomSurvivalForest(min_samples_split=20, random_state=88888888)</pre></div></div></div></div></div>
+
+
+
+
+```python
+##################################
+# Measuring model performance of the 
+# optimal Random Survival Forest Model
+# on the train set
+##################################
+optimal_rsf_cirrhosis_survival_y_train_pred = optimal_rsf_model.predict(cirrhosis_survival_X_train_preprocessed)
+optimal_rsf_cirrhosis_survival_y_train_ci = concordance_index_censored(cirrhosis_survival_y_train_array['Status'], 
+                                                                       cirrhosis_survival_y_train_array['N_Days'], 
+                                                                       optimal_rsf_cirrhosis_survival_y_train_pred)[0]
+print(f"Apparent Concordance Index: {optimal_rsf_cirrhosis_survival_y_train_ci}")
+```
+
+    Apparent Concordance Index: 0.8924739921976593
+    
+
+
+```python
+##################################
+# Measuring model performance of the 
+# optimal Random Survival Forest Model
+# on the test set
+##################################
+optimal_rsf_cirrhosis_survival_y_test_pred = optimal_rsf_model.predict(cirrhosis_survival_X_test_preprocessed)
+optimal_rsf_cirrhosis_survival_y_test_ci = concordance_index_censored(cirrhosis_survival_y_test_array['Status'], 
+                                                                      cirrhosis_survival_y_test_array['N_Days'], 
+                                                                      optimal_rsf_cirrhosis_survival_y_test_pred)[0]
+print(f"Test Concordance Index: {optimal_rsf_cirrhosis_survival_y_test_ci}")
+```
+
+    Test Concordance Index: 0.8693877551020408
+    
+
+
+```python
+##################################
+# Binning the predicted risks
+# into dichotomous groups and
+# exploring the relationships with
+# survival event and duration
+##################################
+cirrhosis_survival_test.reset_index(drop=True, inplace=True)
+kmf = KaplanMeierFitter()
+cirrhosis_survival_test['Predicted_Risks_RSF'] = optimal_rsf_cirrhosis_survival_y_test_pred
+cirrhosis_survival_test['Predicted_RiskGroups_RSF'] = risk_groups = pd.qcut(cirrhosis_survival_test['Predicted_Risks_RSF'], 2, labels=['Low-Risk', 'High-Risk'])
+
+plt.figure(figsize=(17, 8))
+for group in risk_groups.unique():
+    group_data = cirrhosis_survival_test[risk_groups == group]
+    kmf.fit(group_data['N_Days'], event_observed=group_data['Status'], label=group)
+    kmf.plot_survival_function()
+
+plt.title('RSF Survival Probabilities by Predicted Risk Groups')
+plt.xlabel('N_Days')
+plt.ylabel('Event Survival Probability')
+plt.show()
+```
+
+
+    
+![png](output_195_0.png)
+    
+
+
+
+```python
+##################################
+# Gathering the predictor information
+# for 5 test case samples
+##################################
+test_case_10 = cirrhosis_survival_X_test_preprocessed.iloc[[10, 20, 30, 40, 50]]
+display(test_case_10)
+```
+
+
+<div>
+<style scoped>
+    .dataframe tbody tr th:only-of-type {
+        vertical-align: middle;
+    }
+
+    .dataframe tbody tr th {
+        vertical-align: top;
+    }
+
+    .dataframe thead th {
+        text-align: right;
+    }
+</style>
+<table border="1" class="dataframe">
+  <thead>
+    <tr style="text-align: right;">
+      <th></th>
+      <th>Age</th>
+      <th>Bilirubin</th>
+      <th>Cholesterol</th>
+      <th>Albumin</th>
+      <th>Copper</th>
+      <th>Alk_Phos</th>
+      <th>SGOT</th>
+      <th>Tryglicerides</th>
+      <th>Platelets</th>
+      <th>Prothrombin</th>
+      <th>Drug</th>
+      <th>Sex</th>
+      <th>Ascites</th>
+      <th>Hepatomegaly</th>
+      <th>Spiders</th>
+      <th>Edema</th>
+      <th>Stage_1.0</th>
+      <th>Stage_2.0</th>
+      <th>Stage_3.0</th>
+      <th>Stage_4.0</th>
+    </tr>
+  </thead>
+  <tbody>
+    <tr>
+      <th>10</th>
+      <td>0.226982</td>
+      <td>1.530100</td>
+      <td>1.302295</td>
+      <td>1.331981</td>
+      <td>1.916467</td>
+      <td>-0.477846</td>
+      <td>-0.451305</td>
+      <td>2.250260</td>
+      <td>0.201024</td>
+      <td>0.546417</td>
+      <td>1</td>
+      <td>1</td>
+      <td>0</td>
+      <td>1</td>
+      <td>1</td>
+      <td>0</td>
+      <td>0</td>
+      <td>0</td>
+      <td>0</td>
+      <td>1</td>
+    </tr>
+    <tr>
+      <th>20</th>
+      <td>-0.147646</td>
+      <td>0.061189</td>
+      <td>0.793618</td>
+      <td>-1.158235</td>
+      <td>0.861264</td>
+      <td>0.625621</td>
+      <td>0.319035</td>
+      <td>0.446026</td>
+      <td>1.083875</td>
+      <td>-1.508571</td>
+      <td>1</td>
+      <td>1</td>
+      <td>0</td>
+      <td>0</td>
+      <td>0</td>
+      <td>0</td>
+      <td>0</td>
+      <td>0</td>
+      <td>0</td>
+      <td>1</td>
+    </tr>
+    <tr>
+      <th>30</th>
+      <td>0.296370</td>
+      <td>-1.283677</td>
+      <td>0.169685</td>
+      <td>3.237777</td>
+      <td>-1.008276</td>
+      <td>-0.873566</td>
+      <td>-0.845549</td>
+      <td>-0.351236</td>
+      <td>0.985206</td>
+      <td>-0.617113</td>
+      <td>1</td>
+      <td>1</td>
+      <td>0</td>
+      <td>0</td>
+      <td>0</td>
+      <td>0</td>
+      <td>0</td>
+      <td>0</td>
+      <td>1</td>
+      <td>0</td>
+    </tr>
+    <tr>
+      <th>40</th>
+      <td>0.392609</td>
+      <td>-0.096645</td>
+      <td>-0.486337</td>
+      <td>1.903146</td>
+      <td>-0.546292</td>
+      <td>-0.247141</td>
+      <td>-0.720619</td>
+      <td>-0.810790</td>
+      <td>-0.000298</td>
+      <td>1.402075</td>
+      <td>0</td>
+      <td>1</td>
+      <td>0</td>
+      <td>1</td>
+      <td>1</td>
+      <td>0</td>
+      <td>0</td>
+      <td>0</td>
+      <td>0</td>
+      <td>1</td>
+    </tr>
+    <tr>
+      <th>50</th>
+      <td>-0.813646</td>
+      <td>1.089037</td>
+      <td>0.064451</td>
+      <td>0.212865</td>
+      <td>2.063138</td>
+      <td>-0.224432</td>
+      <td>0.074987</td>
+      <td>2.333282</td>
+      <td>0.240640</td>
+      <td>-1.125995</td>
+      <td>0</td>
+      <td>1</td>
+      <td>0</td>
+      <td>1</td>
+      <td>1</td>
+      <td>0</td>
+      <td>0</td>
+      <td>0</td>
+      <td>0</td>
+      <td>1</td>
+    </tr>
+  </tbody>
+</table>
+</div>
+
+
+
+```python
+##################################
+# Gathering the event and duration information
+# for 5 test case samples
+##################################
+print(cirrhosis_survival_y_test_array[[10, 20, 30, 40, 50]])
+```
+
+    [( True, 1827) (False, 1447) (False, 2574) ( True, 3762) (False,  837)]
+    
+
+
+```python
+##################################
+# Gathering the risk-groups
+# for 5 test case samples
+##################################
+print(cirrhosis_survival_test.loc[[10, 20, 30, 40, 50]][['Predicted_RiskGroups_RSF']])
+```
+
+       Predicted_RiskGroups_RSF
+    10                High-Risk
+    20                High-Risk
+    30                 Low-Risk
+    40                High-Risk
+    50                High-Risk
+    
+
+
+```python
+##################################
+# Estimating the cumulative hazard
+# and survival functions
+# for 5 test cases
+##################################
+test_case = cirrhosis_survival_X_test_preprocessed.iloc[[10, 20, 30, 40, 50]]
+test_case_labels = ['Patient_10','Patient_20','Patient_30','Patient_40','Patient_50',]
+test_case_cumulative_hazard_function = optimal_rsf_model.predict_cumulative_hazard_function(test_case)
+test_case_survival_function = optimal_rsf_model.predict_survival_function(test_case)
+
+fig, ax = plt.subplots(1,2,figsize=(17, 8))
+for hazard_prediction, survival_prediction in zip(test_case_cumulative_hazard_function, test_case_survival_function):
+    ax[0].step(hazard_prediction.x,hazard_prediction(hazard_prediction.x),where='post')
+    ax[1].step(survival_prediction.x,survival_prediction(survival_prediction.x),where='post')
+ax[0].set_title('RSF Cumulative Hazard for 5 Test Cases')
+ax[0].set_xlabel('N_Days')
+ax[0].set_ylabel('Cumulative Hazard')
+ax[0].legend(test_case_labels, loc="upper left")
+ax[1].set_title('RSF Survival Function for 5 Test Cases')
+ax[1].set_xlabel('N_Days')
+ax[1].set_ylabel('Event Survival Probability')
+ax[1].legend(test_case_labels, loc="lower left")
+plt.show()
+```
+
+
+    
+![png](output_199_0.png)
+    
+
+
+### 1.6.6 Gradient Boosted Survival <a class="anchor" id="1.6.6"></a>
+
+
+```python
+##################################
+# Defining a function to perform 
+# 5-fold cross-validation and hyperparameter tuning
+# using the Gradient Boosted Survival Model
+##################################
+def cross_validate_gbs_model(X, y, hyperparameters):
+    kf = KFold(n_splits=5, shuffle=True, random_state=88888888)
+    results = []
+
+    for params in hyperparameters:
+        gbs_model = GradientBoostingSurvivalAnalysis(**params, random_state=88888888)
+        fold_results = []
+        
+        for train_index, validation_index in kf.split(X):
+            X_train, X_validation = X.iloc[train_index], X.iloc[validation_index]
+            y_train, y_validation = y[train_index], y[validation_index]
+            
+            gbs_model.fit(X_train, y_train)
+            pred_survival = gbs_model.predict(X_validation)
+            ci = concordance_index_censored(y_validation['Status'], y_validation['N_Days'], pred_survival)[0]
+            fold_results.append(ci)
+        
+        results.append({
+            'Hyperparameters': params,
+            'Concordance_Index_Mean': np.mean(fold_results),
+            'Concordance_Index_Std': np.std(fold_results)
+        })
+    return pd.DataFrame(results)
+```
+
+
+```python
+##################################
+# Defining hyperparameters for tuning
+# using the Gradient Boosted Survival Model
+##################################
+hyperparameters = [{'n_estimators': 100, 'learning_rate': 0.10},
+                   {'n_estimators': 100, 'learning_rate': 0.05},
+                   {'n_estimators': 200, 'learning_rate': 0.10},
+                   {'n_estimators': 200, 'learning_rate': 0.05},
+                   {'n_estimators': 300, 'learning_rate': 0.10},
+                   {'n_estimators': 300, 'learning_rate': 0.05}]
+```
+
+
+```python
+##################################
+# Performing hyperparameter tuning
+# through K-fold cross-validation
+# using the Gradient Boosted Survival Model
+##################################
+cirrhosis_survival_gbs_ht = cross_validate_gbs_model(cirrhosis_survival_X_train_preprocessed,
+                                                     cirrhosis_survival_y_train_array, 
+                                                     hyperparameters)
+display(cirrhosis_survival_gbs_ht)
+```
+
+
+<div>
+<style scoped>
+    .dataframe tbody tr th:only-of-type {
+        vertical-align: middle;
+    }
+
+    .dataframe tbody tr th {
+        vertical-align: top;
+    }
+
+    .dataframe thead th {
+        text-align: right;
+    }
+</style>
+<table border="1" class="dataframe">
+  <thead>
+    <tr style="text-align: right;">
+      <th></th>
+      <th>Hyperparameters</th>
+      <th>Concordance_Index_Mean</th>
+      <th>Concordance_Index_Std</th>
+    </tr>
+  </thead>
+  <tbody>
+    <tr>
+      <th>0</th>
+      <td>{'n_estimators': 100, 'learning_rate': 0.1}</td>
+      <td>0.800822</td>
+      <td>0.038410</td>
+    </tr>
+    <tr>
+      <th>1</th>
+      <td>{'n_estimators': 100, 'learning_rate': 0.05}</td>
+      <td>0.805171</td>
+      <td>0.039901</td>
+    </tr>
+    <tr>
+      <th>2</th>
+      <td>{'n_estimators': 200, 'learning_rate': 0.1}</td>
+      <td>0.800767</td>
+      <td>0.037214</td>
+    </tr>
+    <tr>
+      <th>3</th>
+      <td>{'n_estimators': 200, 'learning_rate': 0.05}</td>
+      <td>0.799043</td>
+      <td>0.037200</td>
+    </tr>
+    <tr>
+      <th>4</th>
+      <td>{'n_estimators': 300, 'learning_rate': 0.1}</td>
+      <td>0.800466</td>
+      <td>0.032817</td>
+    </tr>
+    <tr>
+      <th>5</th>
+      <td>{'n_estimators': 300, 'learning_rate': 0.05}</td>
+      <td>0.798193</td>
+      <td>0.035516</td>
+    </tr>
+  </tbody>
+</table>
+</div>
+
+
+
+```python
+##################################
+# Formulating a Gradient Boosted Survival Model
+# with optimal hyperparameters
+##################################
+optimal_gbs_model = GradientBoostingSurvivalAnalysis(n_estimators=100, learning_rate=0.05, random_state=88888888)
+optimal_gbs_model.fit(cirrhosis_survival_X_train_preprocessed, cirrhosis_survival_y_train_array)
+```
+
+
+
+
+<style>#sk-container-id-4 {color: black;}#sk-container-id-4 pre{padding: 0;}#sk-container-id-4 div.sk-toggleable {background-color: white;}#sk-container-id-4 label.sk-toggleable__label {cursor: pointer;display: block;width: 100%;margin-bottom: 0;padding: 0.3em;box-sizing: border-box;text-align: center;}#sk-container-id-4 label.sk-toggleable__label-arrow:before {content: "▸";float: left;margin-right: 0.25em;color: #696969;}#sk-container-id-4 label.sk-toggleable__label-arrow:hover:before {color: black;}#sk-container-id-4 div.sk-estimator:hover label.sk-toggleable__label-arrow:before {color: black;}#sk-container-id-4 div.sk-toggleable__content {max-height: 0;max-width: 0;overflow: hidden;text-align: left;background-color: #f0f8ff;}#sk-container-id-4 div.sk-toggleable__content pre {margin: 0.2em;color: black;border-radius: 0.25em;background-color: #f0f8ff;}#sk-container-id-4 input.sk-toggleable__control:checked~div.sk-toggleable__content {max-height: 200px;max-width: 100%;overflow: auto;}#sk-container-id-4 input.sk-toggleable__control:checked~label.sk-toggleable__label-arrow:before {content: "▾";}#sk-container-id-4 div.sk-estimator input.sk-toggleable__control:checked~label.sk-toggleable__label {background-color: #d4ebff;}#sk-container-id-4 div.sk-label input.sk-toggleable__control:checked~label.sk-toggleable__label {background-color: #d4ebff;}#sk-container-id-4 input.sk-hidden--visually {border: 0;clip: rect(1px 1px 1px 1px);clip: rect(1px, 1px, 1px, 1px);height: 1px;margin: -1px;overflow: hidden;padding: 0;position: absolute;width: 1px;}#sk-container-id-4 div.sk-estimator {font-family: monospace;background-color: #f0f8ff;border: 1px dotted black;border-radius: 0.25em;box-sizing: border-box;margin-bottom: 0.5em;}#sk-container-id-4 div.sk-estimator:hover {background-color: #d4ebff;}#sk-container-id-4 div.sk-parallel-item::after {content: "";width: 100%;border-bottom: 1px solid gray;flex-grow: 1;}#sk-container-id-4 div.sk-label:hover label.sk-toggleable__label {background-color: #d4ebff;}#sk-container-id-4 div.sk-serial::before {content: "";position: absolute;border-left: 1px solid gray;box-sizing: border-box;top: 0;bottom: 0;left: 50%;z-index: 0;}#sk-container-id-4 div.sk-serial {display: flex;flex-direction: column;align-items: center;background-color: white;padding-right: 0.2em;padding-left: 0.2em;position: relative;}#sk-container-id-4 div.sk-item {position: relative;z-index: 1;}#sk-container-id-4 div.sk-parallel {display: flex;align-items: stretch;justify-content: center;background-color: white;position: relative;}#sk-container-id-4 div.sk-item::before, #sk-container-id-4 div.sk-parallel-item::before {content: "";position: absolute;border-left: 1px solid gray;box-sizing: border-box;top: 0;bottom: 0;left: 50%;z-index: -1;}#sk-container-id-4 div.sk-parallel-item {display: flex;flex-direction: column;z-index: 1;position: relative;background-color: white;}#sk-container-id-4 div.sk-parallel-item:first-child::after {align-self: flex-end;width: 50%;}#sk-container-id-4 div.sk-parallel-item:last-child::after {align-self: flex-start;width: 50%;}#sk-container-id-4 div.sk-parallel-item:only-child::after {width: 0;}#sk-container-id-4 div.sk-dashed-wrapped {border: 1px dashed gray;margin: 0 0.4em 0.5em 0.4em;box-sizing: border-box;padding-bottom: 0.4em;background-color: white;}#sk-container-id-4 div.sk-label label {font-family: monospace;font-weight: bold;display: inline-block;line-height: 1.2em;}#sk-container-id-4 div.sk-label-container {text-align: center;}#sk-container-id-4 div.sk-container {/* jupyter's `normalize.less` sets `[hidden] { display: none; }` but bootstrap.min.css set `[hidden] { display: none !important; }` so we also need the `!important` here to be able to override the default hidden behavior on the sphinx rendered scikit-learn.org. See: https://github.com/scikit-learn/scikit-learn/issues/21755 */display: inline-block !important;position: relative;}#sk-container-id-4 div.sk-text-repr-fallback {display: none;}</style><div id="sk-container-id-4" class="sk-top-container"><div class="sk-text-repr-fallback"><pre>GradientBoostingSurvivalAnalysis(learning_rate=0.05, random_state=88888888)</pre><b>In a Jupyter environment, please rerun this cell to show the HTML representation or trust the notebook. <br />On GitHub, the HTML representation is unable to render, please try loading this page with nbviewer.org.</b></div><div class="sk-container" hidden><div class="sk-item"><div class="sk-estimator sk-toggleable"><input class="sk-toggleable__control sk-hidden--visually" id="sk-estimator-id-4" type="checkbox" checked><label for="sk-estimator-id-4" class="sk-toggleable__label sk-toggleable__label-arrow">GradientBoostingSurvivalAnalysis</label><div class="sk-toggleable__content"><pre>GradientBoostingSurvivalAnalysis(learning_rate=0.05, random_state=88888888)</pre></div></div></div></div></div>
+
+
+
+
+```python
+##################################
+# Measuring model performance of the 
+# optimal Gradient Boosted Survival Model
+# on the train set
+##################################
+optimal_gbs_cirrhosis_survival_y_train_pred = optimal_gbs_model.predict(cirrhosis_survival_X_train_preprocessed)
+optimal_gbs_cirrhosis_survival_y_train_ci = concordance_index_censored(cirrhosis_survival_y_train_array['Status'], 
+                                                                       cirrhosis_survival_y_train_array['N_Days'], 
+                                                                       optimal_gbs_cirrhosis_survival_y_train_pred)[0]
+print(f"Apparent Concordance Index: {optimal_gbs_cirrhosis_survival_y_train_ci}")
+```
+
+    Apparent Concordance Index: 0.9280721716514955
+    
+
+
+```python
+##################################
+# Measuring model performance of the 
+# optimal Gradient Boosted Survival Model
+# on the test set
+##################################
+optimal_gbs_cirrhosis_survival_y_test_pred = optimal_gbs_model.predict(cirrhosis_survival_X_test_preprocessed)
+optimal_gbs_cirrhosis_survival_y_test_ci = concordance_index_censored(cirrhosis_survival_y_test_array['Status'], 
+                                                                      cirrhosis_survival_y_test_array['N_Days'], 
+                                                                      optimal_gbs_cirrhosis_survival_y_test_pred)[0]
+print(f"Test Concordance Index: {optimal_gbs_cirrhosis_survival_y_test_ci}")
+```
+
+    Test Concordance Index: 0.8657596371882086
+    
+
+
+```python
+##################################
+# Binning the predicted risks
+# into dichotomous groups and
+# exploring the relationships with
+# survival event and duration
+##################################
+cirrhosis_survival_test.reset_index(drop=True, inplace=True)
+kmf = KaplanMeierFitter()
+cirrhosis_survival_test['Predicted_Risks_GBS'] = optimal_gbs_cirrhosis_survival_y_test_pred
+cirrhosis_survival_test['Predicted_RiskGroups_GBS'] = risk_groups = pd.qcut(cirrhosis_survival_test['Predicted_Risks_GBS'], 2, labels=['Low-Risk', 'High-Risk'])
+
+plt.figure(figsize=(17, 8))
+for group in risk_groups.unique():
+    group_data = cirrhosis_survival_test[risk_groups == group]
+    kmf.fit(group_data['N_Days'], event_observed=group_data['Status'], label=group)
+    kmf.plot_survival_function()
+
+plt.title('GBS Survival Probabilities by Predicted Risk Groups')
+plt.xlabel('N_Days')
+plt.ylabel('Event Survival Probability')
+plt.show()
+```
+
+
+    
+![png](output_207_0.png)
+    
+
+
+
+```python
+##################################
+# Gathering the predictor information
+# for 5 test case samples
+##################################
+test_case_10 = cirrhosis_survival_X_test_preprocessed.iloc[[10, 20, 30, 40, 50]]
+display(test_case_10)
+```
+
+
+<div>
+<style scoped>
+    .dataframe tbody tr th:only-of-type {
+        vertical-align: middle;
+    }
+
+    .dataframe tbody tr th {
+        vertical-align: top;
+    }
+
+    .dataframe thead th {
+        text-align: right;
+    }
+</style>
+<table border="1" class="dataframe">
+  <thead>
+    <tr style="text-align: right;">
+      <th></th>
+      <th>Age</th>
+      <th>Bilirubin</th>
+      <th>Cholesterol</th>
+      <th>Albumin</th>
+      <th>Copper</th>
+      <th>Alk_Phos</th>
+      <th>SGOT</th>
+      <th>Tryglicerides</th>
+      <th>Platelets</th>
+      <th>Prothrombin</th>
+      <th>Drug</th>
+      <th>Sex</th>
+      <th>Ascites</th>
+      <th>Hepatomegaly</th>
+      <th>Spiders</th>
+      <th>Edema</th>
+      <th>Stage_1.0</th>
+      <th>Stage_2.0</th>
+      <th>Stage_3.0</th>
+      <th>Stage_4.0</th>
+    </tr>
+  </thead>
+  <tbody>
+    <tr>
+      <th>10</th>
+      <td>0.226982</td>
+      <td>1.530100</td>
+      <td>1.302295</td>
+      <td>1.331981</td>
+      <td>1.916467</td>
+      <td>-0.477846</td>
+      <td>-0.451305</td>
+      <td>2.250260</td>
+      <td>0.201024</td>
+      <td>0.546417</td>
+      <td>1</td>
+      <td>1</td>
+      <td>0</td>
+      <td>1</td>
+      <td>1</td>
+      <td>0</td>
+      <td>0</td>
+      <td>0</td>
+      <td>0</td>
+      <td>1</td>
+    </tr>
+    <tr>
+      <th>20</th>
+      <td>-0.147646</td>
+      <td>0.061189</td>
+      <td>0.793618</td>
+      <td>-1.158235</td>
+      <td>0.861264</td>
+      <td>0.625621</td>
+      <td>0.319035</td>
+      <td>0.446026</td>
+      <td>1.083875</td>
+      <td>-1.508571</td>
+      <td>1</td>
+      <td>1</td>
+      <td>0</td>
+      <td>0</td>
+      <td>0</td>
+      <td>0</td>
+      <td>0</td>
+      <td>0</td>
+      <td>0</td>
+      <td>1</td>
+    </tr>
+    <tr>
+      <th>30</th>
+      <td>0.296370</td>
+      <td>-1.283677</td>
+      <td>0.169685</td>
+      <td>3.237777</td>
+      <td>-1.008276</td>
+      <td>-0.873566</td>
+      <td>-0.845549</td>
+      <td>-0.351236</td>
+      <td>0.985206</td>
+      <td>-0.617113</td>
+      <td>1</td>
+      <td>1</td>
+      <td>0</td>
+      <td>0</td>
+      <td>0</td>
+      <td>0</td>
+      <td>0</td>
+      <td>0</td>
+      <td>1</td>
+      <td>0</td>
+    </tr>
+    <tr>
+      <th>40</th>
+      <td>0.392609</td>
+      <td>-0.096645</td>
+      <td>-0.486337</td>
+      <td>1.903146</td>
+      <td>-0.546292</td>
+      <td>-0.247141</td>
+      <td>-0.720619</td>
+      <td>-0.810790</td>
+      <td>-0.000298</td>
+      <td>1.402075</td>
+      <td>0</td>
+      <td>1</td>
+      <td>0</td>
+      <td>1</td>
+      <td>1</td>
+      <td>0</td>
+      <td>0</td>
+      <td>0</td>
+      <td>0</td>
+      <td>1</td>
+    </tr>
+    <tr>
+      <th>50</th>
+      <td>-0.813646</td>
+      <td>1.089037</td>
+      <td>0.064451</td>
+      <td>0.212865</td>
+      <td>2.063138</td>
+      <td>-0.224432</td>
+      <td>0.074987</td>
+      <td>2.333282</td>
+      <td>0.240640</td>
+      <td>-1.125995</td>
+      <td>0</td>
+      <td>1</td>
+      <td>0</td>
+      <td>1</td>
+      <td>1</td>
+      <td>0</td>
+      <td>0</td>
+      <td>0</td>
+      <td>0</td>
+      <td>1</td>
+    </tr>
+  </tbody>
+</table>
+</div>
+
+
+
+```python
+##################################
+# Gathering the event and duration information
+# for 5 test case samples
+##################################
+print(cirrhosis_survival_y_test_array[[10, 20, 30, 40, 50]])
+```
+
+    [( True, 1827) (False, 1447) (False, 2574) ( True, 3762) (False,  837)]
+    
+
+
+```python
+##################################
+# Gathering the risk-groups
+# for 5 test case samples
+##################################
+print(cirrhosis_survival_test.loc[[10, 20, 30, 40, 50]][['Predicted_RiskGroups_GBS']])
+```
+
+       Predicted_RiskGroups_GBS
+    10                High-Risk
+    20                 Low-Risk
+    30                 Low-Risk
+    40                 Low-Risk
+    50                High-Risk
+    
+
+
+```python
+##################################
+# Estimating the cumulative hazard
+# and survival functions
+# for 5 test cases
+##################################
+test_case = cirrhosis_survival_X_test_preprocessed.iloc[[10, 20, 30, 40, 50]]
+test_case_labels = ['Patient_10','Patient_20','Patient_30','Patient_40','Patient_50',]
+test_case_cumulative_hazard_function = optimal_gbs_model.predict_cumulative_hazard_function(test_case)
+test_case_survival_function = optimal_gbs_model.predict_survival_function(test_case)
+
+fig, ax = plt.subplots(1,2,figsize=(17, 8))
+for hazard_prediction, survival_prediction in zip(test_case_cumulative_hazard_function, test_case_survival_function):
+    ax[0].step(hazard_prediction.x,hazard_prediction(hazard_prediction.x),where='post')
+    ax[1].step(survival_prediction.x,survival_prediction(survival_prediction.x),where='post')
+ax[0].set_title('GBS Cumulative Hazard for 5 Test Cases')
+ax[0].set_xlabel('N_Days')
+ax[0].set_ylabel('Cumulative Hazard')
+ax[0].legend(test_case_labels, loc="upper left")
+ax[1].set_title('GBS Survival Function for 5 Test Cases')
+ax[1].set_xlabel('N_Days')
+ax[1].set_ylabel('Event Survival Probability')
+ax[1].legend(test_case_labels, loc="lower left")
+plt.show()
+```
+
+
+    
+![png](output_211_0.png)
+    
+
 
 # 2. Summary <a class="anchor" id="Summary"></a>
 
