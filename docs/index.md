@@ -7892,7 +7892,7 @@ display(cirrhosis_survival_X_test_preprocessed)
 ##################################
 # Defining a function to perform 
 # 5-fold cross-validation and hyperparameter tuning
-# using the Cox-Proportional Hazards Model
+# using the Cox-Proportional Hazards Regression Model
 ##################################
 def cross_validate_coxph_model(X, y, hyperparameters):
     kf = KFold(n_splits=5, shuffle=True, random_state=88888888)
@@ -7923,7 +7923,7 @@ def cross_validate_coxph_model(X, y, hyperparameters):
 ```python
 ##################################
 # Defining hyperparameters for tuning
-# using the Cox-Proportional Hazards Model
+# using the Cox-Proportional Hazards Regression Model
 ##################################
 hyperparameters = [{'alpha': 0.00},
                    {'alpha': 0.01},
@@ -7937,7 +7937,7 @@ hyperparameters = [{'alpha': 0.00},
 ##################################
 # Performing hyperparameter tuning
 # through K-fold cross-validation
-# using the Cox-Proportional Hazards Model
+# using the Cox-Proportional Hazards Regression Model
 ##################################
 cirrhosis_survival_coxph_ht = cross_validate_coxph_model(cirrhosis_survival_X_train_preprocessed,
                                                          cirrhosis_survival_y_train_array, 
@@ -8008,7 +8008,7 @@ display(cirrhosis_survival_coxph_ht)
 
 ```python
 ##################################
-# Formulating a Cox-Proportional Hazards Model
+# Formulating a Cox-Proportional Hazards Regression Model
 # with optimal hyperparameters
 ##################################
 optimal_coxph_model = CoxPHSurvivalAnalysis(alpha=10.0)
@@ -8026,7 +8026,7 @@ optimal_coxph_model.fit(cirrhosis_survival_X_train_preprocessed, cirrhosis_survi
 ```python
 ##################################
 # Measuring model performance of the 
-# optimal Cox-Proportional Hazards Model
+# optimal Cox-Proportional Hazards Regression Model
 # on the train set
 ##################################
 optimal_coxph_cirrhosis_survival_y_train_pred = optimal_coxph_model.predict(cirrhosis_survival_X_train_preprocessed)
@@ -8043,7 +8043,7 @@ print(f"Apparent Concordance Index: {optimal_coxph_cirrhosis_survival_y_train_ci
 ```python
 ##################################
 # Measuring model performance of the 
-# optimal Cox-Proportional Hazards Model
+# optimal Cox-Proportional Hazards Regression Model
 # on the test set
 ##################################
 optimal_coxph_cirrhosis_survival_y_test_pred = optimal_coxph_model.predict(cirrhosis_survival_X_test_preprocessed)
@@ -8055,6 +8055,74 @@ print(f"Test Concordance Index: {optimal_coxph_cirrhosis_survival_y_test_ci}")
 
     Test Concordance Index: 0.8743764172335601
     
+
+
+```python
+##################################
+# Gathering the concordance indices
+# from the train and tests sets for 
+# Cox-Proportional Hazards Regression Model
+##################################
+coxph_set = pd.DataFrame(["Train","Cross-Validation","Test"])
+coxph_ci_values = pd.DataFrame([optimal_coxph_cirrhosis_survival_y_train_ci,
+                                cirrhosis_survival_coxph_ht.Concordance_Index_Mean.max(),
+                                optimal_coxph_cirrhosis_survival_y_test_ci])
+coxph_method = pd.DataFrame(["COXPH"]*3)
+coxph_summary = pd.concat([coxph_set, 
+                           coxph_ci_values,
+                           coxph_method], axis=1)
+coxph_summary.columns = ['Set', 'Concordance.Index', 'Method']
+coxph_summary.reset_index(inplace=True, drop=True)
+display(coxph_summary)
+```
+
+
+<div>
+<style scoped>
+    .dataframe tbody tr th:only-of-type {
+        vertical-align: middle;
+    }
+
+    .dataframe tbody tr th {
+        vertical-align: top;
+    }
+
+    .dataframe thead th {
+        text-align: right;
+    }
+</style>
+<table border="1" class="dataframe">
+  <thead>
+    <tr style="text-align: right;">
+      <th></th>
+      <th>Set</th>
+      <th>Concordance.Index</th>
+      <th>Method</th>
+    </tr>
+  </thead>
+  <tbody>
+    <tr>
+      <th>0</th>
+      <td>Train</td>
+      <td>0.848586</td>
+      <td>COXPH</td>
+    </tr>
+    <tr>
+      <th>1</th>
+      <td>Cross-Validation</td>
+      <td>0.813656</td>
+      <td>COXPH</td>
+    </tr>
+    <tr>
+      <th>2</th>
+      <td>Test</td>
+      <td>0.874376</td>
+      <td>COXPH</td>
+    </tr>
+  </tbody>
+</table>
+</div>
+
 
 
 ```python
@@ -8083,7 +8151,7 @@ plt.show()
 
 
     
-![png](output_170_0.png)
+![png](output_171_0.png)
     
 
 
@@ -8317,7 +8385,7 @@ plt.show()
 
 
     
-![png](output_174_0.png)
+![png](output_175_0.png)
     
 
 
@@ -8520,11 +8588,79 @@ optimal_coxns_cirrhosis_survival_y_test_pred = optimal_coxns_model.predict(cirrh
 optimal_coxns_cirrhosis_survival_y_test_ci = concordance_index_censored(cirrhosis_survival_y_test_array['Status'], 
                                                                         cirrhosis_survival_y_test_array['N_Days'], 
                                                                         optimal_coxns_cirrhosis_survival_y_test_pred)[0]
-print(f"Apparent Concordance Index: {optimal_coxns_cirrhosis_survival_y_test_ci}")
+print(f"Test Concordance Index: {optimal_coxns_cirrhosis_survival_y_test_ci}")
 ```
 
-    Apparent Concordance Index: 0.871655328798186
+    Test Concordance Index: 0.871655328798186
     
+
+
+```python
+##################################
+# Gathering the concordance indices
+# from the train and tests sets for 
+# Cox-Net Survival Model
+##################################
+coxns_set = pd.DataFrame(["Train","Cross-Validation","Test"])
+coxns_ci_values = pd.DataFrame([optimal_coxns_cirrhosis_survival_y_train_ci,
+                                cirrhosis_survival_coxns_ht.Concordance_Index_Mean.max(),
+                                optimal_coxns_cirrhosis_survival_y_test_ci])
+coxns_method = pd.DataFrame(["COXNS"]*3)
+coxns_summary = pd.concat([coxns_set, 
+                           coxns_ci_values,
+                           coxns_method], axis=1)
+coxns_summary.columns = ['Set', 'Concordance.Index', 'Method']
+coxns_summary.reset_index(inplace=True, drop=True)
+display(coxns_summary)
+```
+
+
+<div>
+<style scoped>
+    .dataframe tbody tr th:only-of-type {
+        vertical-align: middle;
+    }
+
+    .dataframe tbody tr th {
+        vertical-align: top;
+    }
+
+    .dataframe thead th {
+        text-align: right;
+    }
+</style>
+<table border="1" class="dataframe">
+  <thead>
+    <tr style="text-align: right;">
+      <th></th>
+      <th>Set</th>
+      <th>Concordance.Index</th>
+      <th>Method</th>
+    </tr>
+  </thead>
+  <tbody>
+    <tr>
+      <th>0</th>
+      <td>Train</td>
+      <td>0.847204</td>
+      <td>COXNS</td>
+    </tr>
+    <tr>
+      <th>1</th>
+      <td>Cross-Validation</td>
+      <td>0.812264</td>
+      <td>COXNS</td>
+    </tr>
+    <tr>
+      <th>2</th>
+      <td>Test</td>
+      <td>0.871655</td>
+      <td>COXNS</td>
+    </tr>
+  </tbody>
+</table>
+</div>
+
 
 
 ```python
@@ -8553,7 +8689,7 @@ plt.show()
 
 
     
-![png](output_182_0.png)
+![png](output_184_0.png)
     
 
 
@@ -8787,7 +8923,7 @@ plt.show()
 
 
     
-![png](output_186_0.png)
+![png](output_188_0.png)
     
 
 
@@ -8823,7 +8959,7 @@ plt.show()
 ##################################
 # Defining a function to perform 
 # 5-fold cross-validation and hyperparameter tuning
-# using the SurvivalTree Model
+# using the Survival Tree Model
 ##################################
 def cross_validate_stree_model(X, y, hyperparameters):
     kf = KFold(n_splits=5, shuffle=True, random_state=88888888)
@@ -8867,7 +9003,7 @@ hyperparameters = [{'min_samples_split': 30, 'min_samples_leaf': 10},
 ##################################
 # Performing hyperparameter tuning
 # through K-fold cross-validation
-# using the SurvivalTree
+# using the Survival Tree Model
 ##################################
 cirrhosis_survival_stree_ht = cross_validate_stree_model(cirrhosis_survival_X_train_preprocessed,
                                                          cirrhosis_survival_y_train_array, 
@@ -8932,7 +9068,7 @@ display(cirrhosis_survival_stree_ht)
 
 ```python
 ##################################
-# Formulating a SurvivalTree
+# Formulating a Survival Tree Model
 # with optimal hyperparameters
 ##################################
 optimal_stree_model = SurvivalTree(min_samples_split=30, min_samples_leaf=5, random_state=88888888)
@@ -8950,7 +9086,7 @@ optimal_stree_model.fit(cirrhosis_survival_X_train_preprocessed, cirrhosis_survi
 ```python
 ##################################
 # Measuring model performance of the 
-# optimal SurvivalTree
+# optimal Survival Tree Model
 # on the train set
 ##################################
 optimal_stree_cirrhosis_survival_y_train_pred = optimal_stree_model.predict(cirrhosis_survival_X_train_preprocessed)
@@ -8967,7 +9103,7 @@ print(f"Apparent Concordance Index: {optimal_stree_cirrhosis_survival_y_train_ci
 ```python
 ##################################
 # Measuring model performance of the 
-# optimal SurvivalTree
+# optimal Survival Tree Model
 # on the test set
 ##################################
 optimal_stree_cirrhosis_survival_y_test_pred = optimal_stree_model.predict(cirrhosis_survival_X_test_preprocessed)
@@ -8979,6 +9115,74 @@ print(f"Test Concordance Index: {optimal_stree_cirrhosis_survival_y_test_ci}")
 
     Test Concordance Index: 0.8174603174603174
     
+
+
+```python
+##################################
+# Gathering the concordance indices
+# from the train and tests sets for 
+# Survival Tree Model
+##################################
+stree_set = pd.DataFrame(["Train","Cross-Validation","Test"])
+stree_ci_values = pd.DataFrame([optimal_stree_cirrhosis_survival_y_train_ci,
+                                cirrhosis_survival_stree_ht.Concordance_Index_Mean.max(),
+                                optimal_stree_cirrhosis_survival_y_test_ci])
+stree_method = pd.DataFrame(["STREE"]*3)
+stree_summary = pd.concat([stree_set, 
+                           stree_ci_values,
+                           stree_method], axis=1)
+stree_summary.columns = ['Set', 'Concordance.Index', 'Method']
+stree_summary.reset_index(inplace=True, drop=True)
+display(stree_summary)
+```
+
+
+<div>
+<style scoped>
+    .dataframe tbody tr th:only-of-type {
+        vertical-align: middle;
+    }
+
+    .dataframe tbody tr th {
+        vertical-align: top;
+    }
+
+    .dataframe thead th {
+        text-align: right;
+    }
+</style>
+<table border="1" class="dataframe">
+  <thead>
+    <tr style="text-align: right;">
+      <th></th>
+      <th>Set</th>
+      <th>Concordance.Index</th>
+      <th>Method</th>
+    </tr>
+  </thead>
+  <tbody>
+    <tr>
+      <th>0</th>
+      <td>Train</td>
+      <td>0.864678</td>
+      <td>STREE</td>
+    </tr>
+    <tr>
+      <th>1</th>
+      <td>Cross-Validation</td>
+      <td>0.793183</td>
+      <td>STREE</td>
+    </tr>
+    <tr>
+      <th>2</th>
+      <td>Test</td>
+      <td>0.817460</td>
+      <td>STREE</td>
+    </tr>
+  </tbody>
+</table>
+</div>
+
 
 
 ```python
@@ -9007,7 +9211,7 @@ plt.show()
 
 
     
-![png](output_194_0.png)
+![png](output_197_0.png)
     
 
 
@@ -9241,7 +9445,7 @@ plt.show()
 
 
     
-![png](output_198_0.png)
+![png](output_201_0.png)
     
 
 
@@ -9452,6 +9656,74 @@ print(f"Test Concordance Index: {optimal_rsf_cirrhosis_survival_y_test_ci}")
 
 ```python
 ##################################
+# Gathering the concordance indices
+# from the train and tests sets for 
+# Random Survival Forest Model
+##################################
+rsf_set = pd.DataFrame(["Train","Cross-Validation","Test"])
+rsf_ci_values = pd.DataFrame([optimal_rsf_cirrhosis_survival_y_train_ci,
+                              cirrhosis_survival_rsf_ht.Concordance_Index_Mean.max(),
+                                optimal_rsf_cirrhosis_survival_y_test_ci])
+rsf_method = pd.DataFrame(["RSF"]*3)
+rsf_summary = pd.concat([rsf_set, 
+                           rsf_ci_values,
+                           rsf_method], axis=1)
+rsf_summary.columns = ['Set', 'Concordance.Index', 'Method']
+rsf_summary.reset_index(inplace=True, drop=True)
+display(rsf_summary)
+```
+
+
+<div>
+<style scoped>
+    .dataframe tbody tr th:only-of-type {
+        vertical-align: middle;
+    }
+
+    .dataframe tbody tr th {
+        vertical-align: top;
+    }
+
+    .dataframe thead th {
+        text-align: right;
+    }
+</style>
+<table border="1" class="dataframe">
+  <thead>
+    <tr style="text-align: right;">
+      <th></th>
+      <th>Set</th>
+      <th>Concordance.Index</th>
+      <th>Method</th>
+    </tr>
+  </thead>
+  <tbody>
+    <tr>
+      <th>0</th>
+      <td>Train</td>
+      <td>0.915312</td>
+      <td>RSF</td>
+    </tr>
+    <tr>
+      <th>1</th>
+      <td>Cross-Validation</td>
+      <td>0.821493</td>
+      <td>RSF</td>
+    </tr>
+    <tr>
+      <th>2</th>
+      <td>Test</td>
+      <td>0.876190</td>
+      <td>RSF</td>
+    </tr>
+  </tbody>
+</table>
+</div>
+
+
+
+```python
+##################################
 # Binning the predicted risks
 # into dichotomous groups and
 # exploring the relationships with
@@ -9476,7 +9748,7 @@ plt.show()
 
 
     
-![png](output_206_0.png)
+![png](output_210_0.png)
     
 
 
@@ -9710,7 +9982,7 @@ plt.show()
 
 
     
-![png](output_210_0.png)
+![png](output_214_0.png)
     
 
 
@@ -9920,6 +10192,74 @@ print(f"Test Concordance Index: {optimal_gbs_cirrhosis_survival_y_test_ci}")
 
 ```python
 ##################################
+# Gathering the concordance indices
+# from the train and tests sets for 
+# Gradient Boosted Survival Model
+##################################
+gbs_set = pd.DataFrame(["Train","Cross-Validation","Test"])
+gbs_ci_values = pd.DataFrame([optimal_gbs_cirrhosis_survival_y_train_ci,
+                              cirrhosis_survival_gbs_ht.Concordance_Index_Mean.max(),
+                                optimal_gbs_cirrhosis_survival_y_test_ci])
+gbs_method = pd.DataFrame(["GBS"]*3)
+gbs_summary = pd.concat([gbs_set, 
+                           gbs_ci_values,
+                           gbs_method], axis=1)
+gbs_summary.columns = ['Set', 'Concordance.Index', 'Method']
+gbs_summary.reset_index(inplace=True, drop=True)
+display(gbs_summary)
+```
+
+
+<div>
+<style scoped>
+    .dataframe tbody tr th:only-of-type {
+        vertical-align: middle;
+    }
+
+    .dataframe tbody tr th {
+        vertical-align: top;
+    }
+
+    .dataframe thead th {
+        text-align: right;
+    }
+</style>
+<table border="1" class="dataframe">
+  <thead>
+    <tr style="text-align: right;">
+      <th></th>
+      <th>Set</th>
+      <th>Concordance.Index</th>
+      <th>Method</th>
+    </tr>
+  </thead>
+  <tbody>
+    <tr>
+      <th>0</th>
+      <td>Train</td>
+      <td>0.928072</td>
+      <td>GBS</td>
+    </tr>
+    <tr>
+      <th>1</th>
+      <td>Cross-Validation</td>
+      <td>0.805171</td>
+      <td>GBS</td>
+    </tr>
+    <tr>
+      <th>2</th>
+      <td>Test</td>
+      <td>0.865760</td>
+      <td>GBS</td>
+    </tr>
+  </tbody>
+</table>
+</div>
+
+
+
+```python
+##################################
 # Binning the predicted risks
 # into dichotomous groups and
 # exploring the relationships with
@@ -9944,7 +10284,7 @@ plt.show()
 
 
     
-![png](output_218_0.png)
+![png](output_223_0.png)
     
 
 
@@ -10178,7 +10518,276 @@ plt.show()
 
 
     
-![png](output_222_0.png)
+![png](output_227_0.png)
+    
+
+
+## 1.7. Consolidated Findings <a class="anchor" id="1.7"></a>
+
+
+```python
+##################################
+# Consolidating all the
+# model performance metrics
+##################################
+model_performance_comparison = pd.concat([coxph_summary, 
+                                          coxns_summary,
+                                          stree_summary, 
+                                          rsf_summary,
+                                          gbs_summary], 
+                                         axis=0,
+                                         ignore_index=True)
+print('Survival Model Comparison: ')
+display(model_performance_comparison)
+```
+
+    Survival Model Comparison: 
+    
+
+
+<div>
+<style scoped>
+    .dataframe tbody tr th:only-of-type {
+        vertical-align: middle;
+    }
+
+    .dataframe tbody tr th {
+        vertical-align: top;
+    }
+
+    .dataframe thead th {
+        text-align: right;
+    }
+</style>
+<table border="1" class="dataframe">
+  <thead>
+    <tr style="text-align: right;">
+      <th></th>
+      <th>Set</th>
+      <th>Concordance.Index</th>
+      <th>Method</th>
+    </tr>
+  </thead>
+  <tbody>
+    <tr>
+      <th>0</th>
+      <td>Train</td>
+      <td>0.848586</td>
+      <td>COXPH</td>
+    </tr>
+    <tr>
+      <th>1</th>
+      <td>Cross-Validation</td>
+      <td>0.813656</td>
+      <td>COXPH</td>
+    </tr>
+    <tr>
+      <th>2</th>
+      <td>Test</td>
+      <td>0.874376</td>
+      <td>COXPH</td>
+    </tr>
+    <tr>
+      <th>3</th>
+      <td>Train</td>
+      <td>0.847204</td>
+      <td>COXNS</td>
+    </tr>
+    <tr>
+      <th>4</th>
+      <td>Cross-Validation</td>
+      <td>0.812264</td>
+      <td>COXNS</td>
+    </tr>
+    <tr>
+      <th>5</th>
+      <td>Test</td>
+      <td>0.871655</td>
+      <td>COXNS</td>
+    </tr>
+    <tr>
+      <th>6</th>
+      <td>Train</td>
+      <td>0.864678</td>
+      <td>STREE</td>
+    </tr>
+    <tr>
+      <th>7</th>
+      <td>Cross-Validation</td>
+      <td>0.793183</td>
+      <td>STREE</td>
+    </tr>
+    <tr>
+      <th>8</th>
+      <td>Test</td>
+      <td>0.817460</td>
+      <td>STREE</td>
+    </tr>
+    <tr>
+      <th>9</th>
+      <td>Train</td>
+      <td>0.915312</td>
+      <td>RSF</td>
+    </tr>
+    <tr>
+      <th>10</th>
+      <td>Cross-Validation</td>
+      <td>0.821493</td>
+      <td>RSF</td>
+    </tr>
+    <tr>
+      <th>11</th>
+      <td>Test</td>
+      <td>0.876190</td>
+      <td>RSF</td>
+    </tr>
+    <tr>
+      <th>12</th>
+      <td>Train</td>
+      <td>0.928072</td>
+      <td>GBS</td>
+    </tr>
+    <tr>
+      <th>13</th>
+      <td>Cross-Validation</td>
+      <td>0.805171</td>
+      <td>GBS</td>
+    </tr>
+    <tr>
+      <th>14</th>
+      <td>Test</td>
+      <td>0.865760</td>
+      <td>GBS</td>
+    </tr>
+  </tbody>
+</table>
+</div>
+
+
+
+```python
+##################################
+# Consolidating the concordance indices
+# for all sets and models
+##################################
+set_labels = ['Train','Test']
+coxph_ci = model_performance_comparison[((model_performance_comparison['Set'] == 'Train') |
+                                         (model_performance_comparison['Set'] == 'Cross-Validation') |
+                                         (model_performance_comparison['Set'] == 'Test')) & 
+                                        (model_performance_comparison['Method']=='COXPH')]['Concordance.Index'].values
+coxns_ci = model_performance_comparison[((model_performance_comparison['Set'] == 'Train') |
+                                         (model_performance_comparison['Set'] == 'Cross-Validation') |
+                                         (model_performance_comparison['Set'] == 'Test')) & 
+                                        (model_performance_comparison['Method']=='COXNS')]['Concordance.Index'].values
+stree_ci = model_performance_comparison[((model_performance_comparison['Set'] == 'Train') |
+                                         (model_performance_comparison['Set'] == 'Cross-Validation') |
+                                         (model_performance_comparison['Set'] == 'Test')) & 
+                                        (model_performance_comparison['Method']=='STREE')]['Concordance.Index'].values
+rsf_ci = model_performance_comparison[((model_performance_comparison['Set'] == 'Train') |
+                                         (model_performance_comparison['Set'] == 'Cross-Validation') |
+                                         (model_performance_comparison['Set'] == 'Test')) &  
+                                        (model_performance_comparison['Method']=='RSF')]['Concordance.Index'].values
+gbs_ci = model_performance_comparison[((model_performance_comparison['Set'] == 'Train') |
+                                         (model_performance_comparison['Set'] == 'Cross-Validation') |
+                                         (model_performance_comparison['Set'] == 'Test')) & 
+                                        (model_performance_comparison['Method']=='GBS')]['Concordance.Index'].values
+```
+
+
+```python
+##################################
+# Plotting the values for the
+# concordance indices
+# for all models
+##################################
+ci_plot = pd.DataFrame({'COXPH': list(coxph_ci),
+                        'COXNS': list(coxns_ci),
+                        'STREE': list(stree_ci),
+                        'SRF': list(rsf_ci),
+                        'GBS': list(gbs_ci)},
+                       index=['Train','Cross-Validation','Test'])
+ci_plot
+```
+
+
+
+
+<div>
+<style scoped>
+    .dataframe tbody tr th:only-of-type {
+        vertical-align: middle;
+    }
+
+    .dataframe tbody tr th {
+        vertical-align: top;
+    }
+
+    .dataframe thead th {
+        text-align: right;
+    }
+</style>
+<table border="1" class="dataframe">
+  <thead>
+    <tr style="text-align: right;">
+      <th></th>
+      <th>COXPH</th>
+      <th>COXNS</th>
+      <th>STREE</th>
+      <th>SRF</th>
+      <th>GBS</th>
+    </tr>
+  </thead>
+  <tbody>
+    <tr>
+      <th>Train</th>
+      <td>0.848586</td>
+      <td>0.847204</td>
+      <td>0.864678</td>
+      <td>0.915312</td>
+      <td>0.928072</td>
+    </tr>
+    <tr>
+      <th>Cross-Validation</th>
+      <td>0.813656</td>
+      <td>0.812264</td>
+      <td>0.793183</td>
+      <td>0.821493</td>
+      <td>0.805171</td>
+    </tr>
+    <tr>
+      <th>Test</th>
+      <td>0.874376</td>
+      <td>0.871655</td>
+      <td>0.817460</td>
+      <td>0.876190</td>
+      <td>0.865760</td>
+    </tr>
+  </tbody>
+</table>
+</div>
+
+
+
+
+```python
+##################################
+# Plotting all the concordance indices
+# for all models
+##################################
+ci_plot = ci_plot.plot.barh(figsize=(10, 6), width=0.90)
+ci_plot.set_xlim(0.00,1.00)
+ci_plot.set_title("Model Comparison by Concordance Indices")
+ci_plot.set_xlabel("Concordance Index")
+ci_plot.set_ylabel("Data Set")
+ci_plot.grid(False)
+ci_plot.legend(loc='center left', bbox_to_anchor=(1.0, 0.5))
+for container in ci_plot.containers:
+    ci_plot.bar_label(container, fmt='%.5f', padding=-50, color='white', fontweight='bold')
+```
+
+
+    
+![png](output_232_0.png)
     
 
 
