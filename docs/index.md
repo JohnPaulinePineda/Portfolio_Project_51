@@ -129,6 +129,7 @@ from sklearn.preprocessing import StandardScaler
 from sklearn.pipeline import Pipeline
 from sklearn.compose import ColumnTransformer
 from sklearn.model_selection import KFold
+from sklearn.inspection import permutation_importance
 
 from statsmodels.nonparametric.smoothers_lowess import lowess
 from scipy import stats
@@ -10703,13 +10704,11 @@ gbs_ci = model_performance_comparison[((model_performance_comparison['Set'] == '
 ci_plot = pd.DataFrame({'COXPH': list(coxph_ci),
                         'COXNS': list(coxns_ci),
                         'STREE': list(stree_ci),
-                        'SRF': list(rsf_ci),
+                        'RSF': list(rsf_ci),
                         'GBS': list(gbs_ci)},
                        index=['Train','Cross-Validation','Test'])
-ci_plot
+display(ci_plot)
 ```
-
-
 
 
 <div>
@@ -10733,7 +10732,7 @@ ci_plot
       <th>COXPH</th>
       <th>COXNS</th>
       <th>STREE</th>
-      <th>SRF</th>
+      <th>RSF</th>
       <th>GBS</th>
     </tr>
   </thead>
@@ -10768,7 +10767,6 @@ ci_plot
 
 
 
-
 ```python
 ##################################
 # Plotting all the concordance indices
@@ -10789,6 +10787,306 @@ for container in ci_plot.containers:
     
 ![png](output_232_0.png)
     
+
+
+
+```python
+##################################
+# Determining the Random Survival Forest model
+# permutation-based feature importance 
+# on train data
+##################################
+rfs_train_feature_importance = permutation_importance(optimal_rsf_model,
+                                                cirrhosis_survival_X_train_preprocessed, 
+                                                cirrhosis_survival_y_train_array, 
+                                                n_repeats=15, 
+                                                random_state=88888888)
+
+rsf_train_feature_importance_summary = pd.DataFrame(
+    {k: rfs_train_feature_importance[k]
+     for k in ("importances_mean", "importances_std")}, 
+    index=cirrhosis_survival_X_train_preprocessed.columns).sort_values(by="importances_mean", ascending=False)
+rsf_train_feature_importance_summary.columns = ['Importances.Mean', 'Importances.Std']
+display(rsf_train_feature_importance_summary)
+```
+
+
+<div>
+<style scoped>
+    .dataframe tbody tr th:only-of-type {
+        vertical-align: middle;
+    }
+
+    .dataframe tbody tr th {
+        vertical-align: top;
+    }
+
+    .dataframe thead th {
+        text-align: right;
+    }
+</style>
+<table border="1" class="dataframe">
+  <thead>
+    <tr style="text-align: right;">
+      <th></th>
+      <th>Importances.Mean</th>
+      <th>Importances.Std</th>
+    </tr>
+  </thead>
+  <tbody>
+    <tr>
+      <th>Bilirubin</th>
+      <td>0.059856</td>
+      <td>0.011472</td>
+    </tr>
+    <tr>
+      <th>Prothrombin</th>
+      <td>0.024225</td>
+      <td>0.003892</td>
+    </tr>
+    <tr>
+      <th>Copper</th>
+      <td>0.023109</td>
+      <td>0.006796</td>
+    </tr>
+    <tr>
+      <th>Age</th>
+      <td>0.017452</td>
+      <td>0.002394</td>
+    </tr>
+    <tr>
+      <th>Cholesterol</th>
+      <td>0.016569</td>
+      <td>0.002951</td>
+    </tr>
+    <tr>
+      <th>Albumin</th>
+      <td>0.013622</td>
+      <td>0.002659</td>
+    </tr>
+    <tr>
+      <th>Tryglicerides</th>
+      <td>0.008306</td>
+      <td>0.001162</td>
+    </tr>
+    <tr>
+      <th>Platelets</th>
+      <td>0.008008</td>
+      <td>0.002287</td>
+    </tr>
+    <tr>
+      <th>SGOT</th>
+      <td>0.006323</td>
+      <td>0.001263</td>
+    </tr>
+    <tr>
+      <th>Alk_Phos</th>
+      <td>0.005998</td>
+      <td>0.001509</td>
+    </tr>
+    <tr>
+      <th>Ascites</th>
+      <td>0.004465</td>
+      <td>0.001230</td>
+    </tr>
+    <tr>
+      <th>Stage_4.0</th>
+      <td>0.003917</td>
+      <td>0.001752</td>
+    </tr>
+    <tr>
+      <th>Hepatomegaly</th>
+      <td>0.003506</td>
+      <td>0.001303</td>
+    </tr>
+    <tr>
+      <th>Edema</th>
+      <td>0.001566</td>
+      <td>0.001421</td>
+    </tr>
+    <tr>
+      <th>Sex</th>
+      <td>0.001143</td>
+      <td>0.000559</td>
+    </tr>
+    <tr>
+      <th>Drug</th>
+      <td>0.001127</td>
+      <td>0.000356</td>
+    </tr>
+    <tr>
+      <th>Stage_3.0</th>
+      <td>0.001046</td>
+      <td>0.000351</td>
+    </tr>
+    <tr>
+      <th>Spiders</th>
+      <td>0.000769</td>
+      <td>0.000515</td>
+    </tr>
+    <tr>
+      <th>Stage_2.0</th>
+      <td>0.000498</td>
+      <td>0.000257</td>
+    </tr>
+    <tr>
+      <th>Stage_1.0</th>
+      <td>0.000108</td>
+      <td>0.000064</td>
+    </tr>
+  </tbody>
+</table>
+</div>
+
+
+
+```python
+##################################
+# Determining the Random Survival Forest model
+# permutation-based feature importance 
+# on test data
+##################################
+rfs_test_feature_importance = permutation_importance(optimal_rsf_model,
+                                                cirrhosis_survival_X_test_preprocessed, 
+                                                cirrhosis_survival_y_test_array, 
+                                                n_repeats=15, 
+                                                random_state=88888888)
+
+rsf_test_feature_importance_summary = pd.DataFrame(
+    {k: rfs_test_feature_importance[k]
+     for k in ("importances_mean", "importances_std")}, 
+    index=cirrhosis_survival_X_test_preprocessed.columns).sort_values(by="importances_mean", ascending=False)
+rsf_test_feature_importance_summary.columns = ['Importances.Mean', 'Importances.Std']
+display(rsf_test_feature_importance_summary)
+```
+
+
+<div>
+<style scoped>
+    .dataframe tbody tr th:only-of-type {
+        vertical-align: middle;
+    }
+
+    .dataframe tbody tr th {
+        vertical-align: top;
+    }
+
+    .dataframe thead th {
+        text-align: right;
+    }
+</style>
+<table border="1" class="dataframe">
+  <thead>
+    <tr style="text-align: right;">
+      <th></th>
+      <th>Importances.Mean</th>
+      <th>Importances.Std</th>
+    </tr>
+  </thead>
+  <tbody>
+    <tr>
+      <th>Bilirubin</th>
+      <td>0.049856</td>
+      <td>0.013631</td>
+    </tr>
+    <tr>
+      <th>Albumin</th>
+      <td>0.016417</td>
+      <td>0.006324</td>
+    </tr>
+    <tr>
+      <th>Copper</th>
+      <td>0.014210</td>
+      <td>0.011984</td>
+    </tr>
+    <tr>
+      <th>SGOT</th>
+      <td>0.013847</td>
+      <td>0.003026</td>
+    </tr>
+    <tr>
+      <th>Ascites</th>
+      <td>0.010763</td>
+      <td>0.003297</td>
+    </tr>
+    <tr>
+      <th>Age</th>
+      <td>0.009977</td>
+      <td>0.003905</td>
+    </tr>
+    <tr>
+      <th>Prothrombin</th>
+      <td>0.009494</td>
+      <td>0.008860</td>
+    </tr>
+    <tr>
+      <th>Stage_4.0</th>
+      <td>0.009221</td>
+      <td>0.004256</td>
+    </tr>
+    <tr>
+      <th>Platelets</th>
+      <td>0.007105</td>
+      <td>0.002176</td>
+    </tr>
+    <tr>
+      <th>Edema</th>
+      <td>0.004172</td>
+      <td>0.002235</td>
+    </tr>
+    <tr>
+      <th>Stage_3.0</th>
+      <td>0.002358</td>
+      <td>0.001590</td>
+    </tr>
+    <tr>
+      <th>Hepatomegaly</th>
+      <td>0.001814</td>
+      <td>0.002055</td>
+    </tr>
+    <tr>
+      <th>Drug</th>
+      <td>0.001391</td>
+      <td>0.001000</td>
+    </tr>
+    <tr>
+      <th>Spiders</th>
+      <td>0.001300</td>
+      <td>0.001072</td>
+    </tr>
+    <tr>
+      <th>Cholesterol</th>
+      <td>0.001240</td>
+      <td>0.003850</td>
+    </tr>
+    <tr>
+      <th>Sex</th>
+      <td>0.000605</td>
+      <td>0.000734</td>
+    </tr>
+    <tr>
+      <th>Alk_Phos</th>
+      <td>0.000484</td>
+      <td>0.002946</td>
+    </tr>
+    <tr>
+      <th>Stage_2.0</th>
+      <td>0.000181</td>
+      <td>0.000963</td>
+    </tr>
+    <tr>
+      <th>Stage_1.0</th>
+      <td>0.000000</td>
+      <td>0.000000</td>
+    </tr>
+    <tr>
+      <th>Tryglicerides</th>
+      <td>-0.002630</td>
+      <td>0.004071</td>
+    </tr>
+  </tbody>
+</table>
+</div>
 
 
 # 2. Summary <a class="anchor" id="Summary"></a>
