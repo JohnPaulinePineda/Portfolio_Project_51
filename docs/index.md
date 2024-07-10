@@ -4907,7 +4907,7 @@ cirrhosis_survival_X_train_cleaned_encoded_object.head()
              * <span style="color: #FF0000">Stage_3.0</span>
              * <span style="color: #FF0000">Stage_4.0</span>
 3. The preprocessed testing subset is comprised of:
-    * **92 rows** (observations)
+    * **94 rows** (observations)
     * **22 columns** (variables)
         * **2/22 event | duration** (boolean | numeric)
              * <span style="color: #FF0000">Status</span>
@@ -7151,6 +7151,63 @@ display(cirrhosis_survival_binned_numeric_lrtest_summary.sort_values(by=['LR.Tes
 
 
 ### 1.6.1 Premodelling Data Description <a class="anchor" id="1.6.1"></a>
+
+1. To evaluate the feature selection capabilities of the candidate models, all predictors were accounted during the model development process using the training subset:
+    * **218 rows** (observations)
+    * **22 columns** (variables)
+        * **2/22 event | duration** (boolean | numeric)
+             * <span style="color: #FF0000">Status</span>
+             * <span style="color: #FF0000">N_Days</span>
+        * **10/22 predictor** (numeric)
+             * <span style="color: #FF0000">Age</span>
+             * <span style="color: #FF0000">Bilirubin</span>
+             * <span style="color: #FF0000">Cholesterol</span>
+             * <span style="color: #FF0000">Albumin</span>
+             * <span style="color: #FF0000">Copper</span>
+             * <span style="color: #FF0000">Alk_Phos</span>
+             * <span style="color: #FF0000">SGOT</span>
+             * <span style="color: #FF0000">Triglycerides</span>
+             * <span style="color: #FF0000">Platelets</span>
+             * <span style="color: #FF0000">Prothrombin</span>
+        * **10/21 predictor** (object)
+             * <span style="color: #FF0000">Drug</span>
+             * <span style="color: #FF0000">Sex</span>
+             * <span style="color: #FF0000">Ascites</span>
+             * <span style="color: #FF0000">Hepatomegaly</span>
+             * <span style="color: #FF0000">Spiders</span>
+             * <span style="color: #FF0000">Edema</span>
+             * <span style="color: #FF0000">Stage_1.0</span>
+             * <span style="color: #FF0000">Stage_2.0</span>
+             * <span style="color: #FF0000">Stage_3.0</span>
+             * <span style="color: #FF0000">Stage_4.0</span>
+2. Similarly, all predictors were accounted during the model evaluation process using the testing subset:
+    * **94 rows** (observations)
+    * **22 columns** (variables)
+        * **2/22 event | duration** (boolean | numeric)
+             * <span style="color: #FF0000">Status</span>
+             * <span style="color: #FF0000">N_Days</span>
+        * **10/22 predictor** (numeric)
+             * <span style="color: #FF0000">Age</span>
+             * <span style="color: #FF0000">Bilirubin</span>
+             * <span style="color: #FF0000">Cholesterol</span>
+             * <span style="color: #FF0000">Albumin</span>
+             * <span style="color: #FF0000">Copper</span>
+             * <span style="color: #FF0000">Alk_Phos</span>
+             * <span style="color: #FF0000">SGOT</span>
+             * <span style="color: #FF0000">Triglycerides</span>
+             * <span style="color: #FF0000">Platelets</span>
+             * <span style="color: #FF0000">Prothrombin</span>
+        * **10/21 predictor** (object)
+             * <span style="color: #FF0000">Drug</span>
+             * <span style="color: #FF0000">Sex</span>
+             * <span style="color: #FF0000">Ascites</span>
+             * <span style="color: #FF0000">Hepatomegaly</span>
+             * <span style="color: #FF0000">Spiders</span>
+             * <span style="color: #FF0000">Edema</span>
+             * <span style="color: #FF0000">Stage_1.0</span>
+             * <span style="color: #FF0000">Stage_2.0</span>
+             * <span style="color: #FF0000">Stage_3.0</span>
+             * <span style="color: #FF0000">Stage_4.0</span>
 
 
 ```python
@@ -10972,11 +11029,10 @@ display(rsf_train_feature_importance_summary)
 # absolute coefficient-based feature importance 
 # on train data
 ##################################
-feature_importance_df = pd.DataFrame({
-    'Signed.Coefficient': optimal_coxph_model.coef_,
-    'Absolute.Coefficient': np.abs(optimal_coxph_model.coef_),
-}, index=cirrhosis_survival_X_train_preprocessed.columns)
-display(feature_importance_df.sort_values('Absolute.Coefficient', ascending=False))
+coxph_train_feature_importance = pd.DataFrame(
+    {'Signed.Coefficient': optimal_coxph_model.coef_,
+    'Absolute.Coefficient': np.abs(optimal_coxph_model.coef_)}, index=cirrhosis_survival_X_train_preprocessed.columns)
+display(coxph_train_feature_importance.sort_values('Absolute.Coefficient', ascending=False))
 ```
 
 
@@ -11109,6 +11165,8 @@ display(feature_importance_df.sort_values('Absolute.Coefficient', ascending=Fals
 
 
 # 2. Summary <a class="anchor" id="Summary"></a>
+
+![Project51_Summary.png](attachment:1e20c37c-b02c-43bb-99af-88bca8e5785e.png)
 
 # 3. References <a class="anchor" id="References"></a>
 
