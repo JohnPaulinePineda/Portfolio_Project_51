@@ -2,7 +2,7 @@
 # Supervised Learning : Modelling Right-Censored Survival Time and Status Responses for Prediction
 
 ***
-### John Pauline Pineda <br> <br> *July 13, 2024*
+### John Pauline Pineda <br> <br> *July 10, 2024*
 ***
 
 * [**1. Table of Contents**](#TOC)
@@ -8375,6 +8375,7 @@ for hazard_prediction, survival_prediction in zip(test_case_cumulative_hazard_fu
     ax[1].step(survival_prediction.x,survival_prediction(survival_prediction.x),where='post')
 ax[0].set_title('COXPH Cumulative Hazard for 5 Test Cases')
 ax[0].set_xlabel('N_Days')
+ax[0].set_ylim(0,5)
 ax[0].set_ylabel('Cumulative Hazard')
 ax[0].legend(test_case_labels, loc="upper left")
 ax[1].set_title('COXPH Survival Function for 5 Test Cases')
@@ -8913,6 +8914,7 @@ for hazard_prediction, survival_prediction in zip(test_case_cumulative_hazard_fu
     ax[1].step(survival_prediction.x,survival_prediction(survival_prediction.x),where='post')
 ax[0].set_title('COXNS Cumulative Hazard for 5 Test Cases')
 ax[0].set_xlabel('N_Days')
+ax[0].set_ylim(0,5)
 ax[0].set_ylabel('Cumulative Hazard')
 ax[0].legend(test_case_labels, loc="upper left")
 ax[1].set_title('COXNS Survival Function for 5 Test Cases')
@@ -9435,6 +9437,7 @@ for hazard_prediction, survival_prediction in zip(test_case_cumulative_hazard_fu
     ax[1].step(survival_prediction.x,survival_prediction(survival_prediction.x),where='post')
 ax[0].set_title('STREE Cumulative Hazard for 5 Test Cases')
 ax[0].set_xlabel('N_Days')
+ax[0].set_ylim(0,5)
 ax[0].set_ylabel('Cumulative Hazard')
 ax[0].legend(test_case_labels, loc="upper left")
 ax[1].set_title('STREE Survival Function for 5 Test Cases')
@@ -9972,6 +9975,7 @@ for hazard_prediction, survival_prediction in zip(test_case_cumulative_hazard_fu
     ax[1].step(survival_prediction.x,survival_prediction(survival_prediction.x),where='post')
 ax[0].set_title('RSF Cumulative Hazard for 5 Test Cases')
 ax[0].set_xlabel('N_Days')
+ax[0].set_ylim(0,5)
 ax[0].set_ylabel('Cumulative Hazard')
 ax[0].legend(test_case_labels, loc="upper left")
 ax[1].set_title('RSF Survival Function for 5 Test Cases')
@@ -10508,6 +10512,7 @@ for hazard_prediction, survival_prediction in zip(test_case_cumulative_hazard_fu
     ax[1].step(survival_prediction.x,survival_prediction(survival_prediction.x),where='post')
 ax[0].set_title('GBS Cumulative Hazard for 5 Test Cases')
 ax[0].set_xlabel('N_Days')
+ax[0].set_ylim(0,5)
 ax[0].set_ylabel('Cumulative Hazard')
 ax[0].legend(test_case_labels, loc="upper left")
 ax[1].set_title('GBS Survival Function for 5 Test Cases')
@@ -10524,6 +10529,27 @@ plt.show()
 
 
 ## 1.7. Consolidated Findings <a class="anchor" id="1.7"></a>
+
+1. The choice of survival model will depend on a number of factors including assumptions, model complexity and variable selection capabilities.
+    * [Cox proportional hazards regression](https://rss.onlinelibrary.wiley.com/doi/abs/10.1111/j.2517-6161.1972.tb00899.x) offers a simpler, well-understood, and straightforward interpretation, but assumes proportional hazards and may be less effective with high-dimensional data.
+    * [Cox net survival](https://doi.org/10.18637/jss.v039.i05) handles high-dimensional data, performs variable selection, and manages multicollinearity, but may be more complex and requires parameter tuning.
+    * [Survival trees](https://www.tandfonline.com/doi/abs/10.1080/01621459.1993.10476296) require no assumptions about survival time distribution and naturally capture interactions, but may be prone to overfitting and less accurate. 
+    * [Random survival forest](https://projecteuclid.org/journals/annals-of-applied-statistics/volume-2/issue-3/Random-survival-forests/10.1214/08-AOAS169.full) is robust against high-dimensional data and provides variable importance, but may be computationally intensive and less interpretable.
+    * [Gradient boosted survival](https://projecteuclid.org/journals/annals-of-statistics/volume-29/issue-5/Greedy-function-approximation-A-gradient-boosting-machine/10.1214/aos/1013203451.full) models complex relationships while reducing bias and variance, but may be highly computationally intensive, needs complex tuning and requires challenging interpretation.
+2. Comparing all results from the survival models formulated, the viable models for prediction can be any of the following:
+    * [Random survival forest](https://projecteuclid.org/journals/annals-of-applied-statistics/volume-2/issue-3/Random-survival-forests/10.1214/08-AOAS169.full) 
+        * Demonstrated the best independent cross-validated (**Concordance Index** = 0.8214) and test (**Concordance Index** = 0.8761) model performance 
+        * Showed considerable overfit between the train (**Concordance Index** = 0.9153) and cross-validated (**Concordance Index** = 0.8214) model performance
+        * Demonstrated good survival profile differentiation between the risk groups
+        * Allows for the estimation of permutation-based variable importance which might aid in better interpretation
+    * [Cox proportional hazards regression](https://rss.onlinelibrary.wiley.com/doi/abs/10.1111/j.2517-6161.1972.tb00899.x)
+        * Demonstrated the second highest independent cross-validated (**Concordance Index** = 0.8136) and test (**Concordance Index** = 0.8743) model performance 
+        * Showed minimal overfit between the train (**Concordance Index** = 0.8485) and cross-validated (**Concordance Index** = 0.8136) model performance
+        * Demonstrated good survival profile differentiation between the risk groups
+        * Allows for the estimation of absolute coefficient-based variable importance which might aid in better interpretation
+3. The feature importance evaluation for the [random survival forest](https://projecteuclid.org/journals/annals-of-applied-statistics/volume-2/issue-3/Random-survival-forests/10.1214/08-AOAS169.full) and [cox proportional hazards regression](https://rss.onlinelibrary.wiley.com/doi/abs/10.1111/j.2517-6161.1972.tb00899.x) determined the following predictors as the most relevant during prediction:
+    * <span style="color: #FF0000">Bilirubin</span>
+    * <span style="color: #FF0000">Prothrombin</span>
 
 
 ```python
@@ -10942,22 +10968,15 @@ display(rsf_train_feature_importance_summary)
 
 ```python
 ##################################
-# Determining the Random Survival Forest model
-# permutation-based feature importance 
-# on test data
+# Determining the Cox Proportional Hazards Regression model
+# absolute coefficient-based feature importance 
+# on train data
 ##################################
-rfs_test_feature_importance = permutation_importance(optimal_rsf_model,
-                                                cirrhosis_survival_X_test_preprocessed, 
-                                                cirrhosis_survival_y_test_array, 
-                                                n_repeats=15, 
-                                                random_state=88888888)
-
-rsf_test_feature_importance_summary = pd.DataFrame(
-    {k: rfs_test_feature_importance[k]
-     for k in ("importances_mean", "importances_std")}, 
-    index=cirrhosis_survival_X_test_preprocessed.columns).sort_values(by="importances_mean", ascending=False)
-rsf_test_feature_importance_summary.columns = ['Importances.Mean', 'Importances.Std']
-display(rsf_test_feature_importance_summary)
+feature_importance_df = pd.DataFrame({
+    'Signed.Coefficient': optimal_coxph_model.coef_,
+    'Absolute.Coefficient': np.abs(optimal_coxph_model.coef_),
+}, index=cirrhosis_survival_X_train_preprocessed.columns)
+display(feature_importance_df.sort_values('Absolute.Coefficient', ascending=False))
 ```
 
 
@@ -10979,110 +10998,110 @@ display(rsf_test_feature_importance_summary)
   <thead>
     <tr style="text-align: right;">
       <th></th>
-      <th>Importances.Mean</th>
-      <th>Importances.Std</th>
+      <th>Signed.Coefficient</th>
+      <th>Absolute.Coefficient</th>
     </tr>
   </thead>
   <tbody>
     <tr>
       <th>Bilirubin</th>
-      <td>0.049856</td>
-      <td>0.013631</td>
-    </tr>
-    <tr>
-      <th>Albumin</th>
-      <td>0.016417</td>
-      <td>0.006324</td>
-    </tr>
-    <tr>
-      <th>Copper</th>
-      <td>0.014210</td>
-      <td>0.011984</td>
-    </tr>
-    <tr>
-      <th>SGOT</th>
-      <td>0.013847</td>
-      <td>0.003026</td>
-    </tr>
-    <tr>
-      <th>Ascites</th>
-      <td>0.010763</td>
-      <td>0.003297</td>
-    </tr>
-    <tr>
-      <th>Age</th>
-      <td>0.009977</td>
-      <td>0.003905</td>
+      <td>0.624673</td>
+      <td>0.624673</td>
     </tr>
     <tr>
       <th>Prothrombin</th>
-      <td>0.009494</td>
-      <td>0.008860</td>
+      <td>0.349448</td>
+      <td>0.349448</td>
     </tr>
     <tr>
-      <th>Stage_4.0</th>
-      <td>0.009221</td>
-      <td>0.004256</td>
-    </tr>
-    <tr>
-      <th>Platelets</th>
-      <td>0.007105</td>
-      <td>0.002176</td>
+      <th>Age</th>
+      <td>0.309594</td>
+      <td>0.309594</td>
     </tr>
     <tr>
       <th>Edema</th>
-      <td>0.004172</td>
-      <td>0.002235</td>
+      <td>0.304485</td>
+      <td>0.304485</td>
     </tr>
     <tr>
-      <th>Stage_3.0</th>
-      <td>0.002358</td>
-      <td>0.001590</td>
+      <th>Stage_4.0</th>
+      <td>0.167935</td>
+      <td>0.167935</td>
     </tr>
     <tr>
-      <th>Hepatomegaly</th>
-      <td>0.001814</td>
-      <td>0.002055</td>
+      <th>Albumin</th>
+      <td>-0.166835</td>
+      <td>0.166835</td>
     </tr>
     <tr>
-      <th>Drug</th>
-      <td>0.001391</td>
-      <td>0.001000</td>
-    </tr>
-    <tr>
-      <th>Spiders</th>
-      <td>0.001300</td>
-      <td>0.001072</td>
-    </tr>
-    <tr>
-      <th>Cholesterol</th>
-      <td>0.001240</td>
-      <td>0.003850</td>
-    </tr>
-    <tr>
-      <th>Sex</th>
-      <td>0.000605</td>
-      <td>0.000734</td>
-    </tr>
-    <tr>
-      <th>Alk_Phos</th>
-      <td>0.000484</td>
-      <td>0.002946</td>
-    </tr>
-    <tr>
-      <th>Stage_2.0</th>
-      <td>0.000181</td>
-      <td>0.000963</td>
+      <th>SGOT</th>
+      <td>0.160465</td>
+      <td>0.160465</td>
     </tr>
     <tr>
       <th>Stage_1.0</th>
-      <td>0.000000</td>
-      <td>0.000000</td>
+      <td>-0.144274</td>
+      <td>0.144274</td>
+    </tr>
+    <tr>
+      <th>Copper</th>
+      <td>0.137420</td>
+      <td>0.137420</td>
     </tr>
     <tr>
       <th>Tryglicerides</th>
-      <td>-0.002630</td>
-      <td>0.004071</td>
+      <td>0.122772</td>
+      <td>0.122772</td>
+    </tr>
+    <tr>
+      <th>Drug</th>
+      <td>-0.122633</td>
+      <td>0.122633</td>
+    </tr>
+    <tr>
+      <th>Ascites</th>
+      <td>0.081358</td>
+      <td>0.081358</td>
+    </tr>
+    <tr>
+      <th>Hepatomegaly</th>
+      <td>0.077079</td>
+      <td>0.077079</td>
+    </tr>
+    <tr>
+      <th>Platelets</th>
+      <td>-0.071638</td>
+      <td>0.071638</td>
+    </tr>
+    <tr>
+      <th>Stage_2.0</th>
+      <td>-0.066467</td>
+      <td>0.066467</td>
+    </tr>
+    <tr>
+      <th>Cholesterol</th>
+      <td>0.049194</td>
+      <td>0.049194</td>
+    </tr>
+    <tr>
+      <th>Sex</th>
+      <td>0.045557</td>
+      <td>0.045557</td>
+    </tr>
+    <tr>
+      <th>Stage_3.0</th>
+      <td>0.042805</td>
+      <td>0.042805</td>
+    </tr>
+    <tr>
+      <th>Spiders</th>
+      <td>0.022839</td>
+      <td>0.022839</td>
+    </tr>
+    <tr>
+      <th>Alk_Phos</th>
+      <td>0.015004</td>
+      <td>0.015004</td>
     </tr>
   </tbody>
 </table>
