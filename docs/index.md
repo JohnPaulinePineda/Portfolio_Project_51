@@ -8219,8 +8219,8 @@ plt.show()
 # Gathering the predictor information
 # for 5 test case samples
 ##################################
-test_case_10 = cirrhosis_survival_X_test_preprocessed.iloc[[10, 20, 30, 40, 50]]
-display(test_case_10)
+test_case_details = cirrhosis_survival_X_test_preprocessed.iloc[[10, 20, 30, 40, 50]]
+display(test_case_details)
 ```
 
 
@@ -8758,8 +8758,8 @@ plt.show()
 # Gathering the predictor information
 # for 5 test case samples
 ##################################
-test_case_10 = cirrhosis_survival_X_test_preprocessed.iloc[[10, 20, 30, 40, 50]]
-display(test_case_10)
+test_case_details = cirrhosis_survival_X_test_preprocessed.iloc[[10, 20, 30, 40, 50]]
+display(test_case_details)
 ```
 
 
@@ -9281,8 +9281,8 @@ plt.show()
 # Gathering the predictor information
 # for 5 test case samples
 ##################################
-test_case_10 = cirrhosis_survival_X_test_preprocessed.iloc[[10, 20, 30, 40, 50]]
-display(test_case_10)
+test_case_details = cirrhosis_survival_X_test_preprocessed.iloc[[10, 20, 30, 40, 50]]
+display(test_case_details)
 ```
 
 
@@ -9819,8 +9819,8 @@ plt.show()
 # Gathering the predictor information
 # for 5 test case samples
 ##################################
-test_case_10 = cirrhosis_survival_X_test_preprocessed.iloc[[10, 20, 30, 40, 50]]
-display(test_case_10)
+test_case_details = cirrhosis_survival_X_test_preprocessed.iloc[[10, 20, 30, 40, 50]]
+display(test_case_details)
 ```
 
 
@@ -10356,8 +10356,8 @@ plt.show()
 # Gathering the predictor information
 # for 5 test case samples
 ##################################
-test_case_10 = cirrhosis_survival_X_test_preprocessed.iloc[[10, 20, 30, 40, 50]]
-display(test_case_10)
+test_case_details = cirrhosis_survival_X_test_preprocessed.iloc[[10, 20, 30, 40, 50]]
+display(test_case_details)
 ```
 
 
