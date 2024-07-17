@@ -10754,7 +10754,7 @@ display(model_performance_comparison)
 # Consolidating the concordance indices
 # for all sets and models
 ##################################
-set_labels = ['Train','Test']
+set_labels = ['Train','Cross-Validation','Test']
 coxph_ci = model_performance_comparison[((model_performance_comparison['Set'] == 'Train') |
                                          (model_performance_comparison['Set'] == 'Cross-Validation') |
                                          (model_performance_comparison['Set'] == 'Test')) & 
@@ -10789,7 +10789,7 @@ ci_plot = pd.DataFrame({'COXPH': list(coxph_ci),
                         'STREE': list(stree_ci),
                         'RSF': list(rsf_ci),
                         'GBS': list(gbs_ci)},
-                       index=['Train','Cross-Validation','Test'])
+                       index = set_labels)
 display(ci_plot)
 ```
 
