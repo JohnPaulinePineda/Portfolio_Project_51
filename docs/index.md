@@ -7169,7 +7169,7 @@ display(cirrhosis_survival_binned_numeric_lrtest_summary.sort_values(by=['LR.Tes
              * <span style="color: #FF0000">Triglycerides</span>
              * <span style="color: #FF0000">Platelets</span>
              * <span style="color: #FF0000">Prothrombin</span>
-        * **10/21 predictor** (object)
+        * **10/22 predictor** (object)
              * <span style="color: #FF0000">Drug</span>
              * <span style="color: #FF0000">Sex</span>
              * <span style="color: #FF0000">Ascites</span>
@@ -7197,7 +7197,7 @@ display(cirrhosis_survival_binned_numeric_lrtest_summary.sort_values(by=['LR.Tes
              * <span style="color: #FF0000">Triglycerides</span>
              * <span style="color: #FF0000">Platelets</span>
              * <span style="color: #FF0000">Prothrombin</span>
-        * **10/21 predictor** (object)
+        * **10/22 predictor** (object)
              * <span style="color: #FF0000">Drug</span>
              * <span style="color: #FF0000">Sex</span>
              * <span style="color: #FF0000">Ascites</span>
@@ -10598,11 +10598,13 @@ plt.show()
         * Demonstrated the best independent cross-validated (**Concordance Index** = 0.8214) and test (**Concordance Index** = 0.8761) model performance 
         * Showed considerable overfit between the train (**Concordance Index** = 0.9153) and cross-validated (**Concordance Index** = 0.8214) model performance
         * Demonstrated good survival profile differentiation between the risk groups
+        * Hazard and survival probability estimations for 5 sampled cases demonstrated reasonable profiles
         * Allows for the estimation of permutation-based variable importance which might aid in better interpretation
     * [Cox proportional hazards regression](https://rss.onlinelibrary.wiley.com/doi/abs/10.1111/j.2517-6161.1972.tb00899.x)
         * Demonstrated the second highest independent cross-validated (**Concordance Index** = 0.8136) and test (**Concordance Index** = 0.8743) model performance 
         * Showed minimal overfit between the train (**Concordance Index** = 0.8485) and cross-validated (**Concordance Index** = 0.8136) model performance
         * Demonstrated good survival profile differentiation between the risk groups
+        * Hazard and survival probability estimations for 5 sampled cases demonstrated reasonable profiles
         * Allows for the estimation of absolute coefficient-based variable importance which might aid in better interpretation
 3. The feature importance evaluation for the [random survival forest](https://projecteuclid.org/journals/annals-of-applied-statistics/volume-2/issue-3/Random-survival-forests/10.1214/08-AOAS169.full) and [cox proportional hazards regression](https://rss.onlinelibrary.wiley.com/doi/abs/10.1111/j.2517-6161.1972.tb00899.x) determined the following predictors as the most relevant during prediction:
     * <span style="color: #FF0000">Bilirubin</span>
