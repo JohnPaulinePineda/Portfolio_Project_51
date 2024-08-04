@@ -11168,7 +11168,7 @@ display(coxph_train_feature_importance.sort_values('Absolute.Coefficient', ascen
 
 # 2. Summary <a class="anchor" id="Summary"></a>
 
-![Project51_Summary.png](attachment:1e20c37c-b02c-43bb-99af-88bca8e5785e.png)
+![Project51_Summary.png](attachment:6ecc0fb4-9563-4bd7-ae98-b1a7ad2fabf7.png)
 
 # 3. References <a class="anchor" id="References"></a>
 
