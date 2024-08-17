@@ -6580,16 +6580,16 @@ plt.show()
     * **Null**: Difference in the means between groups True and False is equal to zero  
     * **Alternative**: Difference in the means between groups True and False is not equal to zero   
 2. There is sufficient evidence to conclude of a statistically significant difference between the means of the numeric measurements obtained from the <span style="color: #FF0000">Status</span> groups in 10 numeric predictors given their high t-test statistic values with reported low p-values less than the significance level of 0.05.
-    * <span style="color: #FF0000">Bilirubin</span>: T.Test.Statistic=-8.031, Correlation.PValue=0.000
-    * <span style="color: #FF0000">Prothrombin</span>: T.Test.Statistic=-7.062, Correlation.PValue=0.000 
-    * <span style="color: #FF0000">Copper</span>: T.Test.Statistic=-5.699, Correlation.PValue=0.000  
-    * <span style="color: #FF0000">Alk_Phos</span>: T.Test.Statistic=-4.638, Correlation.PValue=0.000 
-    * <span style="color: #FF0000">SGOT</span>: T.Test.Statistic=-4.207, Correlation.PValue=0.000 
-    * <span style="color: #FF0000">Albumin</span>: T.Test.Statistic=+3.871, Correlation.PValue=0.000  
-    * <span style="color: #FF0000">Tryglicerides</span>: T.Test.Statistic=-3.575, Correlation.PValue=0.000   
-    * <span style="color: #FF0000">Age</span>: T.Test.Statistic=-3.264, Correlation.PValue=0.001
-    * <span style="color: #FF0000">Platelets</span>: T.Test.Statistic=+3.261, Correlation.PValue=0.001
-    * <span style="color: #FF0000">Cholesterol</span>: T.Test.Statistic=-2.256, Correlation.PValue=0.025
+    * <span style="color: #FF0000">Bilirubin</span>: T.Test.Statistic=-8.031, T.Test.PValue=0.000
+    * <span style="color: #FF0000">Prothrombin</span>: T.Test.Statistic=-7.062, T.Test.PValue=0.000 
+    * <span style="color: #FF0000">Copper</span>: T.Test.Statistic=-5.699, T.Test.PValue=0.000  
+    * <span style="color: #FF0000">Alk_Phos</span>: T.Test.Statistic=-4.638, T.Test.PValue=0.000 
+    * <span style="color: #FF0000">SGOT</span>: T.Test.Statistic=-4.207, T.Test.PValue=0.000 
+    * <span style="color: #FF0000">Albumin</span>: T.Test.Statistic=+3.871, T.Test.PValue=0.000  
+    * <span style="color: #FF0000">Tryglicerides</span>: T.Test.Statistic=-3.575, T.Test.PValue=0.000   
+    * <span style="color: #FF0000">Age</span>: T.Test.Statistic=-3.264, T.Test.PValue=0.001
+    * <span style="color: #FF0000">Platelets</span>: T.Test.Statistic=+3.261, T.Test.PValue=0.001
+    * <span style="color: #FF0000">Cholesterol</span>: T.Test.Statistic=-2.256, T.Test.PValue=0.025
 3. The relationship between the object predictors to the <span style="color: #FF0000">Status</span> event variable was statistically evaluated using the following hypotheses:
     * **Null**: The object predictor is independent of the event variable 
     * **Alternative**: The object predictor is dependent on the event variable   
